@@ -1,0 +1,93 @@
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.vscode/
+
+# Build
+.gradle/
+build/
+target/
+bin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Java
+*.class
+hs_err_pid*
+replay_pid*
+
+# Logs & temp
+logs/
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Node (optional)
+node_modules/
+dist/
+npm-debug.log*
+yarn-*.log
+pnpm-debug.log*
+
+# Env
+.env
+.env.*
+*.local
+
+# Coverage
+coverage/
+jacoco*.exec
+
+##ignore this file##
+/target/
+/.idea/
+/.settings/
+/.vscode/
+/bin/
+
+.classpath
+.project
+.settings
+.idea
+ ##filter databfile、sln file##
+*.mdb
+*.ldb
+*.sln
+##class file##
+*.com
+*.dll
+*.exe
+*.o
+*.so
+# compression file
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.via
+
+*.err
+# OS generated files #
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+.factorypath
+/.mvn/
+/mvnw.cmd
+/mvnw
