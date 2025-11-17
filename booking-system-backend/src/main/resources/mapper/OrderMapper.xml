@@ -2,5 +2,43 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.booking.mapper.OrderMapper">
     <!-- 订单相关SQL映射 -->
-</mapper>
 
+    <resultMap id="OrderResultMap" type="com.booking.entity.Order">
+        <id property="orderId" column="order_id" />
+        <result property="orderNumber" column="order_number" />
+        <result property="userId" column="user_id" />
+        <result property="totalAmount" column="total_amount" />
+        <result property="paidAmount" column="paid_amount" />
+        <result property="orderStatus" column="order_status" />
+        <result property="createTime" column="create_time" />
+        <result property="payTime" column="pay_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.booking.entity.Order" useGeneratedKeys="true" keyProperty="orderId">
+        INSERT INTO orders(order_number, user_id, total_amount, paid_amount, order_status)
+        VALUES(#{orderNumber}, #{userId}, #{totalAmount}, #{paidAmount}, #{orderStatus})
+    </insert>
+
+    <update id="update" parameterType="com.booking.entity.Order">
+        UPDATE orders
+        SET total_amount = #{totalAmount},
+            paid_amount = #{paidAmount},
+            order_status = #{orderStatus},
+            pay_time = #{payTime},
+            update_time = NOW()
+        WHERE order_id = #{orderId}
+    </update>
+
+    <select id="findById" parameterType="long" resultMap="OrderResultMap">
+        SELECT * FROM orders WHERE order_id = #{orderId}
+    </select>
+
+    <select id="findByOrderNumber" parameterType="string" resultMap="OrderResultMap">
+        SELECT * FROM orders WHERE order_number = #{orderNumber}
+    </select>
+
+    <select id="findByUserId" parameterType="int" resultMap="OrderResultMap">
+        SELECT * FROM orders WHERE user_id = #{userId} ORDER BY create_time DESC
+    </select>
+</mapper>

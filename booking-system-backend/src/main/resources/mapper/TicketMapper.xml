@@ -2,5 +2,42 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.booking.mapper.TicketMapper">
     <!-- 票务相关SQL映射 -->
-</mapper>
 
+    <resultMap id="TicketResultMap" type="com.booking.entity.Ticket">
+        <id property="ticketId" column="ticket_id" />
+        <result property="orderId" column="order_id" />
+        <result property="tripId" column="trip_id" />
+        <result property="seatId" column="seat_id" />
+        <result property="passengerName" column="passenger_name" />
+        <result property="passengerIdCard" column="passenger_id_card" />
+        <result property="actualPrice" column="actual_price" />
+        <result property="ticketStatus" column="ticket_status" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.booking.entity.Ticket" useGeneratedKeys="true" keyProperty="ticketId">
+        INSERT INTO tickets(order_id, trip_id, seat_id, passenger_name, passenger_id_card, actual_price, ticket_status)
+        VALUES(#{orderId}, #{tripId}, #{seatId}, #{passengerName}, #{passengerIdCard}, #{actualPrice}, #{ticketStatus})
+    </insert>
+
+    <update id="update" parameterType="com.booking.entity.Ticket">
+        UPDATE tickets
+        SET ticket_status = #{ticketStatus},
+            actual_price = #{actualPrice},
+            update_time = NOW()
+        WHERE ticket_id = #{ticketId}
+    </update>
+
+    <select id="findById" parameterType="long" resultMap="TicketResultMap">
+        SELECT * FROM tickets WHERE ticket_id = #{ticketId}
+    </select>
+
+    <select id="findByOrderId" parameterType="long" resultMap="TicketResultMap">
+        SELECT * FROM tickets WHERE order_id = #{orderId}
+    </select>
+
+    <select id="findByTripId" parameterType="int" resultMap="TicketResultMap">
+        SELECT * FROM tickets WHERE trip_id = #{tripId}
+    </select>
+</mapper>

@@ -1,9 +1,15 @@
 package com.booking.mapper;
 
+import com.booking.entity.Ticket;
+import java.util.List;
+
 /**
- * 票务Mapper接口
+ * 车票Mapper接口
  */
 public interface TicketMapper {
-    // 票务数据访问方法
+    int insert(Ticket ticket);
+    int update(Ticket ticket);
+    Ticket findById(Long ticketId);
+    List<Ticket> findByOrderId(Long orderId);
+    List<Ticket> findByTripId(Integer tripId);
 }
-

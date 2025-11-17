@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booking.mapper.TicketChangeMapper">
+    <resultMap id="TicketChangeResultMap" type="com.booking.entity.TicketChange">
+        <id property="changeId" column="change_id" />
+        <result property="changeType" column="change_type" />
+        <result property="ticketId" column="ticket_id" />
+        <result property="orderId" column="order_id" />
+        <result property="targetTripId" column="target_trip_id" />
+        <result property="targetSeatId" column="target_seat_id" />
+        <result property="changeFee" column="change_fee" />
+        <result property="refundAmount" column="refund_amount" />
+        <result property="processStatus" column="process_status" />
+        <result property="requestTime" column="request_time" />
+        <result property="processTime" column="process_time" />
+        <result property="note" column="note" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.booking.entity.TicketChange" useGeneratedKeys="true" keyProperty="changeId">
+        INSERT INTO ticket_changes(change_type, ticket_id, order_id, target_trip_id, target_seat_id, change_fee, refund_amount, process_status, note)
+        VALUES(#{changeType}, #{ticketId}, #{orderId}, #{targetTripId}, #{targetSeatId}, #{changeFee}, #{refundAmount}, #{processStatus}, #{note})
+    </insert>
+
+    <update id="update" parameterType="com.booking.entity.TicketChange">
+        UPDATE ticket_changes
+        SET change_type = #{changeType},
+            ticket_id = #{ticketId},
+            order_id = #{orderId},
+            target_trip_id = #{targetTripId},
+            target_seat_id = #{targetSeatId},
+            change_fee = #{changeFee},
+            refund_amount = #{refundAmount},
+            process_status = #{processStatus},
+            request_time = #{requestTime},
+            process_time = #{processTime},
+            note = #{note}
+        WHERE change_id = #{changeId}
+    </update>
+
+    <select id="findById" parameterType="long" resultMap="TicketChangeResultMap">
+        SELECT * FROM ticket_changes WHERE change_id = #{changeId}
+    </select>
+
+    <select id="findByOrderId" parameterType="long" resultMap="TicketChangeResultMap">
+        SELECT * FROM ticket_changes WHERE order_id = #{orderId} ORDER BY request_time DESC
+    </select>
+</mapper>
+

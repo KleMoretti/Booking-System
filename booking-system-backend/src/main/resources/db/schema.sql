@@ -1,159 +1,160 @@
--- 网上订票系统数据库脚本
--- 创建数据库
-CREATE DATABASE IF NOT EXISTS booking_system DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- 网上订票系统数据库脚本（与 README 数据字典方案A 对齐）
+
+-- 1. 创建数据库
+CREATE DATABASE IF NOT EXISTS booking_system
+  DEFAULT CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 
 USE booking_system;
 
--- 用户表
+-- 2. 用户表（User）
+-- 保存用户账户与基本信息，包括余额与逻辑删除标记
 CREATE TABLE IF NOT EXISTS users (
-    user_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '用户ID',
-    username VARCHAR(50) NOT NULL UNIQUE COMMENT '用户名',
-    password VARCHAR(255) NOT NULL COMMENT '密码（加密）',
-    email VARCHAR(100) NOT NULL UNIQUE COMMENT '邮箱',
-    phone VARCHAR(20) NOT NULL UNIQUE COMMENT '手机号',
-    real_name VARCHAR(50) NOT NULL COMMENT '真实姓名',
-    id_card VARCHAR(18) COMMENT '身份证号',
-    user_type TINYINT DEFAULT 0 COMMENT '用户类型：0-普通用户，1-管理员',
-    status TINYINT DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    user_id       INT PRIMARY KEY AUTO_INCREMENT COMMENT '用户唯一标识',
+    username      VARCHAR(50)  NOT NULL UNIQUE COMMENT '用户登录名',
+    password      VARCHAR(255) NOT NULL COMMENT '密码哈希值',
+    email         VARCHAR(100)     UNIQUE COMMENT '用户邮箱',
+    phone         VARCHAR(20)      UNIQUE COMMENT '用户手机号',
+    user_type     TINYINT      DEFAULT 0 COMMENT '用户类型：0=普通用户，1=管理员',
+    balance       DECIMAL(12,2) DEFAULT 0.00 COMMENT '用户余额，单位：元',
+    create_time   DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    is_deleted    TINYINT      DEFAULT 0 COMMENT '删除标记：0=未删除，1=已删除',
     INDEX idx_username (username),
     INDEX idx_email (email),
     INDEX idx_phone (phone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
 
--- 票务表
-CREATE TABLE IF NOT EXISTS tickets (
-    ticket_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '票务ID',
-    ticket_type VARCHAR(20) NOT NULL COMMENT '票务类型：train-火车，plane-飞机',
-    ticket_no VARCHAR(50) NOT NULL COMMENT '车次/航班号',
-    departure VARCHAR(50) NOT NULL COMMENT '出发地',
-    destination VARCHAR(50) NOT NULL COMMENT '目的地',
-    departure_time DATETIME NOT NULL COMMENT '出发时间',
-    arrival_time DATETIME COMMENT '到达时间',
-    duration INT COMMENT '行程时长（分钟）',
-    price DECIMAL(10,2) NOT NULL COMMENT '基础价格',
-    total_seats INT NOT NULL COMMENT '总座位数',
-    available_seats INT NOT NULL COMMENT '剩余座位数',
-    status TINYINT DEFAULT 1 COMMENT '状态：0-下架，1-在售',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    INDEX idx_route (departure, destination, departure_time),
-    INDEX idx_ticket_no (ticket_no),
-    INDEX idx_departure_time (departure_time)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='票务表';
+-- 3. 车站表（Stations）
+-- 标准化出发/到达站点信息
+CREATE TABLE IF NOT EXISTS stations (
+    station_id    INT PRIMARY KEY AUTO_INCREMENT COMMENT '车站唯一标识',
+    station_name  VARCHAR(100) COMMENT '站点名称',
+    city          VARCHAR(100) COMMENT '所在城市',
+    station_code  VARCHAR(50)  COMMENT '站点代码（如城市缩写+编号）',
+    address       VARCHAR(255) COMMENT '站点详细地址',
+    create_time   DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    UNIQUE KEY uk_station_code (station_code),
+    INDEX idx_city (city)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='车站表';
 
--- 座位表
+-- 4. 班次表（Trips）
+-- 描述具体运行班次及相关参数
+CREATE TABLE IF NOT EXISTS trips (
+    trip_id              INT PRIMARY KEY AUTO_INCREMENT COMMENT '班次唯一标识',
+    trip_number          VARCHAR(50)  COMMENT '车次号（如G123、D456）',
+    vehicle_info         VARCHAR(100) COMMENT '车辆信息（如CRH380A）',
+    total_seats          INT          NOT NULL DEFAULT 0 COMMENT '总座位数',
+    departure_station_id INT          NOT NULL COMMENT '出发站ID',
+    arrival_station_id   INT          NOT NULL COMMENT '到达站ID',
+    departure_time       DATETIME     COMMENT '出发时间',
+    arrival_time         DATETIME     COMMENT '到达时间',
+    base_price           DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT '基础票价',
+    trip_status          TINYINT      DEFAULT 0 COMMENT '班次状态：0=计划中，1=进行中，2=已结束',
+    create_time          DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time          DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    INDEX idx_trip_number (trip_number),
+    INDEX idx_departure_station (departure_station_id, departure_time),
+    INDEX idx_arrival_station (arrival_station_id, arrival_time),
+    CONSTRAINT fk_trips_departure_station FOREIGN KEY (departure_station_id) REFERENCES stations(station_id),
+    CONSTRAINT fk_trips_arrival_station   FOREIGN KEY (arrival_station_id)   REFERENCES stations(station_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='班次表';
+
+-- 5. 座位表（Seats）
+-- 记录每个班次下的座位号与状态
 CREATE TABLE IF NOT EXISTS seats (
-    seat_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '座位ID',
-    ticket_id INT NOT NULL COMMENT '票务ID',
-    seat_type VARCHAR(20) NOT NULL COMMENT '座位类型：一等座、二等座、商务座等',
-    seat_no VARCHAR(10) NOT NULL COMMENT '座位号',
-    price DECIMAL(10,2) NOT NULL COMMENT '价格',
-    status TINYINT DEFAULT 0 COMMENT '状态：0-可用，1-已锁定，2-已售',
-    lock_time DATETIME COMMENT '锁定时间',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    INDEX idx_ticket_id (ticket_id),
-    INDEX idx_status (status),
-    UNIQUE KEY uk_ticket_seat (ticket_id, seat_no),
-    FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id)
+    seat_id          INT PRIMARY KEY AUTO_INCREMENT COMMENT '座位唯一标识',
+    trip_id          INT          NOT NULL COMMENT '班次ID',
+    seat_number      VARCHAR(20)  NOT NULL COMMENT '座位号（如A1、B2）',
+    seat_status      TINYINT      DEFAULT 0 COMMENT '座位状态：0=可售，1=已锁定，2=已售',
+    lock_expire_time DATETIME     COMMENT '锁定到期时间',
+    create_time      DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time      DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    UNIQUE KEY uk_trip_seat (trip_id, seat_number),
+    INDEX idx_trip_id (trip_id),
+    INDEX idx_seat_status (seat_status),
+    CONSTRAINT fk_seats_trip FOREIGN KEY (trip_id) REFERENCES trips(trip_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='座位表';
 
--- 订单表
+-- 6. 订单表（Orders）
+-- 用户购买行为记录，可包含多张票
 CREATE TABLE IF NOT EXISTS orders (
-    order_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '订单ID',
-    order_no VARCHAR(32) NOT NULL UNIQUE COMMENT '订单号',
-    user_id INT NOT NULL COMMENT '用户ID',
-    ticket_id INT NOT NULL COMMENT '票务ID',
-    seat_id INT NOT NULL COMMENT '座位ID',
-    passenger_name VARCHAR(50) NOT NULL COMMENT '乘客姓名',
-    passenger_id_card VARCHAR(18) NOT NULL COMMENT '乘客身份证',
-    passenger_phone VARCHAR(20) COMMENT '乘客手机号',
-    order_status TINYINT DEFAULT 0 COMMENT '订单状态：0-待支付，1-已支付，2-已取消，3-已退款，4-已完成',
-    total_amount DECIMAL(10,2) NOT NULL COMMENT '订单金额',
-    payment_method VARCHAR(20) COMMENT '支付方式',
-    pay_time DATETIME COMMENT '支付时间',
-    cancel_time DATETIME COMMENT '取消时间',
-    refund_time DATETIME COMMENT '退款时间',
-    refund_amount DECIMAL(10,2) COMMENT '退款金额',
-    expire_time DATETIME COMMENT '过期时间',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    order_id      BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '订单唯一标识',
+    order_number  VARCHAR(64) NOT NULL UNIQUE COMMENT '订单编号（如2023100112345）',
+    user_id       INT         NOT NULL COMMENT '用户ID',
+    total_amount  DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT '订单总金额',
+    paid_amount   DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT '实付金额',
+    order_status  TINYINT     DEFAULT 0 COMMENT '订单状态：0=待支付，1=已支付，2=已取消',
+    create_time   DATETIME    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    pay_time      DATETIME    COMMENT '支付时间',
+    update_time   DATETIME    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX idx_user_id (user_id),
-    INDEX idx_order_no (order_no),
     INDEX idx_order_status (order_status),
     INDEX idx_create_time (create_time),
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id),
-    FOREIGN KEY (seat_id) REFERENCES seats(seat_id)
+    CONSTRAINT fk_orders_user FOREIGN KEY (user_id) REFERENCES users(user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';
 
--- 支付表
-CREATE TABLE IF NOT EXISTS payments (
-    payment_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '支付ID',
-    order_id BIGINT NOT NULL COMMENT '订单ID',
-    payment_no VARCHAR(64) NOT NULL UNIQUE COMMENT '支付流水号',
-    payment_method VARCHAR(20) NOT NULL COMMENT '支付方式：alipay-支付宝，wechat-微信',
-    amount DECIMAL(10,2) NOT NULL COMMENT '支付金额',
-    payment_status TINYINT DEFAULT 0 COMMENT '支付状态：0-待支付，1-支付成功，2-支付失败',
-    transaction_id VARCHAR(64) COMMENT '第三方交易号',
-    pay_time DATETIME COMMENT '支付时间',
-    notify_time DATETIME COMMENT '回调通知时间',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+-- 7. 车票表（Tickets）
+-- 每张实际票，绑定订单、班次、座位与乘客信息
+CREATE TABLE IF NOT EXISTS tickets (
+    ticket_id          BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '车票唯一标识',
+    order_id           BIGINT      NOT NULL COMMENT '订单ID',
+    trip_id            INT         NOT NULL COMMENT '班次ID',
+    seat_id            INT         NOT NULL COMMENT '座位ID',
+    passenger_name     VARCHAR(50) COMMENT '乘客姓名',
+    passenger_id_card  VARCHAR(32) COMMENT '乘客证件号',
+    actual_price       DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT '实付票价',
+    ticket_status      TINYINT     DEFAULT 0 COMMENT '票据状态：0=未使用，1=已使用，2=已退票',
+    create_time        DATETIME    DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time        DATETIME    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX idx_order_id (order_id),
-    INDEX idx_payment_no (payment_no),
-    INDEX idx_transaction_id (transaction_id),
-    FOREIGN KEY (order_id) REFERENCES orders(order_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='支付表';
+    INDEX idx_trip_id (trip_id),
+    INDEX idx_seat_id (seat_id),
+    INDEX idx_ticket_status (ticket_status),
+    CONSTRAINT fk_tickets_order FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    CONSTRAINT fk_tickets_trip  FOREIGN KEY (trip_id)  REFERENCES trips(trip_id),
+    CONSTRAINT fk_tickets_seat  FOREIGN KEY (seat_id)  REFERENCES seats(seat_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='车票表';
 
--- 退改签表
-CREATE TABLE IF NOT EXISTS refund_change (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
-    order_id BIGINT NOT NULL COMMENT '订单ID',
-    user_id INT NOT NULL COMMENT '用户ID',
-    type TINYINT NOT NULL COMMENT '类型：1-退票，2-改签',
-    reason VARCHAR(255) COMMENT '申请原因',
-    status TINYINT DEFAULT 0 COMMENT '状态：0-待审核，1-已通过，2-已拒绝',
-    fee DECIMAL(10,2) DEFAULT 0 COMMENT '手续费',
-    refund_amount DECIMAL(10,2) COMMENT '退款金额',
-    new_ticket_id INT COMMENT '改签后的票务ID（改签时）',
-    new_seat_id INT COMMENT '改签后的座位ID（改签时）',
-    audit_user_id INT COMMENT '审核人ID',
-    audit_time DATETIME COMMENT '审核时间',
-    audit_remark VARCHAR(255) COMMENT '审核备注',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+-- 8. 余额变动记录表（BalanceChanges）
+-- 用户余额变动审计记录
+CREATE TABLE IF NOT EXISTS balance_changes (
+    record_id       BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '记录唯一标识',
+    user_id         INT         NOT NULL COMMENT '用户ID',
+    change_amount   DECIMAL(12,2) COMMENT '变动金额，正为增加，负为减少',
+    balance_before  DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT '变动前余额',
+    balance_after   DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT '变动后余额',
+    change_type     TINYINT     COMMENT '变动类型：0=充值，1=消费，2=退款',
+    create_time     DATETIME    DEFAULT CURRENT_TIMESTAMP COMMENT '记录创建时间',
+    note            TEXT        COMMENT '备注',
+    INDEX idx_user_id (user_id),
+    INDEX idx_change_time (create_time),
+    CONSTRAINT fk_balance_changes_user FOREIGN KEY (user_id) REFERENCES users(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='余额变动记录表';
+
+-- 9. 票务变更记录表（TicketChanges）
+-- 改签与退票统一记录表
+CREATE TABLE IF NOT EXISTS ticket_changes (
+    change_id       BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '请求唯一标识',
+    change_type     TINYINT     COMMENT '请求类型：1=改签，2=退票',
+    ticket_id       BIGINT      NOT NULL COMMENT '车票ID',
+    order_id        BIGINT      NOT NULL COMMENT '订单ID',
+    target_trip_id  INT         COMMENT '目标班次ID',
+    target_seat_id  INT         COMMENT '目标座位ID',
+    change_fee      DECIMAL(12,2) COMMENT '改签费',
+    refund_amount   DECIMAL(12,2) COMMENT '退款金额',
+    process_status  TINYINT     DEFAULT 0 COMMENT '处理状态：0=待处理，1=已处理，2=已拒绝',
+    request_time    DATETIME    DEFAULT CURRENT_TIMESTAMP COMMENT '请求时间',
+    process_time    DATETIME    COMMENT '处理时间',
+    note            TEXT        COMMENT '备注',
+    INDEX idx_ticket_id (ticket_id),
     INDEX idx_order_id (order_id),
-    INDEX idx_user_id (user_id),
-    INDEX idx_status (status),
-    FOREIGN KEY (order_id) REFERENCES orders(order_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='退改签表';
+    INDEX idx_process_status (process_status),
+    INDEX idx_request_time (request_time),
+    CONSTRAINT fk_ticket_changes_ticket FOREIGN KEY (ticket_id) REFERENCES tickets(ticket_id),
+    CONSTRAINT fk_ticket_changes_order  FOREIGN KEY (order_id)  REFERENCES orders(order_id),
+    CONSTRAINT fk_ticket_changes_trip   FOREIGN KEY (target_trip_id) REFERENCES trips(trip_id),
+    CONSTRAINT fk_ticket_changes_seat   FOREIGN KEY (target_seat_id) REFERENCES seats(seat_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='票务变更记录表';
 
--- 操作日志表
-CREATE TABLE IF NOT EXISTS operation_logs (
-    log_id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
-    user_id INT COMMENT '用户ID',
-    username VARCHAR(50) COMMENT '用户名',
-    operation VARCHAR(50) NOT NULL COMMENT '操作类型',
-    method VARCHAR(200) COMMENT '请求方法',
-    params TEXT COMMENT '请求参数',
-    ip VARCHAR(50) COMMENT 'IP地址',
-    location VARCHAR(100) COMMENT '操作地点',
-    execute_time INT COMMENT '执行时长（毫秒）',
-    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
-    INDEX idx_user_id (user_id),
-    INDEX idx_create_time (create_time)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志表';
-
--- 插入测试数据
--- 管理员账号 (密码: admin123)
-INSERT INTO users (username, password, email, phone, real_name, user_type) 
-VALUES ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVKIUi', 'admin@booking.com', '13800000000', '管理员', 1);
-
--- 测试用户 (密码: user123)
-INSERT INTO users (username, password, email, phone, real_name, id_card, user_type) 
-VALUES ('testuser', '$2a$10$5ZH2.hXjG6pANVLUx0VbWuMCT5qKJ4.hXjG6pANVLUx0VbWu', 'user@test.com', '13900000001', '测试用户', '110101199001011234', 0);
-
+-- 脚本结束

@@ -1,9 +1,15 @@
 package com.booking.mapper;
 
+import com.booking.entity.Order;
+import java.util.List;
+
 /**
  * 订单Mapper接口
  */
 public interface OrderMapper {
-    // 订单数据访问方法
+    int insert(Order order);
+    int update(Order order);
+    Order findById(Long orderId);
+    Order findByOrderNumber(String orderNumber);
+    List<Order> findByUserId(Integer userId);
 }
-

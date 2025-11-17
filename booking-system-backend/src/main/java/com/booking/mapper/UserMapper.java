@@ -1,9 +1,15 @@
 package com.booking.mapper;
 
+import com.booking.entity.User;
+import java.util.List;
+
 /**
  * 用户Mapper接口
  */
 public interface UserMapper {
-    // 用户数据访问方法
+    int insert(User user);
+    int update(User user);
+    User findById(Integer userId);
+    User findByUsername(String username);
+    List<User> findAll();
 }
-

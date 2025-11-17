@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booking.mapper.TripMapper">
+    <resultMap id="TripResultMap" type="com.booking.entity.Trip">
+        <id property="tripId" column="trip_id" />
+        <result property="tripNumber" column="trip_number" />
+        <result property="vehicleInfo" column="vehicle_info" />
+        <result property="totalSeats" column="total_seats" />
+        <result property="departureStationId" column="departure_station_id" />
+        <result property="arrivalStationId" column="arrival_station_id" />
+        <result property="departureTime" column="departure_time" />
+        <result property="arrivalTime" column="arrival_time" />
+        <result property="basePrice" column="base_price" />
+        <result property="tripStatus" column="trip_status" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.booking.entity.Trip" useGeneratedKeys="true" keyProperty="tripId">
+        INSERT INTO trips(trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
+        VALUES(#{tripNumber}, #{vehicleInfo}, #{totalSeats}, #{departureStationId}, #{arrivalStationId}, #{departureTime}, #{arrivalTime}, #{basePrice}, #{tripStatus})
+    </insert>
+
+    <update id="update" parameterType="com.booking.entity.Trip">
+        UPDATE trips
+        SET trip_number = #{tripNumber},
+            vehicle_info = #{vehicleInfo},
+            total_seats = #{totalSeats},
+            departure_station_id = #{departureStationId},
+            arrival_station_id = #{arrivalStationId},
+            departure_time = #{departureTime},
+            arrival_time = #{arrivalTime},
+            base_price = #{basePrice},
+            trip_status = #{tripStatus},
+            update_time = NOW()
+        WHERE trip_id = #{tripId}
+    </update>
+
+    <select id="findById" parameterType="int" resultMap="TripResultMap">
+        SELECT * FROM trips WHERE trip_id = #{tripId}
+    </select>
+
+    <select id="searchTrips" resultMap="TripResultMap">
+        SELECT * FROM trips
+        WHERE departure_station_id = #{departureStationId}
+          AND arrival_station_id = #{arrivalStationId}
+          AND departure_time &gt;= #{departureTimeFrom}
+          AND departure_time &lt;= #{departureTimeTo}
+        ORDER BY departure_time ASC
+    </select>
+</mapper>
+
