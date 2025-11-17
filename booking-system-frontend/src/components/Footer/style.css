@@ -1,2 +1,19 @@
 /* Footer组件样式 */
 
+.app-footer {
+  text-align: center;
+  color: #94a3b8;
+  background-color: #0f172a;
+  padding: 16px 24px;
+}
+
+.app-footer-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-divider {
+  color: #1e293b;
+}

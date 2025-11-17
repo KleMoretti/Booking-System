@@ -1,2 +1,57 @@
 /* Header组件样式 */
 
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.app-header-left {
+  display: flex;
+  align-items: center;
+  margin-right: 24px;
+}
+
+.app-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #e5e7eb;
+  font-weight: 600;
+  font-size: 18px;
+  text-decoration: none;
+}
+
+.app-logo:hover {
+  color: #ffffff;
+}
+
+.logo-mark {
+  font-size: 20px;
+}
+
+.app-header-menu {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.user-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #e5e7eb;
+  text-decoration: none;
+}
+
+.user-entry:hover {
+  color: #ffffff;
+}
+
+.user-entry-text {
+  font-size: 14px;
+}

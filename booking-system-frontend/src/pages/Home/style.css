@@ -1,2 +1,16 @@
 /* Home页面样式 */
 
+.page-home {
+  padding-top: 24px;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.home-search-form {
+  margin-top: 8px;
+}

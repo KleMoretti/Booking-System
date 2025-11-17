@@ -1,2 +1,9 @@
 /* Admin页面样式 */
 
+.page-admin {
+  padding-top: 24px;
+}
+
+.admin-stat-card {
+  margin-top: 16px;
+}

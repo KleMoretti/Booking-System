@@ -1,2 +1,24 @@
 /* Login页面样式 */
 
+.page-login {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 60px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-extra {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.login-extra a {
+  color: #2563eb;
+}

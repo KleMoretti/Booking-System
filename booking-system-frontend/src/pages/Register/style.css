@@ -1,2 +1,24 @@
 /* Register页面样式 */
 
+.page-register {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 60px;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 480px;
+}
+
+.register-extra {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.register-extra a {
+  color: #2563eb;
+}
