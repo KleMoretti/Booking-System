@@ -108,21 +108,47 @@ export function setupMock(axiosInstance) {
     // 根据参数过滤车次
     let filteredTrips = [...mockTrips]
     
-    if (params.departureStation) {
+    // 转换 fromStationId 到 departureStation 名称
+    if (params.fromStationId) {
+      const fromStation = mockStations.find(s => s.id === parseInt(params.fromStationId))
+      if (fromStation) {
+        filteredTrips = filteredTrips.filter(
+          trip => trip.departureStation === fromStation.name
+        )
+      }
+    }
+    
+    // 转换 toStationId 到 arrivalStation 名称
+    if (params.toStationId) {
+      const toStation = mockStations.find(s => s.id === parseInt(params.toStationId))
+      if (toStation) {
+        filteredTrips = filteredTrips.filter(
+          trip => trip.arrivalStation === toStation.name
+        )
+      }
+    }
+    
+    // 按日期过滤
+    if (params.departureDate) {
       filteredTrips = filteredTrips.filter(
-        trip => trip.departureStation === params.departureStation
+        trip => trip.date === params.departureDate
       )
     }
     
-    if (params.arrivalStation) {
-      filteredTrips = filteredTrips.filter(
-        trip => trip.arrivalStation === params.arrivalStation
-      )
-    }
+    // 将数据格式转换为前端所需的格式
+    const formattedTrips = filteredTrips.map(trip => ({
+      ...trip,
+      tripNo: trip.tripNumber,
+      fromStation: trip.departureStation,
+      toStation: trip.arrivalStation,
+      // 保留原始的时间字符串
+      departureTime: trip.departureTime,
+      arrivalTime: trip.arrivalTime,
+    }))
     
     return [200, {
       code: 200,
-      data: filteredTrips,
+      data: formattedTrips,
     }]
   })
 

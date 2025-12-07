@@ -25,7 +25,7 @@ export const mockTrips = [
     departureTime: '08:00',
     arrivalTime: '13:30',
     duration: '5小时30分',
-    date: '2024-12-08',
+    date: '2025-12-11',
     seats: {
       available: 160,
       total: 300,
@@ -41,7 +41,7 @@ export const mockTrips = [
     departureTime: '09:30',
     arrivalTime: '15:00',
     duration: '5小时30分',
-    date: '2024-12-08',
+    date: '2025-12-11',
     seats: {
       available: 115,
       total: 300,
@@ -57,7 +57,7 @@ export const mockTrips = [
     departureTime: '10:15',
     arrivalTime: '17:30',
     duration: '7小时15分',
-    date: '2024-12-08',
+    date: '2025-12-11',
     seats: {
       available: 160,
       total: 210,
@@ -73,7 +73,7 @@ export const mockTrips = [
     departureTime: '07:00',
     arrivalTime: '08:20',
     duration: '1小时20分',
-    date: '2024-12-09',
+    date: '2025-12-12',
     seats: {
       available: 148,
       total: 195,
@@ -89,7 +89,7 @@ export const mockTrips = [
     departureTime: '08:30',
     arrivalTime: '10:00',
     duration: '1小时30分',
-    date: '2024-12-09',
+    date: '2025-12-12',
     seats: {
       available: 200,
       total: 280,
@@ -105,7 +105,7 @@ export const mockTrips = [
     departureTime: '07:30',
     arrivalTime: '12:00',
     duration: '4小时30分',
-    date: '2024-12-10',
+    date: '2025-12-13',
     seats: {
       available: 85,
       total: 300,
@@ -121,7 +121,7 @@ export const mockTrips = [
     departureTime: '14:00',
     arrivalTime: '16:30',
     duration: '2小时30分',
-    date: '2024-12-10',
+    date: '2025-12-13',
     seats: {
       available: 120,
       total: 180,
@@ -137,7 +137,7 @@ export const mockTrips = [
     departureTime: '09:00',
     arrivalTime: '10:10',
     duration: '1小时10分',
-    date: '2024-12-11',
+    date: '2025-12-14',
     seats: {
       available: 235,
       total: 300,
@@ -153,7 +153,7 @@ export const mockTrips = [
     departureTime: '11:00',
     arrivalTime: '16:30',
     duration: '5小时30分',
-    date: '2024-12-11',
+    date: '2025-12-14',
     seats: {
       available: 45,
       total: 250,
@@ -169,7 +169,7 @@ export const mockTrips = [
     departureTime: '21:00',
     arrivalTime: '06:30',
     duration: '9小时30分',
-    date: '2024-12-12',
+    date: '2025-12-15',
     seats: {
       available: 320,
       total: 500,
@@ -185,7 +185,7 @@ export const mockTrips = [
     departureTime: '12:30',
     arrivalTime: '13:50',
     duration: '1小时20分',
-    date: '2024-12-12',
+    date: '2025-12-15',
     seats: {
       available: 180,
       total: 280,
@@ -201,7 +201,7 @@ export const mockTrips = [
     departureTime: '18:00',
     arrivalTime: '19:30',
     duration: '1小时30分',
-    date: '2024-12-13',
+    date: '2025-12-16',
     seats: {
       available: 95,
       total: 200,
@@ -217,7 +217,7 @@ export const mockTrips = [
     departureTime: '06:30',
     arrivalTime: '14:30',
     duration: '8小时',
-    date: '2024-12-13',
+    date: '2025-12-16',
     seats: {
       available: 50,
       total: 320,
@@ -233,7 +233,7 @@ export const mockTrips = [
     departureTime: '15:00',
     arrivalTime: '18:30',
     duration: '3小时30分',
-    date: '2024-12-14',
+    date: '2025-12-16',
     seats: {
       available: 210,
       total: 300,
@@ -249,7 +249,7 @@ export const mockTrips = [
     departureTime: '10:00',
     arrivalTime: '16:00',
     duration: '6小时',
-    date: '2024-12-15',
+    date: '2025-12-17',
     seats: {
       available: 130,
       total: 280,

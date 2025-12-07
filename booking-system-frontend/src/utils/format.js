@@ -22,7 +22,13 @@ export const formatDateTime = (date, format = 'YYYY-MM-DD HH:mm:ss') => {
  */
 export const formatTime = (date, format = 'HH:mm') => {
   if (!date) return ''
-  return dayjs(date).format(format)
+  // 如果已经是时间格式字符串 (HH:mm), 直接返回
+  if (typeof date === 'string' && /^\d{2}:\d{2}$/.test(date)) {
+    return date
+  }
+  // 否则尝试用 dayjs 解析
+  const parsed = dayjs(date)
+  return parsed.isValid() ? parsed.format(format) : date
 }
 
 /**

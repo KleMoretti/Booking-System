@@ -111,7 +111,7 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
             label="出发时间"
             rules={[{ required: true, message: '请选择出发时间' }]}
           >
-            <TimePicker format="HH:mm" onChange={handleTimeChange} />
+            <TimePicker format="HH:mm" onChange={handleTimeChange} inputReadOnly allowClear={false} />
           </Form.Item>
 
           <Form.Item
@@ -119,7 +119,7 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
             label="到达时间"
             rules={[{ required: true, message: '请选择到达时间' }]}
           >
-            <TimePicker format="HH:mm" onChange={handleTimeChange} />
+            <TimePicker format="HH:mm" onChange={handleTimeChange} inputReadOnly allowClear={false} />
           </Form.Item>
 
           <Form.Item
@@ -143,6 +143,8 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
               // 禁用今天之前的日期
               return current && current < dayjs().startOf('day')
             }}
+            inputReadOnly
+            allowClear={false}
           />
         </Form.Item>
 

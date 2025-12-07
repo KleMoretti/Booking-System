@@ -143,6 +143,9 @@ function Home() {
                 <DatePicker
                   style={{ width: '100%' }}
                   disabledDate={(current) => current && current < dayjs().startOf('day')}
+                  inputReadOnly
+                  allowClear={false}
+                  placeholder="选择出发日期"
                 />
               </Form.Item>
             </Col>
