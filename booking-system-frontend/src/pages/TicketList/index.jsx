@@ -35,67 +35,69 @@ function TicketList() {
     {
       title: '车次',
       dataIndex: 'tripNo',
-      width: 100,
-      fixed: 'left',
+      width: '10%',
+      align: 'center',
     },
     {
       title: '出发站',
       dataIndex: 'fromStation',
-      width: 100,
+      width: '10%',
+      align: 'center',
     },
     {
       title: '到达站',
       dataIndex: 'toStation',
-      width: 100,
+      width: '10%',
+      align: 'center',
     },
     {
       title: '出发时间',
       dataIndex: 'departureTime',
-      width: 100,
+      width: '12%',
+      align: 'center',
       render: (time) => formatTime(time),
     },
     {
       title: '到达时间',
       dataIndex: 'arrivalTime',
-      width: 100,
+      width: '12%',
+      align: 'center',
       render: (time) => formatTime(time),
     },
     {
       title: '历时',
       dataIndex: 'duration',
-      width: 80,
-      render: (duration) => `${duration || '-'}小时`,
+      width: '10%',
+      align: 'center',
+      render: (duration) => duration || '-',
     },
     {
       title: '余票',
       dataIndex: 'seats',
-      width: 100,
+      width: '10%',
+      align: 'center',
       render: (seats) => (
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '18px', fontWeight: 600, color: seats?.available > 0 ? '#52c41a' : '#ff4d4f' }}>
-            {seats?.available || 0}
-          </div>
-          <div style={{ fontSize: '12px', color: '#8c8c8c' }}>张</div>
+        <div style={{ fontWeight: 600, color: seats?.available > 0 ? '#52c41a' : '#ff4d4f' }}>
+          {seats?.available || 0}张
         </div>
       ),
     },
     {
       title: '票价',
       dataIndex: 'seats',
-      width: 100,
+      width: '12%',
+      align: 'center',
       render: (seats) => (
-        <div style={{ textAlign: 'center' }}>
-          <div className="seat-price" style={{ fontSize: '16px', fontWeight: 600, color: '#1890ff' }}>
-            {formatPrice(seats?.price)}
-          </div>
+        <div style={{ fontWeight: 600, color: '#1890ff' }}>
+          {formatPrice(seats?.price)}
         </div>
       ),
     },
     {
       title: '操作',
       key: 'action',
-      width: 100,
-      fixed: 'right',
+      width: '14%',
+      align: 'center',
       render: (_, record) => (
         <Button
           type="primary"
@@ -138,7 +140,7 @@ function TicketList() {
             dataSource={tripList}
             loading={loading}
             pagination={false}
-            scroll={{ x: 1200 }}
+            size="middle"
           />
         )}
       </Card>

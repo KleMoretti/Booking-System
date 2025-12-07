@@ -41,39 +41,46 @@ function OrderList() {
     {
       title: '订单号',
       dataIndex: 'orderNo',
-      width: 180,
+      width: '18%',
+      align: 'center',
     },
     {
       title: '车次',
       dataIndex: 'tripNo',
-      width: 100,
+      width: '10%',
+      align: 'center',
     },
     {
       title: '出发站',
       dataIndex: 'fromStation',
-      width: 100,
+      width: '10%',
+      align: 'center',
     },
     {
       title: '到达站',
       dataIndex: 'toStation',
-      width: 100,
+      width: '10%',
+      align: 'center',
     },
     {
       title: '出发时间',
       dataIndex: 'departureTime',
-      width: 160,
+      width: '15%',
+      align: 'center',
       render: (time) => formatDateTime(time),
     },
     {
       title: '订单金额',
       dataIndex: 'totalPrice',
-      width: 100,
+      width: '10%',
+      align: 'center',
       render: (price) => formatPrice(price),
     },
     {
       title: '订单状态',
       dataIndex: 'status',
-      width: 100,
+      width: '10%',
+      align: 'center',
       render: (status) => {
         const statusInfo = getOrderStatus(status)
         return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>
@@ -82,7 +89,8 @@ function OrderList() {
     {
       title: '操作',
       key: 'action',
-      width: 120,
+      width: '17%',
+      align: 'center',
       render: (_, record) => (
         <Space size="small">
           {record.status === ORDER_STATUS.PENDING && (
@@ -141,7 +149,7 @@ function OrderList() {
               showTotal: (total) => `共 ${total} 条`,
             }}
             onChange={handleTableChange}
-            scroll={{ x: 1000 }}
+            size="middle"
           />
         )}
       </Card>

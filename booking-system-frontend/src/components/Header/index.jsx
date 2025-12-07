@@ -1,4 +1,5 @@
 // 页面头部组件
+import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Layout, Menu, Dropdown, Avatar, message } from 'antd'
 import { UserOutlined, HomeOutlined, ProfileOutlined, OrderedListOutlined, DashboardOutlined, LogoutOutlined } from '@ant-design/icons'
@@ -83,4 +84,4 @@ function Header() {
   )
 }
 
-export default Header
+export default React.memo(Header)

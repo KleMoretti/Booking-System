@@ -1,4 +1,5 @@
 // 页面头部标题组件
+import React from 'react'
 import { Typography, Breadcrumb } from 'antd'
 import { HomeOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
@@ -35,4 +36,4 @@ function PageHeader({ title, subtitle, breadcrumb = [] }) {
   )
 }
 
-export default PageHeader
+export default React.memo(PageHeader)

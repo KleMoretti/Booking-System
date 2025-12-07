@@ -1,3 +1,4 @@
+import React from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { Layout } from 'antd'
@@ -6,6 +7,7 @@ import AppRoutes from './routes'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import ErrorBoundary from './components/ErrorBoundary'
+import { onRenderCallback, enableProfiler } from './utils/profiler'
 
 const { Content } = Layout
 
@@ -17,7 +19,13 @@ function App() {
           <Layout className="app-root-layout">
             <Header />
             <Content className="app-content-wrapper">
-              <AppRoutes />
+              {enableProfiler ? (
+                <React.Profiler id="app-routes" onRender={onRenderCallback}>
+                  <AppRoutes />
+                </React.Profiler>
+              ) : (
+                <AppRoutes />
+              )}
             </Content>
             <Footer />
           </Layout>

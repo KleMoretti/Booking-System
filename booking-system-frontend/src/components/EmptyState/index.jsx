@@ -1,4 +1,5 @@
 // 空状态组件
+import React from 'react'
 import { Empty, Button } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import './style.css'
@@ -36,4 +37,4 @@ function EmptyState({
   )
 }
 
-export default EmptyState
+export default React.memo(EmptyState)

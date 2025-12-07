@@ -74,6 +74,7 @@ function TripManagement() {
       ...record,
       departureTime: record.departureTime ? dayjs(record.departureTime, 'HH:mm') : null,
       arrivalTime: record.arrivalTime ? dayjs(record.arrivalTime, 'HH:mm') : null,
+      date: record.date ? dayjs(record.date) : null,
       availableSeats: record.seats?.available || 0,
       totalSeats: record.seats?.total || 0,
       price: record.seats?.price || 0,
@@ -85,11 +86,12 @@ function TripManagement() {
     try {
       const values = await form.validateFields()
       
-      // 格式化时间
+      // 格式化时间和日期
       const formattedValues = {
         ...values,
         departureTime: values.departureTime?.format('HH:mm'),
         arrivalTime: values.arrivalTime?.format('HH:mm'),
+        date: values.date?.format('YYYY-MM-DD'),
         seats: {
           available: values.availableSeats,
           total: values.totalSeats,
@@ -158,9 +160,19 @@ function TripManagement() {
       ),
     },
     {
+      title: '日期',
+      dataIndex: 'date',
+      key: 'date',
+      width: 110,
+      align: 'center',
+      render: (date) => (
+        <Tag color="geekblue">{date || '-'}</Tag>
+      ),
+    },
+    {
       title: '时间',
       key: 'time',
-      width: 180,
+      width: 150,
       align: 'center',
       render: (_, record) => (
         <div style={{ fontSize: '13px', color: '#595959' }}>

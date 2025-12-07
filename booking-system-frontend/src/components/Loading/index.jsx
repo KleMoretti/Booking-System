@@ -1,4 +1,5 @@
 // 加载中组件
+import React from 'react'
 import { Spin } from 'antd'
 import './style.css'
 
@@ -10,4 +11,4 @@ function Loading({ tip = '加载中...' }) {
   )
 }
 
-export default Loading
+export default React.memo(Loading)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Table, Card, Tag, Button, Space, Modal, Input, Select, message, Tabs } from 'antd'
 import { CheckOutlined, CloseOutlined, EyeOutlined } from '@ant-design/icons'
 import { getRefundChangeList, processRefundChange } from '../../api/admin'
@@ -23,11 +23,7 @@ function RefundChangeManagement() {
   const [processAction, setProcessAction] = useState('approve')
   const [rejectReason, setRejectReason] = useState('')
 
-  useEffect(() => {
-    fetchData()
-  }, [pagination.current, pagination.pageSize, filters])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       const response = await getRefundChangeList({
@@ -48,33 +44,37 @@ function RefundChangeManagement() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [pagination.current, pagination.pageSize, filters])
 
-  const handleTableChange = (newPagination) => {
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const handleTableChange = useCallback((newPagination) => {
     setPagination(newPagination)
-  }
+  }, [])
 
-  const handleTabChange = (key) => {
-    setFilters({
-      ...filters,
+  const handleTabChange = useCallback((key) => {
+    setFilters(prev => ({
+      ...prev,
       type: key === 'all' ? null : key,
-    })
-    setPagination({ ...pagination, current: 1 })
-  }
+    }))
+    setPagination(prev => ({ ...prev, current: 1 }))
+  }, [])
 
-  const showDetail = (record) => {
+  const showDetail = useCallback((record) => {
     setSelectedRecord(record)
     setDetailVisible(true)
-  }
+  }, [])
 
-  const showProcess = (record, action) => {
+  const showProcess = useCallback((record, action) => {
     setSelectedRecord(record)
     setProcessAction(action)
     setRejectReason('')
     setProcessVisible(true)
-  }
+  }, [])
 
-  const handleProcess = async () => {
+  const handleProcess = useCallback(async () => {
     if (processAction === 'reject' && !rejectReason.trim()) {
       message.warning('请输入拒绝原因')
       return
@@ -91,7 +91,7 @@ function RefundChangeManagement() {
     } catch (error) {
       message.error('操作失败')
     }
-  }
+  }, [processAction, rejectReason, selectedRecord, fetchData])
 
   const columns = [
     {

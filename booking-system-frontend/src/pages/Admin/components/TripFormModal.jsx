@@ -1,9 +1,47 @@
 // 车次表单模态框组件
-import { Modal, Form, Input, Select, InputNumber, TimePicker, Space } from 'antd'
+import React, { useEffect } from 'react'
+import { Modal, Form, Input, Select, InputNumber, TimePicker, DatePicker, Space } from 'antd'
 import dayjs from 'dayjs'
 import { TRAIN_TYPE } from '../../../utils/constants'
 
 function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form }) {
+  // 自动计算历时
+  const calculateDuration = () => {
+    const departureTime = form.getFieldValue('departureTime')
+    const arrivalTime = form.getFieldValue('arrivalTime')
+    
+    if (departureTime && arrivalTime) {
+      const depTime = dayjs(departureTime.format('HH:mm'), 'HH:mm')
+      let arrTime = dayjs(arrivalTime.format('HH:mm'), 'HH:mm')
+      
+      // 如果到达时间早于出发时间，说明是第二天
+      if (arrTime.isBefore(depTime)) {
+        arrTime = arrTime.add(1, 'day')
+      }
+      
+      const diff = arrTime.diff(depTime, 'minute')
+      const hours = Math.floor(diff / 60)
+      const minutes = diff % 60
+      
+      const duration = `${hours}小时${minutes > 0 ? minutes + '分' : ''}`
+      form.setFieldsValue({ duration })
+    }
+  }
+
+  // 监听时间变化
+  useEffect(() => {
+    if (visible) {
+      const departureTime = form.getFieldValue('departureTime')
+      const arrivalTime = form.getFieldValue('arrivalTime')
+      if (departureTime && arrivalTime) {
+        calculateDuration()
+      }
+    }
+  }, [visible])
+
+  const handleTimeChange = () => {
+    calculateDuration()
+  }
   return (
     <Modal
       title={editingRecord ? '编辑车次' : '添加车次'}
@@ -73,7 +111,7 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
             label="出发时间"
             rules={[{ required: true, message: '请选择出发时间' }]}
           >
-            <TimePicker format="HH:mm" />
+            <TimePicker format="HH:mm" onChange={handleTimeChange} />
           </Form.Item>
 
           <Form.Item
@@ -81,7 +119,7 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
             label="到达时间"
             rules={[{ required: true, message: '请选择到达时间' }]}
           >
-            <TimePicker format="HH:mm" />
+            <TimePicker format="HH:mm" onChange={handleTimeChange} />
           </Form.Item>
 
           <Form.Item
@@ -89,16 +127,23 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
             label="历时"
             rules={[{ required: true, message: '请输入历时' }]}
           >
-            <Input placeholder="例如：5小时30分" />
+            <Input placeholder="自动计算" disabled style={{ backgroundColor: '#f5f5f5' }} />
           </Form.Item>
         </Space>
 
         <Form.Item
           name="date"
-          label="日期"
-          rules={[{ required: true, message: '请输入日期' }]}
+          label="发车日期"
+          rules={[{ required: true, message: '请选择发车日期' }]}
         >
-          <Input placeholder="例如：2024-01-20" />
+          <DatePicker 
+            format="YYYY-MM-DD" 
+            style={{ width: '100%' }}
+            disabledDate={(current) => {
+              // 禁用今天之前的日期
+              return current && current < dayjs().startOf('day')
+            }}
+          />
         </Form.Item>
 
         <h4>座位信息</h4>
@@ -130,4 +175,4 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
   )
 }
 
-export default TripFormModal
+export default React.memo(TripFormModal)

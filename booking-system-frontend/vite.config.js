@@ -58,7 +58,7 @@ export default defineConfig({
           // 将 Ant Design 打包成单独的 chunk
           'antd-vendor': ['antd'],
           // 将工具库打包成单独的 chunk
-          'utils-vendor': ['axios', 'dayjs', 'lodash'],
+          'utils-vendor': ['axios', 'dayjs'],
         },
         // 用于从入口点创建的块的打包输出格式
         entryFileNames: 'js/[name]-[hash].js',
