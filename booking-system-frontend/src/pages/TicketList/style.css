@@ -3,3 +3,9 @@
 .page-ticket-list {
   padding-top: 24px;
 }
+
+.seat-price {
+  color: #f97316;
+  font-size: 12px;
+  font-weight: 500;
+}

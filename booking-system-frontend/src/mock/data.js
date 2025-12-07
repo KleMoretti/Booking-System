@@ -1,0 +1,221 @@
+// Mock数据
+
+// 车站列表
+export const mockStations = [
+  { id: 1, code: 'BJP', name: '北京', pinyin: 'beijing' },
+  { id: 2, code: 'SHH', name: '上海', pinyin: 'shanghai' },
+  { id: 3, code: 'GZH', name: '广州', pinyin: 'guangzhou' },
+  { id: 4, code: 'SZH', name: '深圳', pinyin: 'shenzhen' },
+  { id: 5, code: 'CDH', name: '成都', pinyin: 'chengdu' },
+  { id: 6, code: 'HZH', name: '杭州', pinyin: 'hangzhou' },
+  { id: 7, code: 'NJH', name: '南京', pinyin: 'nanjing' },
+  { id: 8, code: 'WUH', name: '武汉', pinyin: 'wuhan' },
+  { id: 9, code: 'XAH', name: '西安', pinyin: 'xian' },
+  { id: 10, code: 'CQH', name: '重庆', pinyin: 'chongqing' },
+]
+
+// 车次列表
+export const mockTrips = [
+  {
+    id: 1,
+    tripNumber: 'G101',
+    trainType: '高铁',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '08:00',
+    arrivalTime: '13:30',
+    duration: '5小时30分',
+    date: '2024-01-20',
+    seats: {
+      available: 160,
+      total: 300,
+      price: 553,
+    }
+  },
+  {
+    id: 2,
+    tripNumber: 'G103',
+    trainType: '高铁',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '09:30',
+    arrivalTime: '15:00',
+    duration: '5小时30分',
+    date: '2024-01-20',
+    seats: {
+      available: 115,
+      total: 300,
+      price: 553,
+    }
+  },
+  {
+    id: 3,
+    tripNumber: 'D201',
+    trainType: '动车',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '10:15',
+    arrivalTime: '17:30',
+    duration: '7小时15分',
+    date: '2024-01-20',
+    seats: {
+      available: 160,
+      total: 210,
+      price: 440,
+    }
+  },
+  {
+    id: 4,
+    tripNumber: 'G305',
+    trainType: '高铁',
+    departureStation: '广州',
+    arrivalStation: '深圳',
+    departureTime: '07:00',
+    arrivalTime: '08:20',
+    duration: '1小时20分',
+    date: '2024-01-20',
+    seats: {
+      available: 148,
+      total: 195,
+      price: 100,
+    }
+  },
+]
+
+// 订单列表
+export const mockOrders = [
+  {
+    id: 1,
+    orderNumber: 'ORD202401200001',
+    tripNumber: 'G101',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '2024-01-20 08:00',
+    seatType: '座位',
+    seatNumber: '03车06A',
+    passengerName: '张三',
+    idNumber: '110101199001011234',
+    price: 553,
+    status: 'paid',
+    statusText: '已支付',
+    createTime: '2024-01-15 10:30:00',
+  },
+  {
+    id: 2,
+    orderNumber: 'ORD202401180002',
+    tripNumber: 'G103',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '2024-01-18 09:30',
+    seatType: '座位',
+    seatNumber: '02车03C',
+    passengerName: '李四',
+    idNumber: '110101199002021234',
+    price: 933,
+    status: 'completed',
+    statusText: '已完成',
+    createTime: '2024-01-12 14:20:00',
+  },
+  {
+    id: 3,
+    orderNumber: 'ORD202401220003',
+    tripNumber: 'D201',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '2024-01-22 10:15',
+    seatType: '座位',
+    seatNumber: '05车12B',
+    passengerName: '王五',
+    idNumber: '110101199003031234',
+    price: 440,
+    status: 'pending',
+    statusText: '待支付',
+    createTime: '2024-01-16 16:45:00',
+  },
+]
+
+// 用户信息
+export const mockUser = {
+  id: 1,
+  username: 'testuser',
+  name: '测试用户',
+  email: 'test@example.com',
+  phone: '13800138000',
+  idNumber: '110101199001011234',
+  role: 'user',
+  createTime: '2024-01-01 10:00:00',
+}
+
+// 管理员统计数据
+export const mockAdminStats = {
+  todayOrders: 125,
+  todayTickets: 358,
+  totalTrips: 1245,
+  totalUsers: 8956,
+  recentOrders: mockOrders.slice(0, 5),
+}
+
+// 改签退票请求列表
+export const mockRefundChangeRequests = [
+  {
+    id: 1,
+    orderNumber: 'ORD202401200001',
+    type: 'refund',
+    typeText: '退票',
+    passengerName: '张三',
+    tripNumber: 'G101',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '2024-01-20 08:00',
+    seatType: '座位',
+    seatNumber: '03车06A',
+    originalPrice: 553,
+    refundAmount: 498,
+    reason: '行程变更',
+    status: 'pending',
+    statusText: '待审核',
+    createTime: '2024-01-18 10:30:00',
+  },
+  {
+    id: 2,
+    orderNumber: 'ORD202401180002',
+    type: 'change',
+    typeText: '改签',
+    passengerName: '李四',
+    tripNumber: 'G103',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '2024-01-18 09:30',
+    newTripNumber: 'G101',
+    newDepartureTime: '2024-01-19 08:00',
+    seatType: '座位',
+    originalPrice: 933,
+    changeFee: 50,
+    reason: '时间调整',
+    status: 'approved',
+    statusText: '已通过',
+    createTime: '2024-01-16 14:20:00',
+    processTime: '2024-01-16 15:00:00',
+  },
+  {
+    id: 3,
+    orderNumber: 'ORD202401220003',
+    type: 'refund',
+    typeText: '退票',
+    passengerName: '王五',
+    tripNumber: 'D201',
+    departureStation: '北京',
+    arrivalStation: '上海',
+    departureTime: '2024-01-22 10:15',
+    seatType: '座位',
+    seatNumber: '05车12B',
+    originalPrice: 440,
+    refundAmount: 396,
+    reason: '临时有事',
+    status: 'rejected',
+    statusText: '已拒绝',
+    createTime: '2024-01-17 16:45:00',
+    processTime: '2024-01-17 17:00:00',
+    rejectReason: '超过退票时限',
+  },
+]

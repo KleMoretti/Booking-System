@@ -1,42 +1,248 @@
 // 管理后台页面
-import { Card, Typography, Row, Col, Statistic } from 'antd'
+import { useState, useEffect } from 'react'
+import { Layout, Menu, Card, Row, Col, Statistic, Typography } from 'antd'
+import {
+  DashboardOutlined,
+  SwapOutlined,
+  CarOutlined,
+  DollarOutlined,
+} from '@ant-design/icons'
+import RefundChangeManagement from './RefundChangeManagement'
+import TripManagement from './TripManagement'
+import PriceManagement from './PriceManagement'
+import { getStatistics } from '../../api/admin'
 import './style.css'
 
-const { Title, Paragraph } = Typography
+const { Sider, Content } = Layout
+const { Title } = Typography
 
 function Admin() {
+  const [selectedKey, setSelectedKey] = useState('dashboard')
+  const [stats, setStats] = useState({
+    todayOrders: 0,
+    todayTickets: 0,
+    totalTrips: 0,
+    totalUsers: 0,
+  })
+
+  useEffect(() => {
+    fetchStats()
+  }, [])
+
+  const fetchStats = async () => {
+    try {
+      const response = await getStatistics()
+      if (response.data) {
+        setStats(response.data)
+      }
+    } catch (error) {
+      console.error('获取统计数据失败', error)
+    }
+  }
+
+  const menuItems = [
+    {
+      key: 'dashboard',
+      icon: <DashboardOutlined />,
+      label: '数据总览',
+    },
+    {
+      key: 'refund-change',
+      icon: <SwapOutlined />,
+      label: '改签退票管理',
+    },
+    {
+      key: 'trips',
+      icon: <CarOutlined />,
+      label: '车次管理',
+    },
+    {
+      key: 'prices',
+      icon: <DollarOutlined />,
+      label: '票价管理',
+    },
+  ]
+
+  const renderContent = () => {
+    switch (selectedKey) {
+      case 'dashboard':
+        return (
+          <div>
+            <Title level={3} style={{ marginBottom: 24 }}>数据概览</Title>
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={12} md={6}>
+                <Card 
+                  bordered={false}
+                  style={{ 
+                    background: '#fff',
+                    borderLeft: '4px solid #1890ff'
+                  }}
+                  bodyStyle={{ padding: '20px' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', color: '#8c8c8c', marginBottom: '8px' }}>今日订单数</div>
+                      <div style={{ fontSize: '28px', fontWeight: '600', color: '#262626' }}>
+                        {stats.todayOrders}
+                      </div>
+                    </div>
+                    <div style={{ 
+                      width: '48px', 
+                      height: '48px', 
+                      borderRadius: '10px',
+                      background: '#e6f7ff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '24px'
+                    }}>
+                      📋
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card 
+                  bordered={false}
+                  style={{ 
+                    background: '#fff',
+                    borderLeft: '4px solid #52c41a'
+                  }}
+                  bodyStyle={{ padding: '20px' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', color: '#8c8c8c', marginBottom: '8px' }}>今日售票量</div>
+                      <div style={{ fontSize: '28px', fontWeight: '600', color: '#262626' }}>
+                        {stats.todayTickets}
+                      </div>
+                    </div>
+                    <div style={{ 
+                      width: '48px', 
+                      height: '48px', 
+                      borderRadius: '10px',
+                      background: '#f6ffed',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '24px'
+                    }}>
+                      🎫
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card 
+                  bordered={false}
+                  style={{ 
+                    background: '#fff',
+                    borderLeft: '4px solid #faad14'
+                  }}
+                  bodyStyle={{ padding: '20px' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', color: '#8c8c8c', marginBottom: '8px' }}>车次数量</div>
+                      <div style={{ fontSize: '28px', fontWeight: '600', color: '#262626' }}>
+                        {stats.totalTrips}
+                      </div>
+                    </div>
+                    <div style={{ 
+                      width: '48px', 
+                      height: '48px', 
+                      borderRadius: '10px',
+                      background: '#fffbe6',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '24px'
+                    }}>
+                      🚄
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Card 
+                  bordered={false}
+                  style={{ 
+                    background: '#fff',
+                    borderLeft: '4px solid #722ed1'
+                  }}
+                  bodyStyle={{ padding: '20px' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', color: '#8c8c8c', marginBottom: '8px' }}>用户数量</div>
+                      <div style={{ fontSize: '28px', fontWeight: '600', color: '#262626' }}>
+                        {stats.totalUsers}
+                      </div>
+                    </div>
+                    <div style={{ 
+                      width: '48px', 
+                      height: '48px', 
+                      borderRadius: '10px',
+                      background: '#f9f0ff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '24px'
+                    }}>
+                      👥
+                    </div>
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+          </div>
+        )
+      case 'refund-change':
+        return <RefundChangeManagement />
+      case 'trips':
+        return <TripManagement />
+      case 'prices':
+        return <PriceManagement />
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="page-admin page-container">
-      <Card className="page-card" bordered={false}>
-        <Title level={3} className="page-title">
-          管理后台总览
-        </Title>
-        <Paragraph className="page-subtitle">
-          后续可在此管理车次、车站、票务策略等后台数据。
-        </Paragraph>
-        <Row gutter={16}>
-          <Col xs={24} sm={12} md={6}>
-            <Card bordered hoverable className="admin-stat-card">
-              <Statistic title="今日订单数" value={0} suffix="单" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card bordered hoverable className="admin-stat-card">
-              <Statistic title="今日售票量" value={0} suffix="张" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card bordered hoverable className="admin-stat-card">
-              <Statistic title="车次数量" value={0} suffix="趟" />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card bordered hoverable className="admin-stat-card">
-              <Statistic title="用户数量" value={0} suffix="人" />
-            </Card>
-          </Col>
-        </Row>
-      </Card>
+      <Layout style={{ minHeight: '100%', background: '#f0f2f5' }}>
+        <Sider
+          width={200}
+          style={{
+            background: '#001529',
+            boxShadow: '2px 0 8px rgba(0,21,41,0.08)'
+          }}
+        >
+          <div style={{ 
+            padding: '24px 20px', 
+            borderBottom: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <Title level={4} style={{ margin: 0, color: '#fff', fontSize: '18px' }}>
+              管理后台
+            </Title>
+          </div>
+          <Menu
+            mode="inline"
+            selectedKeys={[selectedKey]}
+            items={menuItems}
+            onClick={({ key }) => setSelectedKey(key)}
+            style={{ 
+              borderRight: 0, 
+              paddingTop: '16px',
+              background: 'transparent'
+            }}
+            theme="dark"
+          />
+        </Sider>
+        <Content style={{ padding: '24px', minHeight: 'calc(100vh - 200px)', background: '#f0f2f5' }}>
+          {renderContent()}
+        </Content>
+      </Layout>
     </div>
   )
 }

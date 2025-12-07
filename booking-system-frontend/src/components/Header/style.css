@@ -55,3 +55,23 @@
 .user-entry-text {
   font-size: 14px;
 }
+
+.user-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #e5e7eb;
+}
+
+.user-info:hover {
+  color: #ffffff;
+}
+
+.user-avatar {
+  background-color: #2563eb;
+}
+
+.user-name {
+  font-size: 14px;
+}

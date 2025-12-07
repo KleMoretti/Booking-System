@@ -1,21 +1,39 @@
 // 注册页面
-import { Card, Form, Input, Button, Typography } from 'antd'
-import { Link } from 'react-router-dom'
+import { Card, Form, Input, Button, Typography, message } from 'antd'
+import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { useEffect } from 'react'
+import { register } from '../../store/slices/userSlice'
+import { validatePhone, validatePassword, validateConfirmPassword } from '../../utils/validator'
 import './style.css'
 
 const { Title, Paragraph } = Typography
 
 function Register() {
   const [form] = Form.useForm()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { loading, error } = useSelector((state) => state.user)
 
-  const handleRegister = values => {
-    // 暂不调用后端，仅保留接口位置
-    console.log('注册参数：', values)
+  useEffect(() => {
+    if (error) {
+      message.error(error)
+    }
+  }, [error])
+
+  const handleRegister = async (values) => {
+    try {
+      await dispatch(register(values)).unwrap()
+      message.success('注册成功！请登录')
+      navigate('/login')
+    } catch (err) {
+      // 错误已在 useEffect 中处理
+    }
   }
 
   return (
     <div className="page-register page-container">
-      <Card className="page-card register-card" bordered={false}>
+      <Card className="page-card register-card" variant="borderless">
         <Title level={3} className="page-title">
           注册账号
         </Title>
@@ -33,27 +51,27 @@ function Register() {
           <Form.Item
             label="手机号"
             name="phone"
-            rules={[{ required: true, message: '请输入手机号' }]}
+            rules={[{ required: true, validator: validatePhone }]}
           >
             <Input placeholder="请输入手机号" />
           </Form.Item>
           <Form.Item
             label="密码"
             name="password"
-            rules={[{ required: true, message: '请输入密码' }]}
+            rules={[{ required: true, validator: validatePassword }]}
           >
-            <Input.Password placeholder="请输入密码" />
+            <Input.Password placeholder="请输入密码（至少6位）" />
           </Form.Item>
           <Form.Item
             label="确认密码"
             name="confirmPassword"
             dependencies={['password']}
-            rules={[{ required: true, message: '请再次输入密码' }]}
+            rules={[{ required: true, validator: validateConfirmPassword(form) }]}
           >
             <Input.Password placeholder="请再次输入密码" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" block size="large">
+            <Button type="primary" htmlType="submit" block size="large" loading={loading}>
               注册
             </Button>
           </Form.Item>

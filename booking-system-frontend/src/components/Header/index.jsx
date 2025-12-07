@@ -1,7 +1,9 @@
 // 页面头部组件
-import { Link, useLocation } from 'react-router-dom'
-import { Layout, Menu } from 'antd'
-import { UserOutlined, HomeOutlined, ProfileOutlined, OrderedListOutlined, DashboardOutlined } from '@ant-design/icons'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Layout, Menu, Dropdown, Avatar, message } from 'antd'
+import { UserOutlined, HomeOutlined, ProfileOutlined, OrderedListOutlined, DashboardOutlined, LogoutOutlined } from '@ant-design/icons'
+import { useSelector, useDispatch } from 'react-redux'
+import { logout } from '../../store/slices/userSlice'
 import './style.css'
 
 const { Header: AntHeader } = Layout
@@ -15,6 +17,33 @@ const navItems = [
 
 function Header() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const { userInfo, isAuthenticated } = useSelector((state) => state.user)
+
+  const handleLogout = () => {
+    dispatch(logout())
+    message.success('登出成功')
+    navigate('/login')
+  }
+
+  const userMenuItems = [
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: '个人中心',
+      onClick: () => navigate('/profile'),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: '退出登录',
+      onClick: handleLogout,
+    },
+  ]
 
   return (
     <AntHeader className="app-header">
@@ -36,10 +65,19 @@ function Header() {
         className="app-header-menu"
       />
       <div className="app-header-right">
-        <Link to="/login" className="user-entry">
-          <UserOutlined />
-          <span className="user-entry-text">登录 / 注册</span>
-        </Link>
+        {isAuthenticated && userInfo ? (
+          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+            <div className="user-info">
+              <Avatar icon={<UserOutlined />} className="user-avatar" />
+              <span className="user-name">{userInfo.username || '用户'}</span>
+            </div>
+          </Dropdown>
+        ) : (
+          <Link to="/login" className="user-entry">
+            <UserOutlined />
+            <span className="user-entry-text">登录 / 注册</span>
+          </Link>
+        )}
       </div>
     </AntHeader>
   )

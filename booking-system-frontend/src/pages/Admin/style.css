@@ -1,9 +1,115 @@
 /* Admin页面样式 */
 
 .page-admin {
-  padding-top: 24px;
+  padding: 0;
+  background: #f0f2f5;
 }
 
-.admin-stat-card {
-  margin-top: 16px;
+.page-admin .ant-layout {
+  background: #f0f2f5;
+}
+
+.page-admin .ant-layout-sider {
+  background: #001529 !important;
+}
+
+/* 侧边栏菜单样式 */
+.page-admin .ant-menu-dark .ant-menu-item {
+  margin: 4px 12px;
+  width: calc(100% - 24px);
+  border-radius: 6px;
+}
+
+.page-admin .ant-menu-dark .ant-menu-item-selected {
+  background-color: #1890ff !important;
+}
+
+/* 卡片样式 */
+.page-admin .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.03), 
+              0 1px 6px -1px rgba(0,0,0,0.02), 
+              0 2px 4px 0 rgba(0,0,0,0.02);
+  border: 1px solid #f0f0f0;
+}
+
+/* 表格样式 */
+.page-admin .ant-table {
+  background: #fff;
+  font-size: 14px;
+}
+
+.page-admin .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 500;
+  color: #262626;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.page-admin .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.page-admin .ant-table-tbody > tr:hover > td {
+  background: #fafafa;
+}
+
+.page-admin .ant-table-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 按钮样式 */
+.page-admin .ant-btn {
+  border-radius: 6px;
+  font-weight: 400;
+}
+
+.page-admin .ant-btn-sm {
+  font-size: 13px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 4px;
+}
+
+/* 标签样式 */
+.page-admin .ant-tag {
+  border-radius: 4px;
+  padding: 0 7px;
+  font-size: 12px;
+  line-height: 20px;
+  border: 1px solid;
+}
+
+/* 输入框样式 */
+.page-admin .ant-input,
+.page-admin .ant-input-number,
+.page-admin .ant-select-selector,
+.page-admin .ant-picker {
+  border-radius: 6px;
+}
+
+/* 模态框样式 */
+.page-admin .ant-modal-content {
+  border-radius: 8px;
+}
+
+.page-admin .ant-modal-header {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+  border-radius: 8px 8px 0 0;
+}
+
+.page-admin .ant-modal-body {
+  padding: 24px;
+}
+
+/* Tabs样式 */
+.page-admin .ant-tabs-tab {
+  padding: 8px 16px;
+  border-radius: 6px 6px 0 0;
+}
+
+.page-admin .ant-tabs-tab-active {
+  font-weight: 500;
 }
