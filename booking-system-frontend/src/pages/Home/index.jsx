@@ -36,8 +36,8 @@ function Home() {
   // 使用 useMemo 优化 stations 选项计算
   const stationOptions = useMemo(() => 
     stations.map(station => ({
-      label: station.name,
-      value: station.id,
+      label: station.stationName,
+      value: station.stationId,
     })),
   [stations])
 
