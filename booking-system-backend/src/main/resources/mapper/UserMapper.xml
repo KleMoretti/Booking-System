@@ -20,7 +20,7 @@
         VALUES(#{username}, #{password}, #{email}, #{phone}, #{userType}, #{balance}, #{isDeleted})
     </insert>
 
-    <update id="update" parameterType="com.booking.entity.User">
+    <update id="updateById" parameterType="com.booking.entity.User">
         UPDATE users
         SET username = #{username},
             password = #{password},
@@ -33,15 +33,27 @@
         WHERE user_id = #{userId}
     </update>
 
-    <select id="findById" parameterType="int" resultMap="UserResultMap">
-        SELECT * FROM users WHERE user_id = #{userId}
+    <select id="selectById" parameterType="int" resultMap="UserResultMap">
+        SELECT * FROM users WHERE user_id = #{userId} AND is_deleted = 0
     </select>
 
-    <select id="findByUsername" parameterType="string" resultMap="UserResultMap">
-        SELECT * FROM users WHERE username = #{username}
+    <select id="selectByUsername" parameterType="string" resultMap="UserResultMap">
+        SELECT * FROM users WHERE username = #{username} AND is_deleted = 0
     </select>
 
-    <select id="findAll" resultMap="UserResultMap">
-        SELECT * FROM users
+    <select id="selectByEmail" parameterType="string" resultMap="UserResultMap">
+        SELECT * FROM users WHERE email = #{email} AND is_deleted = 0
     </select>
+
+    <select id="selectByPhone" parameterType="string" resultMap="UserResultMap">
+        SELECT * FROM users WHERE phone = #{phone} AND is_deleted = 0
+    </select>
+
+    <select id="selectAll" resultMap="UserResultMap">
+        SELECT * FROM users WHERE is_deleted = 0
+    </select>
+
+    <update id="deleteById" parameterType="int">
+        UPDATE users SET is_deleted = 1 WHERE user_id = #{userId}
+    </update>
 </mapper>

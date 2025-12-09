@@ -24,5 +24,20 @@ public class TripServiceImpl implements TripService {
     public Trip getById(Integer tripId) {
         return tripMapper.findById(tripId);
     }
+
+    @Override
+    public List<Trip> getAllTrips() {
+        return tripMapper.searchTrips(null, null, null, null);
+    }
+
+    @Override
+    public void addTrip(Trip trip) {
+        tripMapper.insert(trip);
+    }
+
+    @Override
+    public void updateTrip(Trip trip) {
+        tripMapper.update(trip);
+    }
 }
 

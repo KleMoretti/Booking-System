@@ -157,4 +157,5 @@ CREATE TABLE IF NOT EXISTS ticket_changes (
     CONSTRAINT fk_ticket_changes_seat   FOREIGN KEY (target_seat_id) REFERENCES seats(seat_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='票务变更记录表';
 
+
 -- 脚本结束

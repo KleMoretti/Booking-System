@@ -39,7 +39,7 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     private void changeBalance(Integer userId, BigDecimal delta, byte type) {
-        User user = userMapper.findById(userId);
+        User user = userMapper.selectById(userId);
         if (user == null) {
             throw new IllegalArgumentException("用户不存在");
         }
@@ -49,7 +49,7 @@ public class BalanceServiceImpl implements BalanceService {
             throw new IllegalStateException("余额不足");
         }
         user.setBalance(after);
-        userMapper.update(user);
+        userMapper.updateById(user);
 
         BalanceChange record = new BalanceChange();
         record.setUserId(userId);
