@@ -1,5 +1,6 @@
 package com.booking.service.impl;
 
+import com.booking.dto.TripVO;
 import com.booking.entity.Trip;
 import com.booking.mapper.TripMapper;
 import com.booking.service.TripService;
@@ -16,8 +17,8 @@ public class TripServiceImpl implements TripService {
     private TripMapper tripMapper;
 
     @Override
-    public List<Trip> searchTrips(Integer departureStationId, Integer arrivalStationId, LocalDateTime departureFrom, LocalDateTime departureTo) {
-        return tripMapper.searchTrips(departureStationId, arrivalStationId, departureFrom, departureTo);
+    public List<TripVO> searchTrips(Integer departureStationId, Integer arrivalStationId, LocalDateTime departureTimeFrom, LocalDateTime departureTimeTo) {
+        return tripMapper.searchTrips(departureStationId, arrivalStationId, departureTimeFrom, departureTimeTo);
     }
 
     @Override
@@ -26,7 +27,7 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public List<Trip> getAllTrips() {
+    public List<TripVO> getAllTrips() {
         return tripMapper.searchTrips(null, null, null, null);
     }
 

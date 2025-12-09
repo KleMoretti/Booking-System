@@ -1,13 +1,18 @@
 package com.booking.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 
 /**
  * 车站实体
  */
 public class Station {
+    @JsonProperty("id")
     private Integer stationId;
+    
+    @JsonProperty("name")
     private String stationName;
+    
     private String city;
     private String stationCode;
     private String address;

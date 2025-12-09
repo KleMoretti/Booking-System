@@ -1,6 +1,7 @@
 package com.booking.controller;
 
 import com.booking.common.Result;
+import com.booking.dto.TripVO;
 import com.booking.entity.Seat;
 import com.booking.entity.Trip;
 import com.booking.service.SeatService;
@@ -29,7 +30,7 @@ public class TripController {
      * 搜索班次
      */
     @GetMapping("/search")
-    public Result<List<Trip>> searchTrips(
+    public Result<List<TripVO>> searchTrips(
             @RequestParam Integer fromStationId,
             @RequestParam Integer toStationId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime departureDate) {
@@ -37,7 +38,7 @@ public class TripController {
         LocalDateTime startTime = departureDate.toLocalDate().atStartOfDay();
         LocalDateTime endTime = startTime.plusDays(1);
         
-        List<Trip> trips = tripService.searchTrips(fromStationId, toStationId, startTime, endTime);
+        List<TripVO> trips = tripService.searchTrips(fromStationId, toStationId, startTime, endTime);
         return Result.success(trips);
     }
 
@@ -45,8 +46,8 @@ public class TripController {
      * 获取班次列表
      */
     @GetMapping("/list")
-    public Result<List<Trip>> getTripList() {
-        List<Trip> trips = tripService.getAllTrips();
+    public Result<List<TripVO>> getTripList() {
+        List<TripVO> trips = tripService.getAllTrips();
         return Result.success(trips);
     }
 

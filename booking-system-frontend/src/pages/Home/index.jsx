@@ -36,8 +36,8 @@ function Home() {
   // 使用 useMemo 优化 stations 选项计算
   const stationOptions = useMemo(() => 
     stations.map(station => ({
-      label: station.stationName,
-      value: station.stationId,
+      label: station.name,
+      value: station.id,
     })),
   [stations])
 
@@ -62,7 +62,7 @@ function Home() {
 
     const searchParams = {
       ...values,
-      departureDate: values.departureDate.format('YYYY-MM-DD'),
+      departureDate: values.departureDate.format('YYYY-MM-DD 00:00:00'),
     }
 
     // 保存搜索条件到Redux

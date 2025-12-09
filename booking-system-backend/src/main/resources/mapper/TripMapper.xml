@@ -40,13 +40,54 @@
         SELECT * FROM trips WHERE trip_id = #{tripId}
     </select>
 
-    <select id="searchTrips" resultMap="TripResultMap">
-        SELECT * FROM trips
-        WHERE departure_station_id = #{departureStationId}
-          AND arrival_station_id = #{arrivalStationId}
-          AND departure_time &gt;= #{departureTimeFrom}
-          AND departure_time &lt;= #{departureTimeTo}
-        ORDER BY departure_time ASC
+    <resultMap id="TripVOResultMap" type="com.booking.dto.TripVO">
+        <id property="tripId" column="trip_id" />
+        <result property="tripNumber" column="trip_number" />
+        <result property="departureStationName" column="departure_station_name" />
+        <result property="arrivalStationName" column="arrival_station_name" />
+        <result property="departureTime" column="departure_time" />
+        <result property="arrivalTime" column="arrival_time" />
+        <result property="duration" column="duration" />
+        <association property="seatInfo" javaType="com.booking.dto.TripVO$SeatInfo">
+            <result property="available" column="available_seats" />
+            <result property="price" column="base_price" />
+        </association>
+    </resultMap>
+    
+    <select id="searchTrips" resultMap="TripVOResultMap">
+        SELECT 
+            t.trip_id,
+            t.trip_number,
+            ds.station_name AS departure_station_name,
+            arr_station.station_name AS arrival_station_name,
+            t.departure_time,
+            t.arrival_time,
+            CONCAT(
+                FLOOR(TIMESTAMPDIFF(MINUTE, t.departure_time, t.arrival_time) / 60), '小时',
+                IF(MOD(TIMESTAMPDIFF(MINUTE, t.departure_time, t.arrival_time), 60) > 0,
+                   CONCAT(MOD(TIMESTAMPDIFF(MINUTE, t.departure_time, t.arrival_time), 60), '分'),
+                   '')
+            ) AS duration,
+            (t.total_seats - COALESCE((SELECT COUNT(*) FROM seats s WHERE s.trip_id = t.trip_id AND s.seat_status IN (1, 2)), 0)) AS available_seats,
+            t.base_price
+        FROM trips t
+        LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
+        LEFT JOIN stations arr_station ON t.arrival_station_id = arr_station.station_id
+        <where>
+            <if test="departureStationId != null">
+                AND t.departure_station_id = #{departureStationId}
+            </if>
+            <if test="arrivalStationId != null">
+                AND t.arrival_station_id = #{arrivalStationId}
+            </if>
+            <if test="departureTimeFrom != null">
+                AND t.departure_time &gt;= #{departureTimeFrom}
+            </if>
+            <if test="departureTimeTo != null">
+                AND t.departure_time &lt;= #{departureTimeTo}
+            </if>
+        </where>
+        ORDER BY t.departure_time ASC
     </select>
 </mapper>
 
