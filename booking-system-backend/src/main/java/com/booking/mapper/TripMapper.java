@@ -1,9 +1,12 @@
 package com.booking.mapper;
 
+import com.booking.dto.TripManagementVO;
 import com.booking.dto.TripVO;
 import com.booking.entity.Trip;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,12 +15,23 @@ import java.util.List;
  */
 @Mapper
 public interface TripMapper {
+    // 基础CRUD
     int insert(Trip trip);
     int update(Trip trip);
+    int delete(@Param("tripId") Integer tripId);
     Trip findById(@Param("tripId") Integer tripId);
+    
+    // 用户端查询
     List<TripVO> searchTrips(@Param("departureStationId") Integer departureStationId, 
                              @Param("arrivalStationId") Integer arrivalStationId, 
                              @Param("departureTimeFrom") LocalDateTime departureTimeFrom, 
                              @Param("departureTimeTo") LocalDateTime departureTimeTo);
+    
+    // 管理端查询
+    List<TripManagementVO> getTripList(@Param("tripNumber") String tripNumber, 
+                                       @Param("offset") Integer offset, 
+                                       @Param("pageSize") Integer pageSize);
+    Long countTrips(@Param("tripNumber") String tripNumber);
+    int updatePrice(@Param("tripId") Integer tripId, @Param("basePrice") BigDecimal basePrice);
 }
 

@@ -1,6 +1,8 @@
 package com.booking.controller;
 
 import com.booking.common.Result;
+import com.booking.dto.CreateOrderDTO;
+import com.booking.dto.OrderVO;
 import com.booking.entity.Order;
 import com.booking.service.OrderService;
 import com.booking.utils.JwtUtil;
@@ -8,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 订单控制器
@@ -46,28 +50,82 @@ public class OrderController {
      * 获取订单详情
      */
     @GetMapping("/{id}")
-    public Result<Order> getOrderDetail(@PathVariable Long id, HttpServletRequest request) {
-        // 从请求头获取token验证用户身份
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
+    public Result<OrderVO> getOrderDetail(@PathVariable Long id, HttpServletRequest request) {
+        Integer userId = getUserIdFromRequest(request);
         
-        Integer userId = jwtUtil.getUserIdFromToken(token);
-        
-        // 获取订单详情
-        Order order = orderService.getById(id);
+        OrderVO order = orderService.getOrderDetail(id);
         
         if (order == null) {
             return Result.error("订单不存在");
         }
         
-        // 验证订单是否属于当前用户
-        if (!order.getUserId().equals(userId)) {
-            return Result.error("无权访问该订单");
-        }
-        
         return Result.success(order);
+    }
+    
+    /**
+     * 创建订单（订票）
+     */
+    @PostMapping("/create")
+    public Result<OrderVO> createOrder(@Valid @RequestBody CreateOrderDTO createOrderDTO, 
+                                       HttpServletRequest request) {
+        try {
+            Integer userId = getUserIdFromRequest(request);
+            
+            OrderVO order = orderService.createOrder(userId, createOrderDTO);
+            return Result.success("订单创建成功", order);
+        } catch (IllegalStateException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("创建订单失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 支付订单
+     */
+    @PostMapping("/{id}/pay")
+    public Result<Void> payOrder(@PathVariable Long id, 
+                                @RequestBody Map<String, String> data,
+                                HttpServletRequest request) {
+        try {
+            Integer userId = getUserIdFromRequest(request);
+            String paymentMethod = data.get("paymentMethod");
+            
+            orderService.payOrder(id, userId, paymentMethod);
+            return Result.success("支付成功", null);
+        } catch (IllegalStateException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("支付失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 取消订单
+     */
+    @PostMapping("/{id}/cancel")
+    public Result<Void> cancelOrder(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            Integer userId = getUserIdFromRequest(request);
+            
+            orderService.cancelOrder(id, userId);
+            return Result.success("订单已取消", null);
+        } catch (IllegalStateException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("取消订单失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 从请求中获取用户ID
+     */
+    private Integer getUserIdFromRequest(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        return jwtUtil.getUserIdFromToken(token);
     }
 }
 

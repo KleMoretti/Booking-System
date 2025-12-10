@@ -15,4 +15,5 @@ public interface TicketMapper {
     Ticket findById(@Param("ticketId") Long ticketId);
     List<Ticket> findByOrderId(@Param("orderId") Long orderId);
     List<Ticket> findByTripId(@Param("tripId") Integer tripId);
+    Long countTodayTickets();
 }

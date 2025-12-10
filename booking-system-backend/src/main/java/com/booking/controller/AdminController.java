@@ -1,14 +1,20 @@
 package com.booking.controller;
 
+import com.booking.common.PageListResult;
 import com.booking.common.Result;
-import com.booking.dto.TripVO;
+import com.booking.dto.TripDTO;
+import com.booking.dto.TripManagementVO;
 import com.booking.entity.Order;
-import com.booking.entity.Trip;
+import com.booking.mapper.OrderMapper;
+import com.booking.mapper.TicketMapper;
+import com.booking.mapper.UserMapper;
 import com.booking.service.OrderService;
 import com.booking.service.TripService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +32,15 @@ public class AdminController {
     @Resource
     private TripService tripService;
     
+    @Resource
+    private UserMapper userMapper;
+    
+    @Resource
+    private TicketMapper ticketMapper;
+    
+    @Resource
+    private OrderMapper orderMapper;
+    
     /**
      * 获取统计数据
      */
@@ -33,11 +48,15 @@ public class AdminController {
     public Result<Map<String, Object>> getStatistics() {
         Map<String, Object> stats = new HashMap<>();
         
-        // TODO: 实现真实的统计逻辑
-        stats.put("totalUsers", 0);
-        stats.put("totalOrders", 0);
-        stats.put("totalRevenue", 0);
-        stats.put("todayOrders", 0);
+        Long totalUsers = userMapper.countActiveUsers();
+        Long totalTrips = tripService.countTrips(null);
+        Long todayOrders = orderMapper.countTodayOrders();
+        Long todayTickets = ticketMapper.countTodayTickets();
+        
+        stats.put("totalUsers", totalUsers);
+        stats.put("totalTrips", totalTrips);
+        stats.put("todayOrders", todayOrders);
+        stats.put("todayTickets", todayTickets);
         
         return Result.success(stats);
     }
@@ -72,36 +91,62 @@ public class AdminController {
     }
     
     /**
-     * 获取车次列表（管理员）
+     * 获取车次列表（管理员）- 分页
      */
     @GetMapping("/trips")
-    public Result<List<TripVO>> getAdminTripList(
+    public Result<PageListResult<TripManagementVO>> getAdminTripList(
             @RequestParam(required = false) String tripNumber,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
         
-        // 获取所有车次
-        List<TripVO> trips = tripService.getAllTrips();
-        return Result.success(trips);
+        // 参数验证
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
+        }
+        if (pageSize > 100) {
+            pageSize = 100;
+        }
+        
+        // 计算偏移量
+        Integer offset = (page - 1) * pageSize;
+        
+        // 查询数据
+        List<TripManagementVO> list = tripService.getTripList(tripNumber, offset, pageSize);
+        Long total = tripService.countTrips(tripNumber);
+        
+        // 返回前端期望的格式
+        PageListResult<TripManagementVO> result = new PageListResult<>(list, total);
+        
+        return Result.success(result);
     }
     
     /**
      * 添加车次
      */
     @PostMapping("/trips")
-    public Result<Void> createTrip(@RequestBody Trip trip) {
-        tripService.addTrip(trip);
-        return Result.success();
+    public Result<Void> createTrip(@Valid @RequestBody TripDTO tripDTO) {
+        try {
+            tripService.addTrip(tripDTO);
+            return Result.success("车次添加成功", null);
+        } catch (Exception e) {
+            return Result.error("添加车次失败：" + e.getMessage());
+        }
     }
     
     /**
      * 更新车次
      */
     @PutMapping("/trips/{id}")
-    public Result<Void> updateTrip(@PathVariable Integer id, @RequestBody Trip trip) {
-        trip.setTripId(id);
-        tripService.updateTrip(trip);
-        return Result.success();
+    public Result<Void> updateTrip(@PathVariable Integer id, @Valid @RequestBody TripDTO tripDTO) {
+        try {
+            tripService.updateTrip(id, tripDTO);
+            return Result.success("车次更新成功", null);
+        } catch (Exception e) {
+            return Result.error("更新车次失败：" + e.getMessage());
+        }
     }
     
     /**
@@ -109,8 +154,12 @@ public class AdminController {
      */
     @DeleteMapping("/trips/{id}")
     public Result<Void> deleteTrip(@PathVariable Integer id) {
-        // TODO: 实现删除逻辑
-        return Result.success();
+        try {
+            tripService.deleteTrip(id);
+            return Result.success("车次删除成功", null);
+        } catch (Exception e) {
+            return Result.error("删除车次失败：" + e.getMessage());
+        }
     }
     
     /**
@@ -118,8 +167,64 @@ public class AdminController {
      */
     @PutMapping("/trips/{id}/price")
     public Result<Void> updateTripPrice(@PathVariable Integer id, @RequestBody Map<String, Object> data) {
-        // TODO: 实现更新票价逻辑
-        return Result.success();
+        try {
+            Object priceObj = data.get("price");
+            if (priceObj == null) {
+                return Result.error("票价不能为空");
+            }
+            
+            BigDecimal newPrice = new BigDecimal(priceObj.toString());
+            
+            // 验证票价合法性
+            if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
+                return Result.error("票价必须大于0");
+            }
+            if (newPrice.compareTo(new BigDecimal("10000")) > 0) {
+                return Result.error("票价不能超过10000元");
+            }
+            
+            tripService.updateTripPrice(id, newPrice);
+            return Result.success("票价更新成功", null);
+        } catch (Exception e) {
+            return Result.error("更新票价失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 批量更新票价
+     */
+    @PutMapping("/trips/batch-price")
+    public Result<Void> batchUpdateTripPrice(@RequestBody Map<String, Object> data) {
+        try {
+            // 获取车次ID列表
+            @SuppressWarnings("unchecked")
+            List<Integer> tripIds = (List<Integer>) data.get("tripIds");
+            if (tripIds == null || tripIds.isEmpty()) {
+                return Result.error("车次ID列表不能为空");
+            }
+            
+            // 获取新票价
+            Object priceObj = data.get("price");
+            if (priceObj == null) {
+                return Result.error("票价不能为空");
+            }
+            
+            BigDecimal newPrice = new BigDecimal(priceObj.toString());
+            
+            // 验证票价合法性
+            if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
+                return Result.error("票价必须大于0");
+            }
+            
+            // 批量更新
+            for (Integer tripId : tripIds) {
+                tripService.updateTripPrice(tripId, newPrice);
+            }
+            
+            return Result.success("批量更新票价成功", null);
+        } catch (Exception e) {
+            return Result.error("批量更新票价失败：" + e.getMessage());
+        }
     }
     
     /**
@@ -142,6 +247,39 @@ public class AdminController {
     public Result<Void> processRefundChange(@PathVariable Long id, @RequestBody Map<String, Object> data) {
         // TODO: 实现审核逻辑
         return Result.success();
+    }
+    
+    /**
+     * 测试接口 - 获取车次总数
+     */
+    @GetMapping("/test/trips/count")
+    public Result<Map<String, Object>> testTripsCount() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Long count = tripService.countTrips(null);
+            result.put("totalTrips", count);
+            result.put("status", "success");
+            result.put("message", "数据库连接正常");
+            return Result.success(result);
+        } catch (Exception e) {
+            result.put("status", "error");
+            result.put("message", e.getMessage());
+            result.put("error", e.toString());
+            return Result.error("查询失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 测试接口 - 获取所有车次（不分页）
+     */
+    @GetMapping("/test/trips/all")
+    public Result<List<TripManagementVO>> testGetAllTrips() {
+        try {
+            List<TripManagementVO> trips = tripService.getTripList(null, 0, 100);
+            return Result.success(trips);
+        } catch (Exception e) {
+            return Result.error("查询失败: " + e.getMessage());
+        }
     }
 }
 

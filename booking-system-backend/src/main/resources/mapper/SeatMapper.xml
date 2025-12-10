@@ -37,4 +37,20 @@
     <select id="findAvailableByTripId" parameterType="int" resultMap="SeatResultMap">
         SELECT * FROM seats WHERE trip_id = #{tripId} AND seat_status = 0
     </select>
+    
+    <!-- 统计可用座位数量 -->
+    <select id="countAvailableSeats" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM seats 
+        WHERE trip_id = #{tripId} 
+        AND seat_status = 0
+    </select>
+    
+    <!-- 查找一个可用座位（用于自动分配） -->
+    <select id="findAvailableSeat" parameterType="int" resultMap="SeatResultMap">
+        SELECT * FROM seats 
+        WHERE trip_id = #{tripId} 
+        AND seat_status = 0 
+        ORDER BY seat_number
+        LIMIT 1
+    </select>
 </mapper>

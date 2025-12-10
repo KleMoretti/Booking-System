@@ -3,7 +3,6 @@ package com.booking.controller;
 import com.booking.common.Result;
 import com.booking.dto.TripVO;
 import com.booking.entity.Seat;
-import com.booking.entity.Trip;
 import com.booking.service.SeatService;
 import com.booking.service.TripService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -55,8 +54,14 @@ public class TripController {
      * 获取班次详情
      */
     @GetMapping("/{id}")
-    public Result<Trip> getTripById(@PathVariable Integer id) {
-        Trip trip = tripService.getById(id);
+    public Result<TripVO> getTripById(@PathVariable Integer id) {
+        // 用户端查看车次详情，返回简化的视图对象
+        List<TripVO> trips = tripService.searchTrips(null, null, null, null);
+        TripVO trip = trips.stream()
+                .filter(t -> t.getTripId().equals(id))
+                .findFirst()
+                .orElse(null);
+        
         if (trip == null) {
             return Result.error("班次不存在");
         }
@@ -70,24 +75,5 @@ public class TripController {
     public Result<List<Seat>> getAvailableSeats(@PathVariable Integer id) {
         List<Seat> seats = seatService.listAvailableSeats(id);
         return Result.success(seats);
-    }
-
-    /**
-     * 添加班次（管理员功能）
-     */
-    @PostMapping
-    public Result<Void> addTrip(@RequestBody Trip trip) {
-        tripService.addTrip(trip);
-        return Result.success();
-    }
-
-    /**
-     * 更新班次（管理员功能）
-     */
-    @PutMapping("/{id}")
-    public Result<Void> updateTrip(@PathVariable Integer id, @RequestBody Trip trip) {
-        trip.setTripId(id);
-        tripService.updateTrip(trip);
-        return Result.success();
     }
 }

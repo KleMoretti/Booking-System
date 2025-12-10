@@ -41,4 +41,64 @@
     <select id="findByUserId" parameterType="int" resultMap="OrderResultMap">
         SELECT * FROM orders WHERE user_id = #{userId} ORDER BY create_time DESC
     </select>
+    
+    <!-- OrderVO结果映射 -->
+    <resultMap id="OrderVOResultMap" type="com.booking.dto.OrderVO">
+        <id property="orderId" column="order_id" />
+        <result property="orderNumber" column="order_number" />
+        <result property="totalAmount" column="total_amount" />
+        <result property="paidAmount" column="paid_amount" />
+        <result property="orderStatus" column="order_status" />
+        <result property="createTime" column="create_time" />
+        <result property="payTime" column="pay_time" />
+        <result property="tripNumber" column="trip_number" />
+        <result property="departureStation" column="departure_station" />
+        <result property="arrivalStation" column="arrival_station" />
+        <result property="departureTime" column="departure_time" />
+        <result property="arrivalTime" column="arrival_time" />
+        <collection property="tickets" ofType="com.booking.dto.OrderVO$TicketInfo">
+            <id property="ticketId" column="ticket_id" />
+            <result property="passengerName" column="passenger_name" />
+            <result property="passengerIdCard" column="passenger_id_card" />
+            <result property="seatNumber" column="seat_number" />
+            <result property="price" column="actual_price" />
+            <result property="ticketStatus" column="ticket_status" />
+        </collection>
+    </resultMap>
+    
+    <!-- 获取订单详情 -->
+    <select id="getOrderDetail" parameterType="long" resultMap="OrderVOResultMap">
+        SELECT 
+            o.order_id,
+            o.order_number,
+            o.total_amount,
+            o.paid_amount,
+            o.order_status,
+            o.create_time,
+            o.pay_time,
+            t.trip_number,
+            ds.station_name AS departure_station,
+            ars.station_name AS arrival_station,
+            t.departure_time,
+            t.arrival_time,
+            tk.ticket_id,
+            tk.passenger_name,
+            tk.passenger_id_card,
+            s.seat_number,
+            tk.actual_price,
+            tk.ticket_status
+        FROM orders o
+        LEFT JOIN tickets tk ON o.order_id = tk.order_id
+        LEFT JOIN trips t ON tk.trip_id = t.trip_id
+        LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
+        LEFT JOIN stations ars ON t.arrival_station_id = ars.station_id
+        LEFT JOIN seats s ON tk.seat_id = s.seat_id
+        WHERE o.order_id = #{orderId}
+    </select>
+    
+    <!-- 统计今日订单数量 -->
+    <select id="countTodayOrders" resultType="long">
+        SELECT COUNT(*) FROM orders
+        WHERE DATE(create_time) = CURDATE()
+    </select>
 </mapper>

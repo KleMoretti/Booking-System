@@ -40,4 +40,10 @@
     <select id="findByTripId" parameterType="int" resultMap="TicketResultMap">
         SELECT * FROM tickets WHERE trip_id = #{tripId}
     </select>
+    
+    <select id="countTodayTickets" resultType="long">
+        SELECT COUNT(*) FROM tickets
+        WHERE DATE(create_time) = CURDATE()
+          AND ticket_status != 2
+    </select>
 </mapper>

@@ -17,5 +17,6 @@ public interface UserMapper {
     User selectByEmail(@Param("email") String email);
     User selectByPhone(@Param("phone") String phone);
     List<User> selectAll();
+    Long countActiveUsers();
     int deleteById(@Param("userId") Integer userId);
 }

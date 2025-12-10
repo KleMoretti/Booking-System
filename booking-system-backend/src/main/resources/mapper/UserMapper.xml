@@ -52,6 +52,10 @@
     <select id="selectAll" resultMap="UserResultMap">
         SELECT * FROM users WHERE is_deleted = 0
     </select>
+    
+    <select id="countActiveUsers" resultType="long">
+        SELECT COUNT(*) FROM users WHERE is_deleted = 0
+    </select>
 
     <update id="deleteById" parameterType="int">
         UPDATE users SET is_deleted = 1 WHERE user_id = #{userId}
