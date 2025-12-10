@@ -1,9 +1,10 @@
 // 票务列表页面
-import { Card, Table, Tag, Button, Space } from 'antd'
+import { Card, Table, Tag, Button, Space, message } from 'antd'
 import { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { searchTrips } from '../../store/slices/ticketSlice'
+import { createOrder } from '../../store/slices/orderSlice'
 import { formatTime, formatPrice, getSeatTypeName } from '../../utils/format'
 import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
@@ -26,9 +27,32 @@ function TicketList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleBookTicket = (trip) => {
-    // 跳转到订票页面（后续实现）
-    console.log('订票：', trip)
+  const handleBookTicket = async (trip) => {
+    try {
+      // 这里先实现一个最小可用的下单流程：为当前用户购买 1 张票
+      const orderData = {
+        tripId: trip.id, // 后端 TripVO 中通过 @JsonProperty("id") 暴露的字段
+        passengers: [
+          {
+            name: '测试乘客',
+            idCard: '110101199001011234',
+          },
+        ],
+      }
+
+      const resultAction = await dispatch(createOrder(orderData))
+
+      if (createOrder.fulfilled.match(resultAction)) {
+        message.success('订单创建成功')
+        // 下单成功后跳转到订单列表
+        navigate('/orders')
+      } else {
+        const errorMsg = resultAction.payload || '创建订单失败'
+        message.error(errorMsg)
+      }
+    } catch (error) {
+      message.error(error.message || '创建订单失败')
+    }
   }
 
   const columns = [

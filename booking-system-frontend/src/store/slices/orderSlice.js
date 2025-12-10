@@ -130,9 +130,12 @@ const orderSlice = createSlice({
       })
       .addCase(getOrderList.fulfilled, (state, action) => {
         state.loading = false
-        state.orderList = action.payload.list || action.payload
-        if (action.payload.total !== undefined) {
-          state.pagination.total = action.payload.total
+        const payload = action.payload
+        state.orderList = payload.list || payload
+        if (payload.total !== undefined) {
+          state.pagination.total = payload.total
+        } else if (Array.isArray(payload)) {
+          state.pagination.total = payload.length
         }
       })
       .addCase(getOrderList.rejected, (state, action) => {

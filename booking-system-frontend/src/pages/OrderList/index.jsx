@@ -37,6 +37,20 @@ function OrderList() {
     loadOrders(newPagination.current, newPagination.pageSize)
   }, [loadOrders])
 
+  const displayOrderList = useMemo(
+    () => orderList.map((order) => ({
+      id: order.orderId ?? order.id,
+      orderNo: order.orderNumber ?? order.orderNo,
+      tripNo: order.tripNumber ?? order.tripNo,
+      fromStation: order.departureStation ?? order.fromStation,
+      toStation: order.arrivalStation ?? order.toStation,
+      departureTime: order.departureTime ?? order.createTime,
+      totalPrice: order.totalAmount ?? order.totalPrice,
+      status: order.orderStatus ?? order.status,
+    })),
+    [orderList]
+  )
+
   const columns = useMemo(() => [
     {
       title: '订单号',
@@ -140,7 +154,7 @@ function OrderList() {
           <Table
             rowKey="id"
             columns={columns}
-            dataSource={orderList}
+            dataSource={displayOrderList}
             loading={loading}
             pagination={{
               ...pagination,

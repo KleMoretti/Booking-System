@@ -96,6 +96,37 @@
         WHERE o.order_id = #{orderId}
     </select>
     
+    <!-- 根据用户ID获取订单详情列表 -->
+    <select id="listOrderDetailByUser" parameterType="int" resultMap="OrderVOResultMap">
+        SELECT 
+            o.order_id,
+            o.order_number,
+            o.total_amount,
+            o.paid_amount,
+            o.order_status,
+            o.create_time,
+            o.pay_time,
+            t.trip_number,
+            ds.station_name AS departure_station,
+            ars.station_name AS arrival_station,
+            t.departure_time,
+            t.arrival_time,
+            tk.ticket_id,
+            tk.passenger_name,
+            tk.passenger_id_card,
+            s.seat_number,
+            tk.actual_price,
+            tk.ticket_status
+        FROM orders o
+        LEFT JOIN tickets tk ON o.order_id = tk.order_id
+        LEFT JOIN trips t ON tk.trip_id = t.trip_id
+        LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
+        LEFT JOIN stations ars ON t.arrival_station_id = ars.station_id
+        LEFT JOIN seats s ON tk.seat_id = s.seat_id
+        WHERE o.user_id = #{userId}
+        ORDER BY o.create_time DESC
+    </select>
+    
     <!-- 统计今日订单数量 -->
     <select id="countTodayOrders" resultType="long">
         SELECT COUNT(*) FROM orders

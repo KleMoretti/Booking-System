@@ -31,19 +31,16 @@ public class OrderController {
      * 获取当前用户的订单列表
      */
     @GetMapping("/list")
-    public Result<List<Order>> getOrderList(HttpServletRequest request) {
-        // 从请求头获取token
-        String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
+    public Result<List<OrderVO>> getOrderList(HttpServletRequest request) {
+        try {
+            Integer userId = getUserIdFromRequest(request);
+            List<OrderVO> orders = orderService.listByUser(userId);
+            return Result.success(orders);
+        } catch (IllegalStateException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("获取订单列表失败：" + e.getMessage());
         }
-        
-        // 从token中获取用户ID
-        Integer userId = jwtUtil.getUserIdFromToken(token);
-        
-        // 查询订单列表
-        List<Order> orders = orderService.listByUser(userId);
-        return Result.success(orders);
     }
     
     /**
@@ -122,10 +119,16 @@ public class OrderController {
      */
     private Integer getUserIdFromRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
-        if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new IllegalStateException("未登录或登录已过期");
         }
-        return jwtUtil.getUserIdFromToken(token);
+
+        token = token.substring(7);
+        Integer userId = jwtUtil.getUserIdFromToken(token);
+        if (userId == null) {
+            throw new IllegalStateException("登录状态无效，请重新登录");
+        }
+        return userId;
     }
 }
 

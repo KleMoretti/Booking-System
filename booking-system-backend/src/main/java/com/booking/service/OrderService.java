@@ -28,9 +28,9 @@ public interface OrderService {
     void cancelOrder(Long orderId, Integer userId);
     
     /**
-     * 获取用户的订单列表
+     * 获取用户的订单列表（包含车次和车票信息）
      */
-    List<Order> listByUser(Integer userId);
+    List<OrderVO> listByUser(Integer userId);
     
     Order getById(Long orderId);
 }

@@ -82,8 +82,8 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
           >
             <Select placeholder="请选择" showSearch>
               {stations.map(station => (
-                <Select.Option key={station.stationId} value={station.stationName}>
-                  {station.stationName}
+                <Select.Option key={station.id} value={station.name}>
+                  {station.name}
                 </Select.Option>
               ))}
             </Select>
@@ -97,8 +97,8 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
           >
             <Select placeholder="请选择" showSearch>
               {stations.map(station => (
-                <Select.Option key={station.stationId} value={station.stationName}>
-                  {station.stationName}
+                <Select.Option key={station.id} value={station.name}>
+                  {station.name}
                 </Select.Option>
               ))}
             </Select>

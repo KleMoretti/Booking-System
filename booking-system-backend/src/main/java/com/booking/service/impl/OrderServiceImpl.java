@@ -204,8 +204,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> listByUser(Integer userId) {
-        return orderMapper.findByUserId(userId);
+    public List<OrderVO> listByUser(Integer userId) {
+        return orderMapper.listOrderDetailByUser(userId);
     }
 
     private String generateOrderNumber() {

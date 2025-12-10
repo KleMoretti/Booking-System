@@ -22,4 +22,9 @@ public interface OrderMapper {
      * 获取订单详情（包含车次和车票信息）
      */
     OrderVO getOrderDetail(@Param("orderId") Long orderId);
+
+    /**
+     * 获取用户的订单列表详情（包含车次和车票信息）
+     */
+    List<OrderVO> listOrderDetailByUser(@Param("userId") Integer userId);
 }

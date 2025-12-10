@@ -17,7 +17,7 @@ export const getStorage = (key) => {
  */
 export const setStorage = (key, value) => {
   try {
-    localStorage.setItem(key, JSON.stringify(value))
+    localStorage.setItem(key, value)
   } catch (error) {
     console.error('写入localStorage失败：', error)
   }

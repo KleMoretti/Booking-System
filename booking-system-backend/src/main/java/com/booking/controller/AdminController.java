@@ -5,7 +5,9 @@ import com.booking.common.Result;
 import com.booking.dto.TripDTO;
 import com.booking.dto.TripManagementVO;
 import com.booking.entity.Order;
+import com.booking.entity.Station;
 import com.booking.mapper.OrderMapper;
+import com.booking.mapper.StationMapper;
 import com.booking.mapper.TicketMapper;
 import com.booking.mapper.UserMapper;
 import com.booking.service.OrderService;
@@ -15,6 +17,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +37,9 @@ public class AdminController {
     
     @Resource
     private TripService tripService;
+    
+    @Resource
+    private StationMapper stationMapper;
     
     @Resource
     private UserMapper userMapper;
@@ -127,8 +136,9 @@ public class AdminController {
      * 添加车次
      */
     @PostMapping("/trips")
-    public Result<Void> createTrip(@Valid @RequestBody TripDTO tripDTO) {
+    public Result<Void> createTrip(@RequestBody TripManagementVO tripVO) {
         try {
+            TripDTO tripDTO = convertToTripDTO(tripVO);
             tripService.addTrip(tripDTO);
             return Result.success("车次添加成功", null);
         } catch (Exception e) {
@@ -140,8 +150,9 @@ public class AdminController {
      * 更新车次
      */
     @PutMapping("/trips/{id}")
-    public Result<Void> updateTrip(@PathVariable Integer id, @Valid @RequestBody TripDTO tripDTO) {
+    public Result<Void> updateTrip(@PathVariable Integer id, @RequestBody TripManagementVO tripVO) {
         try {
+            TripDTO tripDTO = convertToTripDTO(tripVO);
             tripService.updateTrip(id, tripDTO);
             return Result.success("车次更新成功", null);
         } catch (Exception e) {
@@ -225,6 +236,66 @@ public class AdminController {
         } catch (Exception e) {
             return Result.error("批量更新票价失败：" + e.getMessage());
         }
+    }
+    
+    private TripDTO convertToTripDTO(TripManagementVO tripVO) {
+        if (tripVO == null) {
+            throw new IllegalArgumentException("车次数据不能为空");
+        }
+
+        TripDTO tripDTO = new TripDTO();
+        tripDTO.setTripNumber(tripVO.getTripNumber());
+        tripDTO.setVehicleInfo(tripVO.getVehicleInfo());
+
+        String departureStationName = tripVO.getDepartureStationName();
+        String arrivalStationName = tripVO.getArrivalStationName();
+
+        if (departureStationName == null || arrivalStationName == null) {
+            throw new IllegalArgumentException("出发站和到达站不能为空");
+        }
+
+        Station departureStation = stationMapper.findByName(departureStationName);
+        Station arrivalStation = stationMapper.findByName(arrivalStationName);
+
+        if (departureStation == null || arrivalStation == null) {
+            throw new IllegalArgumentException("出发站或到达站不存在");
+        }
+
+        tripDTO.setDepartureStationId(departureStation.getStationId());
+        tripDTO.setArrivalStationId(arrivalStation.getStationId());
+
+        String dateStr = tripVO.getDate();
+        String departureTimeStr = tripVO.getDepartureTime();
+        String arrivalTimeStr = tripVO.getArrivalTime();
+
+        if (dateStr == null || departureTimeStr == null || arrivalTimeStr == null) {
+            throw new IllegalArgumentException("发车日期和时间不能为空");
+        }
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        LocalDate date = LocalDate.parse(dateStr, dateFormatter);
+        LocalTime departureTime = LocalTime.parse(departureTimeStr, timeFormatter);
+        LocalTime arrivalTime = LocalTime.parse(arrivalTimeStr, timeFormatter);
+
+        LocalDateTime departureDateTime = LocalDateTime.of(date, departureTime);
+        LocalDateTime arrivalDateTime = LocalDateTime.of(date, arrivalTime);
+
+        if (arrivalDateTime.isBefore(departureDateTime)) {
+            arrivalDateTime = arrivalDateTime.plusDays(1);
+        }
+
+        tripDTO.setDepartureTime(departureDateTime);
+        tripDTO.setArrivalTime(arrivalDateTime);
+
+        TripManagementVO.SeatInfo seatInfo = tripVO.getSeats();
+        if (seatInfo != null) {
+            tripDTO.setTotalSeats(seatInfo.getTotal());
+            tripDTO.setBasePrice(seatInfo.getPrice());
+        }
+
+        return tripDTO;
     }
     
     /**
