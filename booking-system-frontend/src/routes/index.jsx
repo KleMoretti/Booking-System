@@ -78,6 +78,16 @@ function AppRoutes() {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/profile"
+        element={
+          <PrivateRoute>
+            <LazyLoad>
+              <Profile />
+            </LazyLoad>
+          </PrivateRoute>
+        }
+      />
       {/* 未匹配路由重定向到首页 */}
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>

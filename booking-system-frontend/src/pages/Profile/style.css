@@ -1,0 +1,91 @@
+/* 个人中心页面样式 */
+
+.page-profile {
+  padding: 24px;
+}
+
+.profile-header {
+  margin-bottom: 24px;
+}
+
+.profile-tabs {
+  margin-top: 24px;
+}
+
+.profile-tabs .ant-tabs-nav {
+  margin-bottom: 24px;
+}
+
+/* 个人信息样式 */
+.user-info-container {
+  padding: 16px 0;
+}
+
+/* 修改密码样式 */
+.change-password-container {
+  padding: 16px 0;
+}
+
+/* 余额管理样式 */
+.balance-management-container {
+  padding: 16px 0;
+}
+
+.balance-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.balance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.balance-header .ant-statistic {
+  flex: 1;
+}
+
+.balance-history {
+  margin-top: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .page-profile {
+    padding: 16px;
+  }
+
+  .balance-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .balance-header button {
+    width: 100%;
+  }
+}
+

@@ -64,3 +64,26 @@ export const logout = () => {
     method: 'post',
   })
 }
+
+/**
+ * 充值余额
+ */
+export const rechargeBalance = (data) => {
+  return request({
+    url: '/user/balance/recharge',
+    method: 'post',
+    data,
+  })
+}
+
+/**
+ * 获取余额变动历史
+ */
+export const getBalanceHistory = (params) => {
+  return request({
+    url: '/user/balance/history',
+    method: 'get',
+    params,
+  })
+}
+

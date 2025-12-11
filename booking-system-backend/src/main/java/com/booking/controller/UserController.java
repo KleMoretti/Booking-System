@@ -4,14 +4,12 @@ import com.booking.common.Result;
 import com.booking.dto.LoginDTO;
 import com.booking.dto.RegisterDTO;
 import com.booking.entity.User;
-import com.booking.mapper.UserMapper;
+import com.booking.service.IUserService;
 import com.booking.utils.JwtUtil;
-import com.booking.utils.PasswordUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -22,8 +20,8 @@ import java.util.Map;
 public class UserController {
 
     @Resource
-    private UserMapper userMapper;
-    
+    private IUserService userService;
+
     @Resource
     private JwtUtil jwtUtil;
 
@@ -32,24 +30,14 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@Valid @RequestBody LoginDTO loginDTO) {
-        User user = userMapper.selectByUsername(loginDTO.getUsername());
-        
-        if (user == null) {
-            return Result.error("用户不存在");
+        try {
+            Map<String, Object> data = userService.login(loginDTO);
+            return Result.success(data);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("登录失败：" + e.getMessage());
         }
-        
-        if (!PasswordUtil.matches(loginDTO.getPassword(), user.getPassword())) {
-            return Result.error("密码错误");
-        }
-        
-        // 生成Token
-        String token = jwtUtil.generateToken(user.getUserId(), user.getUsername());
-        
-        Map<String, Object> data = new HashMap<>();
-        data.put("token", token);
-        data.put("user", user);
-        
-        return Result.success(data);
     }
 
     /**
@@ -57,41 +45,14 @@ public class UserController {
      */
     @PostMapping("/register")
     public Result<Void> register(@Valid @RequestBody RegisterDTO registerDTO) {
-        // 检查用户名是否存在
-        User existUser = userMapper.selectByUsername(registerDTO.getUsername());
-        if (existUser != null) {
-            return Result.error("用户名已存在");
+        try {
+            userService.register(registerDTO);
+            return Result.success("注册成功", null);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("注册失败：" + e.getMessage());
         }
-        
-        // 检查邮箱是否存在
-        if (registerDTO.getEmail() != null) {
-            User existEmail = userMapper.selectByEmail(registerDTO.getEmail());
-            if (existEmail != null) {
-                return Result.error("邮箱已被使用");
-            }
-        }
-        
-        // 检查手机号是否存在
-        if (registerDTO.getPhone() != null) {
-            User existPhone = userMapper.selectByPhone(registerDTO.getPhone());
-            if (existPhone != null) {
-                return Result.error("手机号已被使用");
-            }
-        }
-        
-        // 创建新用户
-        User user = new User();
-        user.setUsername(registerDTO.getUsername());
-        user.setPassword(PasswordUtil.encode(registerDTO.getPassword()));
-        user.setEmail(registerDTO.getEmail());
-        user.setPhone(registerDTO.getPhone());
-        user.setUserType((byte) 0); // 普通用户
-        user.setBalance(new java.math.BigDecimal("0.00")); // 初始余额
-        user.setIsDeleted((byte) 0); // 设置为未删除
-        
-        userMapper.insert(user);
-        
-        return Result.success();
     }
 
     /**
@@ -102,18 +63,17 @@ public class UserController {
         try {
             String jwt = token.replace("Bearer ", "");
             Integer userId = jwtUtil.getUserIdFromToken(jwt);
-            User user = userMapper.selectById(userId);
-            
+            User user = userService.getUserById(userId);
+
             if (user == null) {
                 return Result.error("用户不存在");
             }
             
-            // 隐藏密码
-            user.setPassword(null);
-            
             return Result.success(user);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
-            return Result.error("Token无效");
+            return Result.error("获取用户信息失败：" + e.getMessage());
         }
     }
 
@@ -129,11 +89,13 @@ public class UserController {
             Integer userId = jwtUtil.getUserIdFromToken(jwt);
             
             user.setUserId(userId);
-            userMapper.updateById(user);
-            
-            return Result.success();
+            userService.updateUser(user);
+
+            return Result.success("更新成功", null);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
-            return Result.error("Token无效");
+            return Result.error("更新失败：" + e.getMessage());
         }
     }
 
@@ -148,24 +110,38 @@ public class UserController {
             String jwt = token.replace("Bearer ", "");
             Integer userId = jwtUtil.getUserIdFromToken(jwt);
             
-            User user = userMapper.selectById(userId);
-            if (user == null) {
-                return Result.error("用户不存在");
-            }
-            
             String oldPassword = passwordData.get("oldPassword");
             String newPassword = passwordData.get("newPassword");
             
-            if (!PasswordUtil.matches(oldPassword, user.getPassword())) {
-                return Result.error("原密码错误");
-            }
-            
-            user.setPassword(PasswordUtil.encode(newPassword));
-            userMapper.updateById(user);
-            
-            return Result.success();
+            userService.changePassword(userId, oldPassword, newPassword);
+
+            return Result.success("密码修改成功", null);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
         } catch (Exception e) {
-            return Result.error("Token无效");
+            return Result.error("密码修改失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 充值
+     */
+    @PostMapping("/recharge")
+    public Result<Void> recharge(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, Object> data) {
+        try {
+            String jwt = token.replace("Bearer ", "");
+            Integer userId = jwtUtil.getUserIdFromToken(jwt);
+
+            java.math.BigDecimal amount = new java.math.BigDecimal(data.get("amount").toString());
+            userService.recharge(userId, amount);
+
+            return Result.success("充值成功", null);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("充值失败：" + e.getMessage());
         }
     }
 
@@ -175,7 +151,7 @@ public class UserController {
     @PostMapping("/logout")
     public Result<Void> logout() {
         // JWT是无状态的，登出主要由前端处理（删除token）
-        return Result.success();
+        return Result.success("登出成功", null);
     }
 }
 
