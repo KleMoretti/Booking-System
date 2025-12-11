@@ -11,6 +11,7 @@ const Register = lazy(() => import('../pages/Register'))
 const OrderList = lazy(() => import('../pages/OrderList'))
 const TicketList = lazy(() => import('../pages/TicketList'))
 const Admin = lazy(() => import('../pages/Admin'))
+const Profile = lazy(() => import('../pages/Profile'))
 
 // 懒加载包装组件
 const LazyLoad = ({ children }) => (
@@ -22,7 +23,7 @@ const LazyLoad = ({ children }) => (
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route 
         path="/home" 
         element={
