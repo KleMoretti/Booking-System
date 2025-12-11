@@ -25,7 +25,7 @@ export const mockTrips = [
     departureTime: '08:00',
     arrivalTime: '13:30',
     duration: '5小时30分',
-    date: '2025-12-11',
+    date: '2025-12-12',
     seats: {
       available: 160,
       total: 300,

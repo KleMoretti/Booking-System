@@ -48,6 +48,13 @@ export const TRAIN_TYPE = {
   NORMAL: '普速',
 }
 
+// 支付方式
+export const PAYMENT_METHOD = {
+  BALANCE: 'BALANCE',    // 余额支付
+  ALIPAY: 'ALIPAY',      // 支付宝
+  WECHAT: 'WECHAT',      // 微信支付
+}
+
 // 本地存储键名
 export const STORAGE_KEYS = {
   TOKEN: 'token',

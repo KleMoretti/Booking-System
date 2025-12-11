@@ -2,7 +2,7 @@
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Layout, Menu, Dropdown, Avatar, message } from 'antd'
-import { UserOutlined, HomeOutlined, ProfileOutlined, OrderedListOutlined, DashboardOutlined, LogoutOutlined } from '@ant-design/icons'
+import { UserOutlined, HomeOutlined, ProfileOutlined, OrderedListOutlined, DashboardOutlined, LogoutOutlined, SwapOutlined } from '@ant-design/icons'
 import { useSelector, useDispatch } from 'react-redux'
 import { logout } from '../../store/slices/userSlice'
 import './style.css'
@@ -13,6 +13,7 @@ const navItems = [
   { key: '/home', label: '首页', icon: <HomeOutlined /> },
   { key: '/tickets', label: '车票查询', icon: <OrderedListOutlined /> },
   { key: '/orders', label: '我的订单', icon: <ProfileOutlined /> },
+  { key: '/refund-change', label: '退票改签', icon: <SwapOutlined /> },
   { key: '/admin', label: '后台管理', icon: <DashboardOutlined /> },
 ]
 

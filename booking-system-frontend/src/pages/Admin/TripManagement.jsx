@@ -245,7 +245,7 @@ function TripManagement() {
     <div>
       <Card 
         title="车次管理" 
-        bordered={false}
+        variant="borderless"
         extra={
           <Button type="primary" icon={<PlusOutlined />} onClick={showAddModal}>
             添加车次

@@ -6,7 +6,9 @@ import './style.css'
 function Loading({ tip = '加载中...' }) {
   return (
     <div className="app-loading">
-      <Spin size="large" tip={tip} />
+      <Spin size="large" tip={tip}>
+        <div style={{ minHeight: '100px' }} />
+      </Spin>
     </div>
   )
 }

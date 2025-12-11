@@ -218,7 +218,7 @@ function RefundChangeManagement() {
     <div>
       <Card 
         title="改签退票管理" 
-        bordered={false}
+        variant="borderless"
       >
         <Tabs
           items={tabItems}

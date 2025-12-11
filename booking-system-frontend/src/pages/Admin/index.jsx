@@ -72,12 +72,12 @@ function Admin() {
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} md={6}>
                 <Card 
-                  bordered={false}
+                  variant="borderless"
                   style={{ 
                     background: '#fff',
                     borderLeft: '4px solid #1890ff'
                   }}
-                  bodyStyle={{ padding: '20px' }}
+                  styles={{ body: { padding: '20px' } }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
@@ -103,12 +103,12 @@ function Admin() {
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card 
-                  bordered={false}
+                  variant="borderless"
                   style={{ 
                     background: '#fff',
                     borderLeft: '4px solid #52c41a'
                   }}
-                  bodyStyle={{ padding: '20px' }}
+                  styles={{ body: { padding: '20px' } }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
@@ -134,12 +134,12 @@ function Admin() {
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card 
-                  bordered={false}
+                  variant="borderless"
                   style={{ 
                     background: '#fff',
                     borderLeft: '4px solid #faad14'
                   }}
-                  bodyStyle={{ padding: '20px' }}
+                  styles={{ body: { padding: '20px' } }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
@@ -165,12 +165,12 @@ function Admin() {
               </Col>
               <Col xs={24} sm={12} md={6}>
                 <Card 
-                  bordered={false}
+                  variant="borderless"
                   style={{ 
                     background: '#fff',
                     borderLeft: '4px solid #722ed1'
                   }}
-                  bodyStyle={{ padding: '20px' }}
+                  styles={{ body: { padding: '20px' } }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>

@@ -12,6 +12,8 @@ const OrderList = lazy(() => import('../pages/OrderList'))
 const TicketList = lazy(() => import('../pages/TicketList'))
 const Admin = lazy(() => import('../pages/Admin'))
 const Profile = lazy(() => import('../pages/Profile'))
+const RefundChange = lazy(() => import('../pages/RefundChange'))
+const Payment = lazy(() => import('../pages/Payment'))
 
 // 懒加载包装组件
 const LazyLoad = ({ children }) => (
@@ -85,6 +87,26 @@ function AppRoutes() {
           <PrivateRoute>
             <LazyLoad>
               <Profile />
+            </LazyLoad>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/refund-change"
+        element={
+          <PrivateRoute>
+            <LazyLoad>
+              <RefundChange />
+            </LazyLoad>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/payment"
+        element={
+          <PrivateRoute>
+            <LazyLoad>
+              <Payment />
             </LazyLoad>
           </PrivateRoute>
         }

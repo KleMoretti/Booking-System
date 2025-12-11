@@ -38,7 +38,7 @@ function UserInfo({ userInfo }) {
       label: '账户余额',
       children: (
         <Space>
-          <span style={{ fontSize: '18px', fontWeight: 'bold', color: '#1890ff' }}>
+          <span style={{ fontSize: '14px', fontWeight: '600', color: '#1890ff' }}>
             ¥{(userInfo.balance || 0).toFixed(2)}
           </span>
         </Space>
@@ -66,7 +66,8 @@ function UserInfo({ userInfo }) {
         bordered
         column={{ xs: 1, sm: 1, md: 2 }}
         items={items}
-        labelStyle={{ fontWeight: 'bold', width: '120px' }}
+        labelStyle={{ fontWeight: '600', width: '100px' }}
+        size="small"
       />
     </div>
   )

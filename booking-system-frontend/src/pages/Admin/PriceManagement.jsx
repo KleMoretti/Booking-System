@@ -154,7 +154,7 @@ function PriceManagement() {
             <span>票价管理</span>
           </Space>
         }
-        bordered={false}
+        variant="borderless"
       >
         <Table
           columns={columns}

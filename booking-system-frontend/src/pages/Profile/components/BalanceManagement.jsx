@@ -138,11 +138,10 @@ function BalanceManagement({ userInfo }) {
               value={userInfo?.balance || 0}
               precision={2}
               prefix="¥"
-              valueStyle={{ color: '#1890ff', fontSize: '32px' }}
+              valueStyle={{ color: '#262626', fontSize: '28px', fontWeight: '600' }}
             />
             <Button
               type="primary"
-              size="large"
               icon={<PlusOutlined />}
               onClick={() => setRechargeModalVisible(true)}
             >
@@ -217,7 +216,6 @@ function BalanceManagement({ userInfo }) {
             </div>
             <InputNumber
               style={{ width: '100%' }}
-              size="large"
               min={10}
               max={10000}
               precision={2}

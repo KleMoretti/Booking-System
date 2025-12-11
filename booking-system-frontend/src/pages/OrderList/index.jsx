@@ -2,6 +2,7 @@
 import { Card, Table, Tag, Button, Space, message } from 'antd'
 import { useEffect, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { getOrderList, cancelOrder } from '../../store/slices/orderSlice'
 import { formatDateTime, formatPrice, getOrderStatus } from '../../utils/format'
 import { ORDER_STATUS, PAGINATION } from '../../utils/constants'
@@ -13,6 +14,7 @@ import './style.css'
 
 function OrderList() {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { orderList, loading, pagination } = useSelector((state) => state.order)
 
   const loadOrders = useCallback((page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
@@ -108,7 +110,11 @@ function OrderList() {
       render: (_, record) => (
         <Space size="small">
           {record.status === ORDER_STATUS.PENDING && (
-            <Button type="link" size="small">
+            <Button 
+              type="link" 
+              size="small"
+              onClick={() => navigate(`/payment?orderId=${record.id}`)}
+            >
               去支付
             </Button>
           )}

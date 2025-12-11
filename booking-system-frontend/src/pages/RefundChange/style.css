@@ -1,0 +1,108 @@
+/* 退票改签页面样式 */
+
+.page-refund-change {
+  padding: 24px;
+}
+
+.page-refund-change .page-card {
+  min-height: 500px;
+}
+
+/* 退票弹窗样式 */
+.refund-modal-content {
+  padding: 8px 0;
+}
+
+.refund-rules {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.refund-rules h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.refund-rules ul {
+  margin: 0 0 12px 0;
+  padding-left: 20px;
+}
+
+.refund-rules li {
+  margin: 8px 0;
+  color: #595959;
+  font-size: 13px;
+}
+
+.refund-note {
+  margin: 0;
+  padding: 8px 12px;
+  background: #fff7e6;
+  border-left: 3px solid #faad14;
+  color: #ad6800;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+/* 改签弹窗样式 */
+.change-modal-content {
+  padding: 8px 0;
+}
+
+.original-order-info h4,
+.new-order-info h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.change-rules {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.change-rules h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.change-rules ul {
+  margin: 0 0 12px 0;
+  padding-left: 20px;
+}
+
+.change-rules li {
+  margin: 8px 0;
+  color: #595959;
+  font-size: 13px;
+}
+
+.change-note {
+  margin: 0;
+  padding: 8px 12px;
+  background: #e6f7ff;
+  border-left: 3px solid #1890ff;
+  color: #0050b3;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .page-refund-change {
+    padding: 16px;
+  }
+  
+  .refund-modal-content,
+  .change-modal-content {
+    padding: 4px 0;
+  }
+}

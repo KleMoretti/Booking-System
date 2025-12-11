@@ -37,12 +37,12 @@ function ChangePassword() {
 
   return (
     <div className="change-password-container">
-      <Card bordered={false}>
+      <Card variant="borderless">
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          style={{ maxWidth: '500px' }}
+          style={{ maxWidth: '450px' }}
         >
           <Form.Item
             label="原密码"
@@ -55,7 +55,6 @@ function ChangePassword() {
             <Input.Password
               prefix={<LockOutlined />}
               placeholder="请输入原密码"
-              size="large"
             />
           </Form.Item>
 
@@ -75,7 +74,6 @@ function ChangePassword() {
             <Input.Password
               prefix={<LockOutlined />}
               placeholder="请输入新密码（6-20位，需包含字母和数字）"
-              size="large"
             />
           </Form.Item>
 
@@ -98,7 +96,6 @@ function ChangePassword() {
             <Input.Password
               prefix={<LockOutlined />}
               placeholder="请再次输入新密码"
-              size="large"
             />
           </Form.Item>
 
@@ -107,8 +104,6 @@ function ChangePassword() {
               type="primary"
               htmlType="submit"
               loading={loading}
-              size="large"
-              block
             >
               修改密码
             </Button>

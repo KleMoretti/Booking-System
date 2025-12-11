@@ -64,3 +64,14 @@ export const refundOrder = (orderId, data) => {
     data,
   })
 }
+
+/**
+ * 改签
+ */
+export const changeOrder = (orderId, data) => {
+  return request({
+    url: `/order/${orderId}/change`,
+    method: 'post',
+    data,
+  })
+}
