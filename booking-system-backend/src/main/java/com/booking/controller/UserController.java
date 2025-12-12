@@ -3,14 +3,19 @@ package com.booking.controller;
 import com.booking.common.Result;
 import com.booking.dto.LoginDTO;
 import com.booking.dto.RegisterDTO;
+import com.booking.entity.BalanceChange;
 import com.booking.entity.User;
+import com.booking.mapper.BalanceChangeMapper;
 import com.booking.service.IUserService;
 import com.booking.utils.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 用户控制器
@@ -24,6 +29,9 @@ public class UserController {
 
     @Resource
     private JwtUtil jwtUtil;
+
+    @Resource
+    private BalanceChangeMapper balanceChangeMapper;
 
     /**
      * 用户登录
@@ -145,6 +153,40 @@ public class UserController {
         }
     }
 
+    @PostMapping("/balance/recharge")
+    public Result<Void> rechargeBalance(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, Object> data) {
+        return recharge(token, data);
+    }
+
+    @GetMapping("/balance/history")
+    public Result<List<Map<String, Object>>> getBalanceHistory(
+            @RequestHeader("Authorization") String token) {
+        try {
+            String jwt = token.replace("Bearer ", "");
+            Integer userId = jwtUtil.getUserIdFromToken(jwt);
+
+            List<BalanceChange> records = balanceChangeMapper.findByUserId(userId);
+            List<Map<String, Object>> data = records.stream().map(record -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", record.getRecordId());
+                map.put("createdAt", record.getCreateTime());
+                map.put("amount", record.getChangeAmount());
+                map.put("balance", record.getBalanceAfter());
+                map.put("description", record.getNote());
+                map.put("type", convertChangeType(record.getChangeType()));
+                return map;
+            }).collect(Collectors.toList());
+
+            return Result.success(data);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("获取余额历史失败：" + e.getMessage());
+        }
+    }
+
     /**
      * 登出
      */
@@ -152,6 +194,24 @@ public class UserController {
     public Result<Void> logout() {
         // JWT是无状态的，登出主要由前端处理（删除token）
         return Result.success("登出成功", null);
+    }
+
+    private String convertChangeType(Byte changeType) {
+        if (changeType == null) {
+            return "UNKNOWN";
+        }
+        switch (changeType) {
+            case 0:
+                return "RECHARGE";
+            case 1:
+                return "PAYMENT";
+            case 2:
+                return "REFUND";
+            case 3:
+                return "CHANGE";
+            default:
+                return "UNKNOWN";
+        }
     }
 }
 

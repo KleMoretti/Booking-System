@@ -8,6 +8,8 @@
         <result property="password" column="password" />
         <result property="email" column="email" />
         <result property="phone" column="phone" />
+        <result property="realName" column="real_name" />
+        <result property="idCardNo" column="id_card_no" />
         <result property="userType" column="user_type" />
         <result property="balance" column="balance" />
         <result property="createTime" column="create_time" />

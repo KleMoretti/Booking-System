@@ -7,6 +7,8 @@ function UserInfo({ userInfo }) {
     return <div>暂无用户信息</div>
   }
 
+  const isAdmin = userInfo.role === 'ADMIN' || userInfo.userType === 1
+
   const items = [
     {
       key: 'username',
@@ -16,12 +18,12 @@ function UserInfo({ userInfo }) {
     {
       key: 'name',
       label: '姓名',
-      children: userInfo.name || '-',
+      children: userInfo.realName || userInfo.name || '-',
     },
     {
       key: 'idNumber',
       label: '身份证号',
-      children: userInfo.idNumber || '-',
+      children: userInfo.idCardNo || userInfo.idNumber || '-',
     },
     {
       key: 'phone',
@@ -47,7 +49,7 @@ function UserInfo({ userInfo }) {
     {
       key: 'role',
       label: '用户角色',
-      children: userInfo.role === 'ADMIN' ? (
+      children: isAdmin ? (
         <Tag color="red">管理员</Tag>
       ) : (
         <Tag color="blue">普通用户</Tag>
@@ -56,7 +58,10 @@ function UserInfo({ userInfo }) {
     {
       key: 'createdAt',
       label: '注册时间',
-      children: userInfo.createdAt ? formatDateTime(userInfo.createdAt) : '-',
+      children:
+        (userInfo.createTime || userInfo.createdAt)
+          ? formatDateTime(userInfo.createTime || userInfo.createdAt)
+          : '-',
     },
   ]
 

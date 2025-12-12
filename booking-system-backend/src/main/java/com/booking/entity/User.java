@@ -12,6 +12,8 @@ public class User {
     private String password;
     private String email;
     private String phone;
+    private String realName;
+    private String idCardNo;
     private Byte userType;
     private BigDecimal balance;
     private LocalDateTime createTime;
@@ -56,6 +58,22 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    public String getIdCardNo() {
+        return idCardNo;
+    }
+
+    public void setIdCardNo(String idCardNo) {
+        this.idCardNo = idCardNo;
     }
 
     public Byte getUserType() {
