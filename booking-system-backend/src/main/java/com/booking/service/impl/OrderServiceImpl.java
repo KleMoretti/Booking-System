@@ -56,6 +56,8 @@ public class OrderServiceImpl implements OrderService {
         if (trip == null) {
             throw new IllegalStateException("车次不存在");
         }
+
+        ensureSeatsForTrip(trip);
         
         // 检查余票数量
         int requestCount = passengers.size();
@@ -124,6 +126,31 @@ public class OrderServiceImpl implements OrderService {
         
         // 返回订单详情
         return getOrderDetail(order.getOrderId());
+    }
+
+    private void ensureSeatsForTrip(Trip trip) {
+        if (trip == null || trip.getTripId() == null || trip.getTotalSeats() == null || trip.getTotalSeats() <= 0) {
+            return;
+        }
+        List<Seat> seats = seatMapper.findByTripId(trip.getTripId());
+        if (seats != null && !seats.isEmpty()) {
+            return;
+        }
+        int totalSeats = trip.getTotalSeats();
+        for (int i = 1; i <= totalSeats; i++) {
+            Seat seat = new Seat();
+            seat.setTripId(trip.getTripId());
+            seat.setSeatNumber(generateSeatNumber(i));
+            seat.setSeatStatus((byte) 0);
+            seatMapper.insert(seat);
+        }
+    }
+
+    private String generateSeatNumber(int index) {
+        int rowIndex = (index - 1) / 10;
+        int numberInRow = (index - 1) % 10 + 1;
+        char rowChar = (char) ('A' + rowIndex);
+        return rowChar + String.valueOf(numberInRow);
     }
 
     @Override

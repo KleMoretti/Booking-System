@@ -1,6 +1,6 @@
 // 票务列表页面
-import { Card, Table, Tag, Button, Space, message } from 'antd'
-import { useEffect, useCallback } from 'react'
+import { Card, Table, Tag, Button, Space, message, Modal, Form, Input, Radio } from 'antd'
+import { useEffect, useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { searchTrips } from '../../store/slices/ticketSlice'
@@ -17,6 +17,11 @@ function TicketList() {
   const navigate = useNavigate()
   const location = useLocation()
   const { tripList, loading, searchParams } = useSelector((state) => state.ticket)
+  const { userInfo } = useSelector((state) => state.user)
+  const [bookingModalVisible, setBookingModalVisible] = useState(false)
+  const [selectedTrip, setSelectedTrip] = useState(null)
+  const [purchaseType, setPurchaseType] = useState('self')
+  const [form] = Form.useForm()
 
   useEffect(() => {
     // 从 URL查询参数或状态中获取搜索条件
@@ -27,32 +32,82 @@ function TicketList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleBookTicket = async (trip) => {
+  const handleBookTicket = (trip) => {
+    // 这里先实现一个最小可用的下单流程：为当前用户购买 1 张票
+    setSelectedTrip(trip)
+    const defaultName = userInfo?.realName || userInfo?.username || ''
+    const defaultIdCard = userInfo?.idCardNo || ''
+    setPurchaseType('self')
+    form.setFieldsValue({
+      purchaseType: 'self',
+      passengerName: defaultName,
+      passengerIdCard: defaultIdCard,
+    })
+    setBookingModalVisible(true)
+  }
+
+  const handlePurchaseTypeChange = (e) => {
+    const value = e.target.value
+    setPurchaseType(value)
+    if (value === 'self') {
+      const defaultName = userInfo?.realName || userInfo?.username || ''
+      const defaultIdCard = userInfo?.idCardNo || ''
+      form.setFieldsValue({
+        passengerName: defaultName,
+        passengerIdCard: defaultIdCard,
+      })
+    } else {
+      form.setFieldsValue({
+        passengerName: '',
+        passengerIdCard: '',
+      })
+    }
+  }
+
+  const handleSubmitBooking = async () => {
+    if (!selectedTrip) {
+      return
+    }
     try {
-      // 这里先实现一个最小可用的下单流程：为当前用户购买 1 张票
+      const values = await form.validateFields()
+      const passengers = [
+        {
+          name: values.passengerName,
+          idCard: values.passengerIdCard,
+        },
+      ]
+
       const orderData = {
-        tripId: trip.id, // 后端 TripVO 中通过 @JsonProperty("id") 暴露的字段
-        passengers: [
-          {
-            name: '测试乘客',
-            idCard: '110101199001011234',
-          },
-        ],
+        tripId: selectedTrip.id,
+        passengers,
       }
 
       const resultAction = await dispatch(createOrder(orderData))
 
       if (createOrder.fulfilled.match(resultAction)) {
         message.success('订单创建成功')
-        // 下单成功后跳转到订单列表
+        setBookingModalVisible(false)
+        setSelectedTrip(null)
         navigate('/orders')
       } else {
         const errorMsg = resultAction.payload || '创建订单失败'
         message.error(errorMsg)
+        if (errorMsg.includes('余票不足') && searchParams) {
+          dispatch(searchTrips(searchParams))
+        }
       }
     } catch (error) {
+      if (error && error.errorFields) {
+        return
+      }
       message.error(error.message || '创建订单失败')
     }
+  }
+
+  const handleCloseBookingModal = () => {
+    setBookingModalVisible(false)
+    setSelectedTrip(null)
+    form.resetFields()
   }
 
   const columns = [
@@ -126,6 +181,7 @@ function TicketList() {
         <Button
           type="primary"
           size="small"
+          disabled={!record.seats || (record.seats.available || 0) <= 0}
           onClick={() => handleBookTicket(record)}
         >
           订票
@@ -167,6 +223,51 @@ function TicketList() {
             size="middle"
           />
         )}
+        <Modal
+          title="填写购票信息"
+          open={bookingModalVisible}
+          onCancel={handleCloseBookingModal}
+          onOk={handleSubmitBooking}
+          okText="提交订单"
+          destroyOnClose
+        >
+          {selectedTrip && (
+            <div style={{ marginBottom: 16 }}>
+              <p>
+                车次：{selectedTrip.tripNo} | {selectedTrip.fromStation} → {selectedTrip.toStation}
+              </p>
+              <p>出发时间：{formatTime(selectedTrip.departureTime, 'YYYY-MM-DD HH:mm')}</p>
+              <p>
+                余票：{selectedTrip.seats?.available || 0} 张，票价：{formatPrice(selectedTrip.seats?.price)}
+              </p>
+            </div>
+          )}
+          <Form
+            form={form}
+            layout="vertical"
+          >
+            <Form.Item label="购票类型" name="purchaseType">
+              <Radio.Group value={purchaseType} onChange={handlePurchaseTypeChange}>
+                <Radio value="self">为自己购票</Radio>
+                <Radio value="other">为他人购票</Radio>
+              </Radio.Group>
+            </Form.Item>
+            <Form.Item
+              label="乘客姓名"
+              name="passengerName"
+              rules={[{ required: true, message: '请输入乘客姓名' }]}
+            >
+              <Input placeholder="请输入乘客姓名" />
+            </Form.Item>
+            <Form.Item
+              label="身份证号"
+              name="passengerIdCard"
+              rules={[{ required: true, message: '请输入身份证号' }]}
+            >
+              <Input placeholder="请输入身份证号" />
+            </Form.Item>
+          </Form>
+        </Modal>
       </Card>
     </div>
   )

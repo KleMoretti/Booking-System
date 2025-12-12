@@ -1,10 +1,10 @@
 // 订单列表页面
-import { Card, Table, Tag, Button, Space, message } from 'antd'
-import { useEffect, useCallback, useMemo } from 'react'
+import { Card, Table, Tag, Button, Space, message, Modal, Descriptions } from 'antd'
+import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { getOrderList, cancelOrder } from '../../store/slices/orderSlice'
-import { formatDateTime, formatPrice, getOrderStatus } from '../../utils/format'
+import { formatDateTime, formatPrice, getOrderStatus, formatIdCard } from '../../utils/format'
 import { ORDER_STATUS, PAGINATION } from '../../utils/constants'
 import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
@@ -16,6 +16,8 @@ function OrderList() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { orderList, loading, pagination } = useSelector((state) => state.order)
+  const [detailModalVisible, setDetailModalVisible] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState(null)
 
   const loadOrders = useCallback((page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
     dispatch(getOrderList({ page, pageSize }))
@@ -38,6 +40,14 @@ function OrderList() {
   const handleTableChange = useCallback((newPagination) => {
     loadOrders(newPagination.current, newPagination.pageSize)
   }, [loadOrders])
+
+  const handleViewDetail = useCallback((orderId) => {
+    const fullOrder = orderList.find((order) => (order.orderId ?? order.id) === orderId)
+    if (fullOrder) {
+      setSelectedOrder(fullOrder)
+      setDetailModalVisible(true)
+    }
+  }, [orderList])
 
   const displayOrderList = useMemo(
     () => orderList.map((order) => ({
@@ -128,10 +138,17 @@ function OrderList() {
               取消
             </Button>
           )}
+          <Button
+            type="link"
+            size="small"
+            onClick={() => handleViewDetail(record.id)}
+          >
+            详情
+          </Button>
         </Space>
       ),
     },
-  ], [handleCancelOrder])
+  ], [handleCancelOrder, handleViewDetail])
 
   if (loading && orderList.length === 0) {
     return (
@@ -172,6 +189,92 @@ function OrderList() {
             size="middle"
           />
         )}
+        <Modal
+          title="订单详情"
+          open={detailModalVisible}
+          onCancel={() => {
+            setDetailModalVisible(false)
+            setSelectedOrder(null)
+          }}
+          footer={null}
+          width={720}
+        >
+          {selectedOrder && (
+            <>
+              <Descriptions
+                column={2}
+                size="small"
+                bordered
+                labelStyle={{ fontWeight: '600', width: '120px' }}
+              >
+                <Descriptions.Item label="订单号">
+                  {selectedOrder.orderNumber || selectedOrder.orderNo}
+                </Descriptions.Item>
+                <Descriptions.Item label="订单状态">
+                  {selectedOrder.orderStatusText || getOrderStatus(selectedOrder.orderStatus)?.text}
+                </Descriptions.Item>
+                <Descriptions.Item label="车次">
+                  {selectedOrder.tripNumber || selectedOrder.tripNo}
+                </Descriptions.Item>
+                <Descriptions.Item label="订单金额">
+                  {formatPrice(selectedOrder.totalAmount || selectedOrder.totalPrice)}
+                </Descriptions.Item>
+                <Descriptions.Item label="出发站">
+                  {selectedOrder.departureStation || selectedOrder.fromStation}
+                </Descriptions.Item>
+                <Descriptions.Item label="到达站">
+                  {selectedOrder.arrivalStation || selectedOrder.toStation}
+                </Descriptions.Item>
+                <Descriptions.Item label="出发时间" span={2}>
+                  {formatDateTime(selectedOrder.departureTime)}
+                </Descriptions.Item>
+                {selectedOrder.payTime && (
+                  <Descriptions.Item label="支付时间" span={2}>
+                    {formatDateTime(selectedOrder.payTime)}
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+              {Array.isArray(selectedOrder.tickets) && selectedOrder.tickets.length > 0 && (
+                <Table
+                  style={{ marginTop: 16 }}
+                  size="small"
+                  rowKey="ticketId"
+                  pagination={false}
+                  columns={[
+                    {
+                      title: '乘客姓名',
+                      dataIndex: 'passengerName',
+                      key: 'passengerName',
+                    },
+                    {
+                      title: '身份证号',
+                      dataIndex: 'passengerIdCard',
+                      key: 'passengerIdCard',
+                      render: (value) => formatIdCard(value),
+                    },
+                    {
+                      title: '座位号',
+                      dataIndex: 'seatNumber',
+                      key: 'seatNumber',
+                    },
+                    {
+                      title: '票价',
+                      dataIndex: 'price',
+                      key: 'price',
+                      render: (price) => formatPrice(price),
+                    },
+                    {
+                      title: '票状态',
+                      dataIndex: 'ticketStatusText',
+                      key: 'ticketStatusText',
+                    },
+                  ]}
+                  dataSource={selectedOrder.tickets}
+                />
+              )}
+            </>
+          )}
+        </Modal>
       </Card>
     </div>
   )
