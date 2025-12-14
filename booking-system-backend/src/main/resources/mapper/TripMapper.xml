@@ -177,7 +177,32 @@
                 AND arr_station.station_name LIKE CONCAT('%', #{arrivalStation}, '%')
             </if>
         </where>
-        ORDER BY t.create_time DESC
+        ORDER BY
+        <choose>
+            <when test="sortBy != null and sortBy == 'tripNumber'">
+                t.trip_number
+            </when>
+            <when test="sortBy != null and sortBy == 'date'">
+                t.departure_time
+            </when>
+            <when test="sortBy != null and sortBy == 'departureTime'">
+                t.departure_time
+            </when>
+            <when test="sortBy != null and sortBy == 'departureStation'">
+                ds.station_name
+            </when>
+            <otherwise>
+                t.departure_time
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="sortOrder != null and sortOrder == 'asc'">
+                ASC
+            </when>
+            <otherwise>
+                DESC
+            </otherwise>
+        </choose>
         <if test="offset != null and pageSize != null">
             LIMIT #{offset}, #{pageSize}
         </if>

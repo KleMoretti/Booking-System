@@ -33,6 +33,8 @@ function TripManagement() {
         departureDate: values.departureDate ? values.departureDate.format('YYYY-MM-DD') : undefined,
         departureStation: values.departureStation,
         arrivalStation: values.arrivalStation,
+        sortBy: values.sortBy,
+        sortOrder: values.sortOrder,
       })
       
       if (response.data) {
@@ -77,7 +79,7 @@ function TripManagement() {
   }
 
   const handleReset = () => {
-    searchForm.resetFields(['tripNumber', 'departureDate', 'departureStation', 'arrivalStation'])
+    searchForm.resetFields(['tripNumber', 'departureDate', 'departureStation', 'arrivalStation', 'sortBy', 'sortOrder'])
     setPagination(prev => ({ ...prev, current: PAGINATION.DEFAULT_PAGE }))
     fetchData()
   }
@@ -231,16 +233,16 @@ function TripManagement() {
         <Form
           form={searchForm}
           layout="vertical"
-          size="large"
+          size="middle"
           style={{
-            marginBottom: 24,
-            padding: '24px 24px 0',
+            marginBottom: 16,
+            padding: '16px 16px 0',
             background: 'var(--color-bg-container)',
             borderRadius: 12,
             border: '1px solid var(--color-border-secondary)',
           }}
         >
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
             <Form.Item label="车次号" name="tripNumber" style={{ marginBottom: 0 }}>
               <Input 
                 placeholder="请输入车次号" 
@@ -291,12 +293,34 @@ function TripManagement() {
                 ))}
               </Select>
             </Form.Item>
+            <Form.Item label="排序字段" name="sortBy" style={{ marginBottom: 0 }}>
+              <Select
+                allowClear
+                placeholder="选择排序字段"
+                style={{ width: '100%' }}
+              >
+                <Select.Option value="tripNumber">车次号</Select.Option>
+                <Select.Option value="date">日期</Select.Option>
+                <Select.Option value="departureTime">出发时间</Select.Option>
+                <Select.Option value="departureStation">出发站</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item label="排序方向" name="sortOrder" style={{ marginBottom: 0 }}>
+              <Select
+                allowClear
+                placeholder="选择排序方向"
+                style={{ width: '100%' }}
+              >
+                <Select.Option value="asc">升序</Select.Option>
+                <Select.Option value="desc">降序</Select.Option>
+              </Select>
+            </Form.Item>
           </div>
-          <div style={{ marginTop: 16, paddingBottom: 20, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-            <Button icon={<ReloadOutlined />} onClick={handleReset} size="large">
+          <div style={{ marginTop: 12, paddingBottom: 12, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button icon={<ReloadOutlined />} onClick={handleReset}>
               重置
             </Button>
-            <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch} size="large">
+            <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
               搜索
             </Button>
           </div>

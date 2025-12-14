@@ -32,6 +32,8 @@ public interface TripMapper {
                                        @Param("departureDate") String departureDate,
                                        @Param("departureStation") String departureStation,
                                        @Param("arrivalStation") String arrivalStation,
+                                       @Param("sortBy") String sortBy,
+                                       @Param("sortOrder") String sortOrder,
                                        @Param("offset") Integer offset,
                                        @Param("pageSize") Integer pageSize);
     Long countTrips(@Param("tripNumber") String tripNumber,

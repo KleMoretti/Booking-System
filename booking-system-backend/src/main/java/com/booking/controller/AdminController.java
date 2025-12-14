@@ -108,6 +108,8 @@ public class AdminController {
             @RequestParam(required = false) String departureDate,
             @RequestParam(required = false) String departureStation,
             @RequestParam(required = false) String arrivalStation,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String sortOrder,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
         
@@ -126,7 +128,7 @@ public class AdminController {
         Integer offset = (page - 1) * pageSize;
         
         // 查询数据
-        List<TripManagementVO> list = tripService.getTripList(tripNumber, departureDate, departureStation, arrivalStation, offset, pageSize);
+        List<TripManagementVO> list = tripService.getTripList(tripNumber, departureDate, departureStation, arrivalStation, sortBy, sortOrder, offset, pageSize);
         Long total = tripService.countTrips(tripNumber, departureDate, departureStation, arrivalStation);
         
         // 返回前端期望的格式
@@ -349,7 +351,7 @@ public class AdminController {
     @GetMapping("/test/trips/all")
     public Result<List<TripManagementVO>> testGetAllTrips() {
         try {
-            List<TripManagementVO> trips = tripService.getTripList(null, null, null, null, 0, 100);
+            List<TripManagementVO> trips = tripService.getTripList(null, null, null, null, null, null, 0, 100);
             return Result.success(trips);
         } catch (Exception e) {
             return Result.error("查询失败: " + e.getMessage());

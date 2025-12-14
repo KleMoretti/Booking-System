@@ -16,7 +16,7 @@ public interface TripService {
     List<TripVO> getAllTrips();
     
     // 管理端车次管理
-    List<TripManagementVO> getTripList(String tripNumber, String departureDate, String departureStation, String arrivalStation, Integer offset, Integer pageSize);
+    List<TripManagementVO> getTripList(String tripNumber, String departureDate, String departureStation, String arrivalStation, String sortBy, String sortOrder, Integer offset, Integer pageSize);
     Long countTrips(String tripNumber, String departureDate, String departureStation, String arrivalStation);
     void addTrip(TripDTO tripDTO);
     void updateTrip(Integer tripId, TripDTO tripDTO);
