@@ -1,10 +1,11 @@
 // 退票改签页面
-import { Card, Table, Tag, Button, Space, message, Modal, Select, DatePicker, TimePicker, InputNumber, Form, Descriptions, Divider, Alert, Statistic } from 'antd'
+import { Card, Table, Tag, Button, Space, message, Modal, Select, Form, Descriptions, Divider, Alert } from 'antd'
 import { SwapOutlined, RollbackOutlined, ExclamationCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getOrderList } from '../../store/slices/orderSlice'
 import { refundOrder, changeOrder } from '../../api/order'
+import { searchTrips, getStationList } from '../../api/ticket'
 import { formatDateTime, formatPrice, getOrderStatus } from '../../utils/format'
 import { ORDER_STATUS, API_CODE, PAGINATION } from '../../utils/constants'
 import PageHeader from '../../components/PageHeader'
@@ -26,6 +27,10 @@ function RefundChange() {
   const [form] = Form.useForm()
   const [refundFee, setRefundFee] = useState(0)
   const [refundAmount, setRefundAmount] = useState(0)
+  const [availableTrips, setAvailableTrips] = useState([])
+  const [loadingTrips, setLoadingTrips] = useState(false)
+  const [selectedTrip, setSelectedTrip] = useState(null)
+  const [stations, setStations] = useState([])
 
   const loadOrders = useCallback((page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
     dispatch(getOrderList({ page, pageSize }))
@@ -34,6 +39,54 @@ function RefundChange() {
   useEffect(() => {
     loadOrders()
   }, [loadOrders])
+
+  // 加载站点列表
+  useEffect(() => {
+    const loadStations = async () => {
+      try {
+        const response = await getStationList()
+        if (response.code === API_CODE.SUCCESS) {
+          setStations(response.data)
+        }
+      } catch (error) {
+        console.error('加载站点列表失败：', error)
+      }
+    }
+    loadStations()
+  }, [])
+
+  // 提取城市名称（去除站点后缀）
+  const extractCityName = useCallback((stationName) => {
+    if (!stationName) return ''
+    
+    // 去除常见的站点后缀
+    let cityName = stationName
+      .replace(/站$/, '')                           // 去掉"站"
+      .replace(/(虹桥|浦东|火车|高铁|客运)站?$/, '') // 去掉特殊站点名
+      .replace(/(南|北|东|西)站?$/, '')              // 去掉方位后缀
+    
+    return cityName.trim()
+  }, [])
+
+  // 检查两个站点是否属于同一城市
+  const isSameCity = useCallback((station1, station2) => {
+    if (!station1 || !station2) return false
+    
+    // 1. 完全匹配（如 "北京南站" === "北京南站"）
+    if (station1 === station2) return true
+    
+    const city1 = extractCityName(station1)
+    const city2 = extractCityName(station2)
+    
+    // 2. 城市名完全匹配（如 "北京" === "北京"）
+    if (city1 === city2 && city1.length > 0) return true
+    
+    // 3. 其中一个站点名包含另一个的城市名
+    // 例如："北京南站" 包含 "北京"，"北京" 匹配 "北京南站"
+    if (station1.startsWith(city2) || station2.startsWith(city1)) return true
+    
+    return false
+  }, [extractCityName])
 
   // 只显示可以退票或改签的订单
   const eligibleOrders = useMemo(
@@ -91,11 +144,144 @@ function RefundChange() {
     setRefundModalVisible(true)
   }, [calculateRefundFee])
 
+  // 搜索可用车次（同一路线，未来的所有车次）
+  const loadAvailableTrips = useCallback(async (fromStationName, toStationName, currentTripNo) => {
+    setLoadingTrips(true)
+    try {
+      const allTrips = []
+      
+      // 查找匹配的站点
+      const fromCityStations = stations.filter(s => 
+        isSameCity(s.name, fromStationName)
+      )
+      const toCityStations = stations.filter(s => 
+        isSameCity(s.name, toStationName)
+      )
+      
+      console.log('搜索改签车次：', {
+        原出发站: fromStationName,
+        原到达站: toStationName,
+        匹配的出发站: fromCityStations.map(s => s.name),
+        匹配的到达站: toCityStations.map(s => s.name),
+        当前车次: currentTripNo
+      })
+      
+      if (fromCityStations.length === 0 || toCityStations.length === 0) {
+        message.warning('未找到匹配的站点，请检查站点名称')
+        setAvailableTrips([])
+        setLoadingTrips(false)
+        return
+      }
+      
+      // 搜索未来7天的车次
+      for (let i = 0; i < 7; i++) {
+        const searchDate = dayjs().add(i, 'day').format('YYYY-MM-DD 00:00:00')
+        
+        // 对每个站点组合进行搜索
+        for (const fromStation of fromCityStations) {
+          for (const toStation of toCityStations) {
+            try {
+              const response = await searchTrips({
+                fromStationId: fromStation.id,
+                toStationId: toStation.id,
+                departureDate: searchDate,
+              })
+              
+              if (response.code === API_CODE.SUCCESS && response.data) {
+                allTrips.push(...response.data)
+              }
+            } catch (err) {
+              console.error('搜索车次失败：', err)
+            }
+          }
+        }
+      }
+      
+      console.log('搜索到的所有车次：', allTrips.length)
+      
+      // 去重、过滤和排序
+      const filteredTrips = allTrips.filter(trip => {
+        // 过滤掉当前订单的车次
+        const tripNo = trip.tripNumber || trip.tripNo
+        if (tripNo === currentTripNo) {
+          console.log('过滤掉当前车次：', tripNo)
+          return false
+        }
+        
+        // 只保留未来的车次
+        const departureTime = dayjs(trip.departureTime)
+        if (!departureTime.isAfter(dayjs())) {
+          console.log('过滤掉过去的车次：', tripNo, departureTime.format('YYYY-MM-DD HH:mm'))
+          return false
+        }
+        
+        return true
+      })
+      
+      console.log('过滤后的车次：', filteredTrips.length)
+      
+      // 使用车次ID和出发时间的组合作为唯一键
+      const uniqueTrips = Array.from(
+        new Map(
+          filteredTrips.map(trip => {
+            const key = `${trip.tripNumber || trip.tripNo}_${trip.departureTime}`
+            return [key, trip]
+          })
+        ).values()
+      )
+      
+      console.log('去重后的车次：', uniqueTrips.length)
+      
+      // 按出发时间排序
+      uniqueTrips.sort((a, b) => 
+        dayjs(a.departureTime).valueOf() - dayjs(b.departureTime).valueOf()
+      )
+      
+      if (uniqueTrips.length === 0) {
+        message.warning('未找到可用的改签车次，请检查是否有符合条件的车次')
+      } else {
+        message.success(`找到 ${uniqueTrips.length} 个可改签车次`)
+      }
+      
+      setAvailableTrips(uniqueTrips)
+    } catch (error) {
+      console.error('加载可用车次失败：', error)
+      
+      // 根据错误类型显示具体的错误信息
+      let errorMessage = '加载车次失败，请稍后重试'
+      
+      if (error.response) {
+        const { status, data } = error.response
+        
+        if (status === 404) {
+          errorMessage = '未找到相关车次信息'
+        } else if (status === 400) {
+          errorMessage = data?.message || '查询参数无效'
+        } else if (status === 500) {
+          errorMessage = '服务器处理异常，请稍后重试'
+        } else if (data?.message) {
+          errorMessage = data.message
+        }
+      } else if (error.request) {
+        errorMessage = '服务器无响应，请检查网络连接'
+      }
+      
+      message.error(errorMessage)
+      setAvailableTrips([])
+    } finally {
+      setLoadingTrips(false)
+    }
+  }, [stations, isSameCity])
+
   // 打开改签弹窗
   const handleOpenChange = useCallback((record) => {
     setSelectedOrder(record)
+    setSelectedTrip(null)
+    setAvailableTrips([])
     form.resetFields()
     setChangeModalVisible(true)
+    // 注意：这里无法从 record 直接获取站点ID，需要从订单详情中获取
+    // 暂时使用示例数据，实际应该从后端获取完整订单信息
   }, [form])
 
   // 处理退票
@@ -123,7 +309,31 @@ function RefundChange() {
           }
         } catch (error) {
           console.error('退票失败：', error)
-          message.error('网络错误，请稍后重试')
+          
+          // 根据错误类型显示具体的错误信息
+          let errorMessage = '退票失败，请稍后重试'
+          
+          if (error.response) {
+            // 服务器返回了错误响应
+            const { status, data } = error.response
+            
+            if (status === 404) {
+              errorMessage = '订单不存在或已被处理'
+            } else if (status === 400) {
+              errorMessage = data?.message || '退票请求无效，请检查订单状态'
+            } else if (status === 403) {
+              errorMessage = '您没有权限执行此操作'
+            } else if (status === 500) {
+              errorMessage = '服务器处理异常，请稍后重试'
+            } else if (data?.message) {
+              errorMessage = data.message
+            }
+          } else if (error.request) {
+            // 请求已发出但没有收到响应
+            errorMessage = '服务器无响应，请检查网络连接'
+          }
+          
+          message.error(errorMessage)
         } finally {
           setProcessingRefund(false)
         }
@@ -131,30 +341,48 @@ function RefundChange() {
     })
   }, [selectedOrder, loadOrders, pagination])
 
+  // 处理车次选择
+  const handleTripSelect = useCallback((value) => {
+    const trip = availableTrips.find(t => t.id === value || t.tripId === value)
+    setSelectedTrip(trip)
+    if (trip) {
+      form.setFieldsValue({
+        newTripId: trip.id || trip.tripId,
+      })
+    }
+  }, [availableTrips, form])
+
   // 处理改签
   const handleChange = useCallback(async () => {
+    if (!selectedTrip) {
+      message.warning('请选择要改签的车次')
+      return
+    }
+    
     try {
       const values = await form.validateFields()
       
       confirm({
         title: '确认改签',
         icon: <ExclamationCircleOutlined />,
-        content: `确定要改签订单 ${selectedOrder.orderNo} 吗？改签后原订单将失效。`,
+        content: `确定要改签到车次 ${selectedTrip.tripNumber || selectedTrip.tripNo} 吗？改签后原订单将失效。`,
         okText: '确认改签',
         cancelText: '取消',
         onOk: async () => {
           setProcessingChange(true)
           try {
             const response = await changeOrder(selectedOrder.id, {
-              newTripNo: values.newTripNo,
-              newDepartureDate: values.newDepartureDate.format('YYYY-MM-DD'),
-              newDepartureTime: values.newDepartureTime.format('HH:mm:ss'),
+              newTripId: values.newTripId,
+              newTripNo: selectedTrip.tripNumber || selectedTrip.tripNo,
+              newDepartureDate: dayjs(selectedTrip.departureTime).format('YYYY-MM-DD'),
+              newDepartureTime: dayjs(selectedTrip.departureTime).format('HH:mm:ss'),
               reason: '用户主动改签'
             })
             if (response.code === API_CODE.SUCCESS) {
               message.success('改签成功！')
               setChangeModalVisible(false)
               setSelectedOrder(null)
+              setSelectedTrip(null)
               form.resetFields()
               loadOrders(pagination.current, pagination.pageSize)
             } else {
@@ -162,7 +390,33 @@ function RefundChange() {
             }
           } catch (error) {
             console.error('改签失败：', error)
-            message.error('网络错误，请稍后重试')
+            
+            // 根据错误类型显示具体的错误信息
+            let errorMessage = '改签失败，请稍后重试'
+            
+            if (error.response) {
+              // 服务器返回了错误响应
+              const { status, data } = error.response
+              
+              if (status === 404) {
+                errorMessage = '订单或车次不存在'
+              } else if (status === 400) {
+                errorMessage = data?.message || '改签请求无效，请检查订单和车次信息'
+              } else if (status === 403) {
+                errorMessage = '您没有权限执行此操作'
+              } else if (status === 409) {
+                errorMessage = '该车次座位已满，请选择其他车次'
+              } else if (status === 500) {
+                errorMessage = '服务器处理异常，请稍后重试'
+              } else if (data?.message) {
+                errorMessage = data.message
+              }
+            } else if (error.request) {
+              // 请求已发出但没有收到响应
+              errorMessage = '服务器无响应，请检查网络连接'
+            }
+            
+            message.error(errorMessage)
           } finally {
             setProcessingChange(false)
           }
@@ -171,7 +425,7 @@ function RefundChange() {
     } catch (error) {
       console.error('表单验证失败：', error)
     }
-  }, [selectedOrder, form, loadOrders, pagination])
+  }, [selectedOrder, selectedTrip, form, loadOrders, pagination])
 
   const handleTableChange = useCallback((newPagination) => {
     loadOrders(newPagination.current, newPagination.pageSize)
@@ -436,56 +690,123 @@ function RefundChange() {
             <Divider />
 
             <div className="new-order-info">
-              <h4>改签后信息</h4>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h4 style={{ margin: 0 }}>选择改签车次</h4>
+                <Button 
+                  type="primary"
+                  loading={loadingTrips}
+                  onClick={() => {
+                    if (stations.length === 0) {
+                      message.error('站点信息加载中，请稍后重试')
+                      return
+                    }
+                    
+                    // 使用站点名称和当前车次号进行搜索
+                    loadAvailableTrips(
+                      selectedOrder.fromStation, 
+                      selectedOrder.toStation,
+                      selectedOrder.tripNo
+                    )
+                  }}
+                  disabled={loadingTrips || stations.length === 0}
+                >
+                  搜索可用车次
+                </Button>
+              </div>
+              <Alert
+                message="说明"
+                description='改签仅限同一路线的车次，点击"搜索可用车次"按钮查看可改签的车次列表'
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+              />
+              
               <Form
                 form={form}
                 layout="vertical"
-                initialValues={{
-                  newDepartureDate: dayjs(selectedOrder.departureTime),
-                }}
               >
                 <Form.Item
-                  label="新车次"
-                  name="newTripNo"
-                  rules={[{ required: true, message: '请输入新车次号' }]}
+                  label="选择新车次"
+                  name="newTripId"
+                  rules={[{ required: true, message: '请选择要改签的车次' }]}
                 >
                   <Select
-                    placeholder="选择新车次"
-                    options={[
-                      { value: 'G1001', label: 'G1001 - 高铁' },
-                      { value: 'D2001', label: 'D2001 - 动车' },
-                      { value: 'K3001', label: 'K3001 - 快车' },
-                      { value: 'T4001', label: 'T4001 - 特快' },
-                    ]}
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="新出发日期"
-                  name="newDepartureDate"
-                  rules={[{ required: true, message: '请选择新出发日期' }]}
-                >
-                  <DatePicker 
-                    style={{ width: '100%' }}
-                    inputReadOnly
-                    allowClear={false}
-                    disabledDate={(current) => {
-                      return current && current < dayjs().startOf('day')
-                    }}
-                  />
-                </Form.Item>
-                <Form.Item
-                  label="新出发时间"
-                  name="newDepartureTime"
-                  rules={[{ required: true, message: '请选择新出发时间' }]}
-                >
-                  <TimePicker 
-                    style={{ width: '100%' }}
-                    format="HH:mm"
-                    inputReadOnly
-                    allowClear={false}
-                  />
+                    placeholder="请选择车次"
+                    loading={loadingTrips}
+                    onChange={handleTripSelect}
+                    notFoundContent={loadingTrips ? "加载中..." : "暂无可用车次"}
+                    disabled={availableTrips.length === 0}
+                  >
+                    {availableTrips.map((trip) => {
+                      const tripId = trip.tripId || trip.id
+                      const tripNumber = trip.tripNumber || trip.tripNo
+                      const price = trip.basePrice || trip.price || trip.ticketPrice || 0
+                      const departureTime = dayjs(trip.departureTime)
+                      const arrivalTime = dayjs(trip.arrivalTime)
+                      
+                      return (
+                        <Select.Option 
+                          key={tripId} 
+                          value={tripId}
+                        >
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            gap: '12px'
+                          }}>
+                            <span style={{ minWidth: '80px' }}>
+                              <strong>{tripNumber}</strong>
+                              {trip.vehicleInfo && <span style={{ fontSize: '12px', color: '#999', marginLeft: '4px' }}>
+                                {trip.vehicleInfo}
+                              </span>}
+                            </span>
+                            <span style={{ fontSize: '13px', color: '#666', flex: 1 }}>
+                              {departureTime.format('MM-DD HH:mm')} 
+                              {' → '} 
+                              {arrivalTime.format('HH:mm')}
+                            </span>
+                            <span style={{ color: '#ff4d4f', fontWeight: 600, minWidth: '70px', textAlign: 'right' }}>
+                              ¥{price.toFixed(2)}
+                            </span>
+                          </div>
+                        </Select.Option>
+                      )
+                    })}
+                  </Select>
                 </Form.Item>
               </Form>
+
+              {/* 显示选中车次的详细信息 */}
+              {selectedTrip && (
+                <div style={{ marginTop: 16 }}>
+                  <Descriptions column={2} size="small" bordered>
+                    <Descriptions.Item label="车次号">
+                      {selectedTrip.tripNumber || selectedTrip.tripNo}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="车型">
+                      {selectedTrip.vehicleInfo || selectedTrip.trainType || '高铁'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="出发站">
+                      {selectedTrip.departureStationName || selectedTrip.departureStation || selectedOrder.fromStation}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="到达站">
+                      {selectedTrip.arrivalStationName || selectedTrip.arrivalStation || selectedOrder.toStation}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="出发时间" span={2}>
+                      {formatDateTime(selectedTrip.departureTime)}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="到达时间" span={2}>
+                      {formatDateTime(selectedTrip.arrivalTime)}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="票价" span={2}>
+                      <span style={{ color: '#ff4d4f', fontSize: '16px', fontWeight: 600 }}>
+                        ¥{(selectedTrip.basePrice || selectedTrip.price || selectedTrip.ticketPrice || 0).toFixed(2)}
+                      </span>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </div>
+              )}
             </div>
 
             <Divider />

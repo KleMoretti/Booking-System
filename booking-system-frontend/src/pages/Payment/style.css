@@ -1,22 +1,22 @@
 /* 支付页面样式 */
 
 .page-payment {
-  padding: 24px;
+  padding: 16px;
 }
 
 .page-payment .page-card {
-  min-height: 500px;
+  min-height: auto;
 }
 
 .payment-content {
   max-width: 800px;
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 16px 0;
 }
 
 /* 订单信息卡片 */
 .order-info-card {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   border-radius: 8px;
 }
 
@@ -36,7 +36,7 @@
 
 /* 支付方式卡片 */
 .payment-method-card {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   border-radius: 8px;
 }
 
@@ -102,7 +102,7 @@
 .payment-actions {
   display: flex;
   justify-content: center;
-  padding: 24px 0;
+  padding: 16px 0;
 }
 
 /* 支付结果页面 */

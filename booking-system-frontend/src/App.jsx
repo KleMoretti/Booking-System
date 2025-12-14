@@ -35,7 +35,8 @@ function AppContent() {
   useEffect(() => {
     // 当用户登录且信息不完整时，显示弹窗
     if (isAuthenticated && userInfo) {
-      const isProfileIncomplete = !userInfo.realName || !userInfo.idCard
+      // 注意：后端返回的字段是 idCardNo，不是 idCard
+      const isProfileIncomplete = !userInfo.realName || !userInfo.idCardNo
       setShowCompleteModal(isProfileIncomplete)
     } else {
       setShowCompleteModal(false)

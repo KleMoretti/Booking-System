@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react'
 
 const SEARCH_HISTORY_KEY = 'booking_search_history'
-const MAX_HISTORY_COUNT = 5
+const MAX_HISTORY_COUNT = 4
 
 export const useSearchHistory = () => {
   const [history, setHistory] = useState([])
