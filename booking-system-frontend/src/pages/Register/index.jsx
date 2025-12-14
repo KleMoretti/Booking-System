@@ -2,9 +2,10 @@
 import { Card, Form, Input, Button, Typography, message } from 'antd'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { PasswordInput } from 'antd-password-input-strength'
 import { register } from '../../store/slices/userSlice'
-import { validatePhone, validatePassword, validateConfirmPassword } from '../../utils/validator'
+import { validatePhone, validateConfirmPassword } from '../../utils/validator'
 import './style.css'
 
 const { Title, Paragraph } = Typography
@@ -14,6 +15,7 @@ function Register() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { loading, error } = useSelector((state) => state.user)
+  const [passwordLevel, setPasswordLevel] = useState(0)
 
   useEffect(() => {
     if (error) {
@@ -58,9 +60,34 @@ function Register() {
           <Form.Item
             label="密码"
             name="password"
-            rules={[{ required: true, validator: validatePassword }]}
+            rules={[
+              { required: true, message: '请输入密码' },
+              {
+                validator: async (_, value) => {
+                  if (!value || value.length < 8) {
+                    return Promise.reject('密码长度至少8位')
+                  }
+                  if (passwordLevel < 2) {
+                    return Promise.reject('密码强度太弱，请使用字母、数字和特殊字符组合')
+                  }
+                  return Promise.resolve()
+                }
+              }
+            ]}
+            extra="密码强度：建议使用8位以上，包含大小写字母、数字和特殊字符"
           >
-            <Input.Password placeholder="请输入密码（至少6位）" />
+            <PasswordInput
+              placeholder="请输入密码（至少8位）"
+              onLevelChange={setPasswordLevel}
+              settings={{
+                colorScheme: {
+                  levels: ['#ff4033', '#fe940d', '#ffd908', '#cbe11d', '#6ecc3a'],
+                  noLevel: 'lightgrey'
+                },
+                height: 4,
+                alwaysVisible: false
+              }}
+            />
           </Form.Item>
           <Form.Item
             label="确认密码"

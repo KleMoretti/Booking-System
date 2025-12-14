@@ -59,11 +59,12 @@ export const formatIdCard = (idCard) => {
  * 订单状态映射
  */
 export const orderStatusMap = {
-  0: { text: '未支付', color: 'orange' },
+  0: { text: '待支付', color: 'orange' },
   1: { text: '已支付', color: 'green' },
   2: { text: '已取消', color: 'red' },
   3: { text: '已退款', color: 'default' },
   4: { text: '已完成', color: 'blue' },
+  5: { text: '已超时', color: 'volcano' },
 }
 
 /**

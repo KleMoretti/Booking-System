@@ -1,13 +1,14 @@
 // 支付页面
 import { Card, Radio, Button, Space, message, Descriptions, Divider, Alert, Spin, Statistic, List } from 'antd'
 import { AlipayOutlined, WechatOutlined, WalletOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { getOrderDetail, payOrder } from '../../api/order'
+import { getOrderDetail, payOrder, cancelOrder } from '../../api/order'
 import { formatDateTime, formatPrice } from '../../utils/format'
-import { API_CODE, PAYMENT_METHOD } from '../../utils/constants'
+import { API_CODE, PAYMENT_METHOD, ORDER_TIMEOUT } from '../../utils/constants'
 import PageHeader from '../../components/PageHeader'
+import dayjs from 'dayjs'
 import './style.css'
 
 const { Countdown } = Statistic
@@ -24,7 +25,8 @@ function Payment() {
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHOD.BALANCE)
   const [paying, setPaying] = useState(false)
   const [paymentResult, setPaymentResult] = useState(null)
-  const [deadline, setDeadline] = useState(Date.now() + 15 * 60 * 1000) // 15分钟倒计时
+  const [deadline, setDeadline] = useState(Date.now() + ORDER_TIMEOUT)
+  const cancelingRef = useRef(false)
 
   useEffect(() => {
     if (!orderId) {
@@ -35,13 +37,23 @@ function Payment() {
     loadOrderDetail()
   }, [orderId])
 
-  // 倒计时结束处理
-  const handleCountdownFinish = useCallback(() => {
-    message.warning('支付超时，订单已取消')
-    setTimeout(() => {
-      navigate('/orders')
-    }, 2000)
-  }, [navigate])
+  // 倒计时结束处理 - 自动取消订单
+  const handleCountdownFinish = useCallback(async () => {
+    if (cancelingRef.current) return
+    cancelingRef.current = true
+    
+    try {
+      await cancelOrder(orderId)
+      message.warning('支付超时，订单已自动取消')
+    } catch (error) {
+      console.error('自动取消订单失败：', error)
+      message.warning('支付超时')
+    } finally {
+      setTimeout(() => {
+        navigate('/orders')
+      }, 2000)
+    }
+  }, [orderId, navigate])
 
   const loadOrderDetail = async () => {
     setOrderLoading(true)
@@ -49,6 +61,20 @@ function Payment() {
       const response = await getOrderDetail(orderId)
       if (response.code === API_CODE.SUCCESS) {
         setOrderDetail(response.data)
+        
+        // 根据订单创建时间计算倒计时截止时间
+        if (response.data.createTime) {
+          const createTime = dayjs(response.data.createTime).valueOf()
+          const deadlineTime = createTime + ORDER_TIMEOUT
+          const now = Date.now()
+          
+          // 如果已经超时，直接取消订单
+          if (now >= deadlineTime) {
+            handleCountdownFinish()
+          } else {
+            setDeadline(deadlineTime)
+          }
+        }
       } else {
         message.error(response.message || '获取订单信息失败')
         setTimeout(() => navigate('/orders'), 2000)

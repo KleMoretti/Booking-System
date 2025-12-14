@@ -244,14 +244,52 @@ export function setupMock(axiosInstance) {
     const data = JSON.parse(config.data)
     console.log('Mock: 创建订单', data)
     
-    const newOrder = {
-      id: Math.floor(Math.random() * 10000),
-      orderNumber: 'ORD' + Date.now(),
-      ...data,
-      status: 'pending',
-      statusText: '待支付',
-      createTime: new Date().toISOString(),
+    // 生成随机座位号
+    const generateSeatNumber = () => {
+      const carNumber = String(Math.floor(Math.random() * 8) + 1).padStart(2, '0') // 01-08车
+      const rowNumber = String(Math.floor(Math.random() * 20) + 1).padStart(2, '0') // 01-20排
+      const seatLetter = ['A', 'B', 'C', 'D', 'F'][Math.floor(Math.random() * 5)] // A-F座位
+      return `${carNumber}车${rowNumber}${seatLetter}`
     }
+    
+    // 查找车次信息
+    const trip = mockTrips.find(t => t.id === data.tripId)
+    const basePrice = trip ? trip.seats.price : 553
+    
+    // 生成车票列表
+    const tickets = data.passengers.map((passenger, index) => ({
+      ticketId: Math.floor(Math.random() * 100000) + index,
+      passengerName: passenger.name,
+      passengerIdCard: passenger.idCard,
+      seatNumber: generateSeatNumber(),
+      price: basePrice,
+      ticketStatus: 0, // 未使用
+      ticketStatusText: '未使用',
+    }))
+    
+    const orderId = Math.floor(Math.random() * 10000)
+    const totalAmount = basePrice * tickets.length
+    
+    const newOrder = {
+      orderId: orderId,
+      id: orderId,
+      orderNumber: 'ORD' + Date.now(),
+      tripId: data.tripId,
+      tripNumber: trip ? trip.tripNo : 'G1',
+      departureStation: trip ? trip.fromStation : '北京南',
+      arrivalStation: trip ? trip.toStation : '上海虹桥',
+      departureTime: trip ? trip.departureTime : '2025-12-15 08:00:00',
+      arrivalTime: trip ? trip.arrivalTime : '2025-12-15 13:30:00',
+      totalAmount: totalAmount,
+      paidAmount: 0,
+      orderStatus: 0, // 待支付
+      orderStatusText: '待支付',
+      createTime: new Date().toISOString(),
+      tickets: tickets,
+    }
+    
+    // 添加到mockOrders用于后续查询
+    mockOrders.unshift(newOrder)
     
     return [200, {
       code: 200,
@@ -302,6 +340,15 @@ export function setupMock(axiosInstance) {
     const orderId = parseInt(config.url.split('/')[2])
     console.log('Mock: 取消订单', orderId)
     
+    // 更新订单状态
+    const order = mockOrders.find(o => (o.orderId ?? o.id) === orderId)
+    if (order) {
+      order.orderStatus = 2 // 已取消
+      order.status = 2
+      order.orderStatusText = '已取消'
+      order.statusText = '已取消'
+    }
+    
     return [200, {
       code: 200,
       message: '订单已取消',
@@ -312,6 +359,17 @@ export function setupMock(axiosInstance) {
   mock.onPost(/\/order\/\d+\/pay/).reply((config) => {
     const orderId = parseInt(config.url.split('/')[2])
     console.log('Mock: 支付订单', orderId)
+    
+    // 更新订单状态
+    const order = mockOrders.find(o => (o.orderId ?? o.id) === orderId)
+    if (order) {
+      order.orderStatus = 1 // 已支付
+      order.status = 1
+      order.orderStatusText = '已支付'
+      order.statusText = '已支付'
+      order.paidAmount = order.totalAmount
+      order.payTime = new Date().toISOString()
+    }
     
     return [200, {
       code: 200,

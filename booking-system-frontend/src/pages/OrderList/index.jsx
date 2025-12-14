@@ -1,17 +1,20 @@
 // 订单列表页面
-import { Card, Table, Tag, Button, Space, message, Modal, Descriptions, Tabs } from 'antd'
+import { Card, Table, Tag, Button, Space, message, Modal, Descriptions, Tabs, Statistic } from 'antd'
 import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, QrcodeOutlined } from '@ant-design/icons'
 import { getOrderList, cancelOrder } from '../../store/slices/orderSlice'
 import { formatDateTime, formatPrice, getOrderStatus, formatIdCard } from '../../utils/format'
-import { ORDER_STATUS, PAGINATION } from '../../utils/constants'
+import { ORDER_STATUS, PAGINATION, ORDER_TIMEOUT } from '../../utils/constants'
 import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import Loading from '../../components/Loading'
 import ETicketDetail from '../../components/ETicketDetail'
+import dayjs from 'dayjs'
 import './style.css'
+
+const { Countdown } = Statistic
 
 
 function OrderList() {
@@ -32,15 +35,30 @@ function OrderList() {
     loadOrders()
   }, [loadOrders])
 
-  const handleCancelOrder = useCallback(async (orderId) => {
+  const handleCancelOrder = useCallback(async (orderId, isTimeout = false) => {
     try {
       await dispatch(cancelOrder(orderId)).unwrap()
-      message.success('订单已取消')
+      if (isTimeout) {
+        message.warning('订单已超时自动取消')
+      } else {
+        message.success('订单已取消')
+      }
       loadOrders(pagination.current, pagination.pageSize)
     } catch (error) {
-      message.error('取消订单失败')
+      if (!isTimeout) {
+        message.error('取消订单失败')
+      }
     }
   }, [dispatch, loadOrders, pagination.current, pagination.pageSize])
+  
+  // 计算订单的倒计时截止时间
+  const getOrderDeadline = useCallback((order) => {
+    if ((order.orderStatus ?? order.status) !== ORDER_STATUS.PENDING) {
+      return null
+    }
+    const createTime = dayjs(order.createTime).valueOf()
+    return createTime + ORDER_TIMEOUT
+  }, [])
 
   const handleTableChange = useCallback((newPagination) => {
     loadOrders(newPagination.current, newPagination.pageSize)
@@ -160,17 +178,39 @@ function OrderList() {
     {
       title: '订单状态',
       dataIndex: 'status',
-      width: '10%',
+      width: '12%',
       align: 'center',
-      render: (status) => {
+      render: (status, record) => {
         const statusInfo = getOrderStatus(status)
+        const originalOrder = orderList.find(o => (o.orderId ?? o.id) === record.id)
+        const deadline = originalOrder ? getOrderDeadline(originalOrder) : null
+        
+        if (status === ORDER_STATUS.PENDING && deadline) {
+          const now = Date.now()
+          if (now >= deadline) {
+            // 已超时，触发自动取消
+            setTimeout(() => handleCancelOrder(record.id, true), 100)
+            return <Tag color="volcano">已超时</Tag>
+          }
+          return (
+            <Space direction="vertical" size={0} style={{ textAlign: 'center' }}>
+              <Tag color={statusInfo.color}>{statusInfo.text}</Tag>
+              <Countdown
+                value={deadline}
+                format="mm:ss"
+                valueStyle={{ fontSize: '12px', color: '#ff4d4f', lineHeight: '16px' }}
+                onFinish={() => handleCancelOrder(record.id, true)}
+              />
+            </Space>
+          )
+        }
         return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>
       },
     },
     {
       title: '操作',
       key: 'action',
-      width: '17%',
+      width: '15%',
       align: 'center',
       render: (_, record) => (
         <Space size="small">
@@ -188,7 +228,7 @@ function OrderList() {
               type="link"
               danger
               size="small"
-              onClick={() => handleCancelOrder(record.id)}
+              onClick={() => handleCancelOrder(record.id, false)}
             >
               取消
             </Button>
@@ -203,7 +243,7 @@ function OrderList() {
         </Space>
       ),
     },
-  ], [handleCancelOrder, handleViewDetail])
+  ], [handleCancelOrder, handleViewDetail, navigate, getOrderDeadline, orderList])
 
   if (loading && orderList.length === 0) {
     return (

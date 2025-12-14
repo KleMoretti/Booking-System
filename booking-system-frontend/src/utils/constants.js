@@ -26,6 +26,7 @@ export const ORDER_STATUS = {
   CANCELLED: 2,    // 已取消：订单已取消
   REFUNDED: 3,     // 已退款：订单已退票退款
   COMPLETED: 4,    // 已完成：车次已发车且乘车完毕
+  TIMEOUT: 5,      // 已超时：订单超时未支付自动取消
 }
 
 // 用户类型
@@ -54,6 +55,9 @@ export const PAYMENT_METHOD = {
   ALIPAY: 'ALIPAY',      // 支付宝
   WECHAT: 'WECHAT',      // 微信支付
 }
+
+// 订单支付超时时间（毫秒）
+export const ORDER_TIMEOUT = 15 * 60 * 1000 // 15分钟
 
 // 本地存储键名
 export const STORAGE_KEYS = {

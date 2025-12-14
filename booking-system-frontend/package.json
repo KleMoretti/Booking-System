@@ -12,6 +12,7 @@
     "dependencies": {
         "@reduxjs/toolkit": "^2.2.8",
         "antd": "^5.21.6",
+        "antd-password-input-strength": "^2.0.1",
         "axios": "^1.7.7",
         "classnames": "^2.5.1",
         "dayjs": "^1.11.13",

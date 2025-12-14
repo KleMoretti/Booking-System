@@ -22,3 +22,17 @@
 .register-extra a {
   color: #2563eb;
 }
+
+/* 密码强度指示器样式 */
+.register-card .ant-form-item-extra {
+  color: #8c8c8c;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* 密码强度条样式优化 */
+.register-card .antd-password-input-strength-bar {
+  margin-top: 8px;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
