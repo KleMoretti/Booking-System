@@ -16,6 +16,5 @@ logs/
 # Temp
 *.tmp
 *.temp
-booking-system-backend/src/main/resources/application-dev.yml
-booking-system-backend/src/main/resources/application.yml
+*.yml
 .env
