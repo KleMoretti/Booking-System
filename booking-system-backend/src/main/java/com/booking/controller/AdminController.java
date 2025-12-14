@@ -58,7 +58,7 @@ public class AdminController {
         Map<String, Object> stats = new HashMap<>();
         
         Long totalUsers = userMapper.countActiveUsers();
-        Long totalTrips = tripService.countTrips(null);
+        Long totalTrips = tripService.countTrips(null, null, null, null);
         Long todayOrders = orderMapper.countTodayOrders();
         Long todayTickets = ticketMapper.countTodayTickets();
         
@@ -105,6 +105,9 @@ public class AdminController {
     @GetMapping("/trips")
     public Result<PageListResult<TripManagementVO>> getAdminTripList(
             @RequestParam(required = false) String tripNumber,
+            @RequestParam(required = false) String departureDate,
+            @RequestParam(required = false) String departureStation,
+            @RequestParam(required = false) String arrivalStation,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
         
@@ -123,8 +126,8 @@ public class AdminController {
         Integer offset = (page - 1) * pageSize;
         
         // 查询数据
-        List<TripManagementVO> list = tripService.getTripList(tripNumber, offset, pageSize);
-        Long total = tripService.countTrips(tripNumber);
+        List<TripManagementVO> list = tripService.getTripList(tripNumber, departureDate, departureStation, arrivalStation, offset, pageSize);
+        Long total = tripService.countTrips(tripNumber, departureDate, departureStation, arrivalStation);
         
         // 返回前端期望的格式
         PageListResult<TripManagementVO> result = new PageListResult<>(list, total);
@@ -327,7 +330,7 @@ public class AdminController {
     public Result<Map<String, Object>> testTripsCount() {
         Map<String, Object> result = new HashMap<>();
         try {
-            Long count = tripService.countTrips(null);
+            Long count = tripService.countTrips(null, null, null, null);
             result.put("totalTrips", count);
             result.put("status", "success");
             result.put("message", "数据库连接正常");
@@ -346,7 +349,7 @@ public class AdminController {
     @GetMapping("/test/trips/all")
     public Result<List<TripManagementVO>> testGetAllTrips() {
         try {
-            List<TripManagementVO> trips = tripService.getTripList(null, 0, 100);
+            List<TripManagementVO> trips = tripService.getTripList(null, null, null, null, 0, 100);
             return Result.success(trips);
         } catch (Exception e) {
             return Result.error("查询失败: " + e.getMessage());

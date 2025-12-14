@@ -53,4 +53,9 @@
         ORDER BY seat_number
         LIMIT 1
     </select>
+    
+    <!-- 根据车次ID删除所有座位 -->
+    <delete id="deleteByTripId" parameterType="int">
+        DELETE FROM seats WHERE trip_id = #{tripId}
+    </delete>
 </mapper>

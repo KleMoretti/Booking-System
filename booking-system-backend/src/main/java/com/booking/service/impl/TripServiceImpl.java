@@ -41,13 +41,13 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public List<TripManagementVO> getTripList(String tripNumber, Integer offset, Integer pageSize) {
-        return tripMapper.getTripList(tripNumber, offset, pageSize);
+    public List<TripManagementVO> getTripList(String tripNumber, String departureDate, String departureStation, String arrivalStation, Integer offset, Integer pageSize) {
+        return tripMapper.getTripList(tripNumber, departureDate, departureStation, arrivalStation, offset, pageSize);
     }
 
     @Override
-    public Long countTrips(String tripNumber) {
-        return tripMapper.countTrips(tripNumber);
+    public Long countTrips(String tripNumber, String departureDate, String departureStation, String arrivalStation) {
+        return tripMapper.countTrips(tripNumber, departureDate, departureStation, arrivalStation);
     }
 
     @Override
@@ -92,7 +92,7 @@ public class TripServiceImpl implements TripService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteTrip(Integer tripId) {
         // 删除车次相关的座位
-        // seatMapper.deleteByTripId(tripId);
+        seatMapper.deleteByTripId(tripId);
         // 删除车次
         tripMapper.delete(tripId);
     }

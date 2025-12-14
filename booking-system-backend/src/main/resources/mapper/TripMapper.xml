@@ -96,10 +96,22 @@
 
     <!-- 统计车次数量 -->
     <select id="countTrips" resultType="long">
-        SELECT COUNT(*) FROM trips
+        SELECT COUNT(*)
+        FROM trips t
+        LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
+        LEFT JOIN stations arr_station ON t.arrival_station_id = arr_station.station_id
         <where>
             <if test="tripNumber != null and tripNumber != ''">
-                AND trip_number LIKE CONCAT('%', #{tripNumber}, '%')
+                AND t.trip_number LIKE CONCAT('%', #{tripNumber}, '%')
+            </if>
+            <if test="departureDate != null and departureDate != ''">
+                AND DATE(t.departure_time) = #{departureDate}
+            </if>
+            <if test="departureStation != null and departureStation != ''">
+                AND ds.station_name LIKE CONCAT('%', #{departureStation}, '%')
+            </if>
+            <if test="arrivalStation != null and arrivalStation != ''">
+                AND arr_station.station_name LIKE CONCAT('%', #{arrivalStation}, '%')
             </if>
         </where>
     </select>
@@ -154,6 +166,15 @@
         <where>
             <if test="tripNumber != null and tripNumber != ''">
                 AND t.trip_number LIKE CONCAT('%', #{tripNumber}, '%')
+            </if>
+            <if test="departureDate != null and departureDate != ''">
+                AND DATE(t.departure_time) = #{departureDate}
+            </if>
+            <if test="departureStation != null and departureStation != ''">
+                AND ds.station_name LIKE CONCAT('%', #{departureStation}, '%')
+            </if>
+            <if test="arrivalStation != null and arrivalStation != ''">
+                AND arr_station.station_name LIKE CONCAT('%', #{arrivalStation}, '%')
             </if>
         </where>
         ORDER BY t.create_time DESC

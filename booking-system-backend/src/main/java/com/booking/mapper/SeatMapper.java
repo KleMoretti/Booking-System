@@ -25,4 +25,9 @@ public interface SeatMapper {
      * 查找一个可用座位（用于自动分配）
      */
     Seat findAvailableSeat(@Param("tripId") Integer tripId);
+    
+    /**
+     * 根据车次ID删除所有座位
+     */
+    int deleteByTripId(@Param("tripId") Integer tripId);
 }

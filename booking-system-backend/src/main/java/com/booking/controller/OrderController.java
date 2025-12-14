@@ -1,8 +1,10 @@
 package com.booking.controller;
 
 import com.booking.common.Result;
+import com.booking.dto.ChangeOrderDTO;
 import com.booking.dto.CreateOrderDTO;
 import com.booking.dto.OrderVO;
+import com.booking.dto.RefundOrderDTO;
 import com.booking.entity.Order;
 import com.booking.service.OrderService;
 import com.booking.utils.JwtUtil;
@@ -111,6 +113,44 @@ public class OrderController {
             return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("取消订单失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 退票
+     */
+    @PostMapping("/{id}/refund")
+    public Result<Void> refundOrder(@PathVariable Long id, 
+                                    @RequestBody RefundOrderDTO refundDTO,
+                                    HttpServletRequest request) {
+        try {
+            Integer userId = getUserIdFromRequest(request);
+            
+            orderService.refundOrder(id, userId, refundDTO);
+            return Result.success("退票成功，退款将在3-5个工作日内到账", null);
+        } catch (IllegalStateException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("退票失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 改签
+     */
+    @PostMapping("/{id}/change")
+    public Result<Void> changeOrder(@PathVariable Long id, 
+                                    @RequestBody ChangeOrderDTO changeDTO,
+                                    HttpServletRequest request) {
+        try {
+            Integer userId = getUserIdFromRequest(request);
+            
+            orderService.changeOrder(id, userId, changeDTO);
+            return Result.success("改签成功", null);
+        } catch (IllegalStateException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("改签失败：" + e.getMessage());
         }
     }
     

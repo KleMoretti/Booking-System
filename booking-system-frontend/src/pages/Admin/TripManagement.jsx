@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Table, Card, Button, Space, message, Popconfirm, Tag, Form } from 'antd'
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'
+import { Table, Card, Button, Space, message, Popconfirm, Tag, Form, Input, DatePicker, Select } from 'antd'
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { getAdminTripList, createTrip, updateTrip, deleteTrip } from '../../api/admin'
 import { getStationList } from '../../api/ticket'
@@ -8,6 +8,8 @@ import { PAGINATION } from '../../utils/constants'
 import TripFormModal from './components/TripFormModal'
 
 function TripManagement() {
+  // 查询表单与编辑表单使用不同的 Form 实例，避免互相干扰
+  const [searchForm] = Form.useForm()
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [dataSource, setDataSource] = useState([])
@@ -23,9 +25,14 @@ function TripManagement() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
+      const values = searchForm.getFieldsValue()
       const response = await getAdminTripList({
         page: pagination.current,
         pageSize: pagination.pageSize,
+        tripNumber: values.tripNumber,
+        departureDate: values.departureDate ? values.departureDate.format('YYYY-MM-DD') : undefined,
+        departureStation: values.departureStation,
+        arrivalStation: values.arrivalStation,
       })
       
       if (response.data) {
@@ -40,7 +47,7 @@ function TripManagement() {
     } finally {
       setLoading(false)
     }
-  }, [pagination.current, pagination.pageSize])
+  }, [pagination.current, pagination.pageSize, searchForm])
 
   const fetchStations = useCallback(async () => {
     try {
@@ -60,6 +67,19 @@ function TripManagement() {
 
   const handleTableChange = (newPagination) => {
     setPagination(newPagination)
+  }
+
+  const handleSearch = () => {
+    // 重置到第一页，依赖 pagination 的 useEffect 会自动触发 fetchData
+    setPagination(prev => ({ ...prev, current: PAGINATION.DEFAULT_PAGE }))
+    // 立即按当前筛选条件请求一次，避免在第一页时点击无效
+    fetchData()
+  }
+
+  const handleReset = () => {
+    searchForm.resetFields(['tripNumber', 'departureDate', 'departureStation', 'arrivalStation'])
+    setPagination(prev => ({ ...prev, current: PAGINATION.DEFAULT_PAGE }))
+    fetchData()
   }
 
   const showAddModal = () => {
@@ -252,6 +272,65 @@ function TripManagement() {
           </Button>
         }
       >
+        <Form
+          form={searchForm}
+          layout="inline"
+          size="middle"
+          style={{
+            marginBottom: 16,
+            padding: 12,
+            background: '#fafafa',
+            borderRadius: 8,
+          }}
+        >
+          <Form.Item label="车次号" name="tripNumber">
+            <Input placeholder="请输入车次号" allowClear style={{ width: 160 }} />
+          </Form.Item>
+          <Form.Item label="出发日期" name="departureDate">
+            <DatePicker allowClear style={{ width: 160 }} />
+          </Form.Item>
+          <Form.Item label="出发站" name="departureStation">
+            <Select
+              allowClear
+              showSearch
+              placeholder="请选择出发站"
+              style={{ width: 180 }}
+              optionFilterProp="children"
+            >
+              {stations.map(station => (
+                <Select.Option key={station.id} value={station.name}>
+                  {station.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item label="到达站" name="arrivalStation">
+            <Select
+              allowClear
+              showSearch
+              placeholder="请选择到达站"
+              style={{ width: 180 }}
+              optionFilterProp="children"
+            >
+              {stations.map(station => (
+                <Select.Option key={station.id} value={station.name}>
+                  {station.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Space>
+              <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
+                搜索
+              </Button>
+              <Button icon={<ReloadOutlined />} onClick={handleReset}>
+                重置
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+
         <Table
           columns={columns}
           dataSource={dataSource}

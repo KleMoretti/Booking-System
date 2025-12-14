@@ -28,10 +28,16 @@ public interface TripMapper {
                              @Param("departureTimeTo") LocalDateTime departureTimeTo);
     
     // 管理端查询
-    List<TripManagementVO> getTripList(@Param("tripNumber") String tripNumber, 
-                                       @Param("offset") Integer offset, 
+    List<TripManagementVO> getTripList(@Param("tripNumber") String tripNumber,
+                                       @Param("departureDate") String departureDate,
+                                       @Param("departureStation") String departureStation,
+                                       @Param("arrivalStation") String arrivalStation,
+                                       @Param("offset") Integer offset,
                                        @Param("pageSize") Integer pageSize);
-    Long countTrips(@Param("tripNumber") String tripNumber);
+    Long countTrips(@Param("tripNumber") String tripNumber,
+                    @Param("departureDate") String departureDate,
+                    @Param("departureStation") String departureStation,
+                    @Param("arrivalStation") String arrivalStation);
     int updatePrice(@Param("tripId") Integer tripId, @Param("basePrice") BigDecimal basePrice);
 }
 

@@ -1,7 +1,9 @@
 package com.booking.service;
 
+import com.booking.dto.ChangeOrderDTO;
 import com.booking.dto.CreateOrderDTO;
 import com.booking.dto.OrderVO;
+import com.booking.dto.RefundOrderDTO;
 import com.booking.entity.Order;
 
 import java.util.List;
@@ -26,6 +28,16 @@ public interface OrderService {
      * 取消订单
      */
     void cancelOrder(Long orderId, Integer userId);
+    
+    /**
+     * 退票
+     */
+    void refundOrder(Long orderId, Integer userId, RefundOrderDTO refundDTO);
+    
+    /**
+     * 改签
+     */
+    void changeOrder(Long orderId, Integer userId, ChangeOrderDTO changeDTO);
     
     /**
      * 获取用户的订单列表（包含车次和车票信息）

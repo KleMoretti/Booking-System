@@ -107,9 +107,24 @@ function RefundChange() {
       departureTime: order.departureTime ?? order.createTime,
       totalPrice: order.totalAmount ?? order.totalPrice,
       status: order.orderStatus ?? order.status,
+      passengerCount: order.tickets ? order.tickets.length : (order.passengerCount ?? order.ticketCount ?? 1),
     })),
     [eligibleOrders]
   )
+
+  const changePricePreview = useMemo(() => {
+    if (!selectedOrder || !selectedTrip) return null
+    const passengerCount = selectedOrder.passengerCount ?? 1
+    const oldAmount = Number(selectedOrder.totalPrice || 0)
+    const unitPrice = Number(
+      (selectedTrip && selectedTrip.seats && selectedTrip.seats.price != null)
+        ? selectedTrip.seats.price
+        : (selectedTrip && (selectedTrip.basePrice || selectedTrip.price || selectedTrip.ticketPrice)) || 0
+    )
+    const newAmount = unitPrice * passengerCount
+    const diff = newAmount - oldAmount
+    return { passengerCount, oldAmount, unitPrice, newAmount, diff }
+  }, [selectedOrder, selectedTrip])
 
   // 计算退票费用
   const calculateRefundFee = useCallback((order) => {
@@ -145,10 +160,18 @@ function RefundChange() {
   }, [calculateRefundFee])
 
   // 搜索可用车次（同一路线，未来的所有车次）
-  const loadAvailableTrips = useCallback(async (fromStationName, toStationName, currentTripNo) => {
+  const loadAvailableTrips = useCallback(async (fromStationName, toStationName, currentTripNo, currentDepartureTime) => {
     setLoadingTrips(true)
     try {
       const allTrips = []
+      
+      console.log('开始搜索改签车次：', {
+        原出发站: fromStationName,
+        原到达站: toStationName,
+        当前车次: currentTripNo,
+        站点列表数量: stations.length,
+        前5个站点: stations.slice(0, 5).map(s => ({id: s.id, name: s.name}))
+      })
       
       // 查找匹配的站点
       const fromCityStations = stations.filter(s => 
@@ -158,24 +181,23 @@ function RefundChange() {
         isSameCity(s.name, toStationName)
       )
       
-      console.log('搜索改签车次：', {
-        原出发站: fromStationName,
-        原到达站: toStationName,
-        匹配的出发站: fromCityStations.map(s => s.name),
-        匹配的到达站: toCityStations.map(s => s.name),
-        当前车次: currentTripNo
+      console.log('站点匹配结果：', {
+        匹配的出发站: fromCityStations.map(s => ({id: s.id, name: s.name})),
+        匹配的到达站: toCityStations.map(s => ({id: s.id, name: s.name}))
       })
       
       if (fromCityStations.length === 0 || toCityStations.length === 0) {
-        message.warning('未找到匹配的站点，请检查站点名称')
+        console.error('站点匹配失败，请检查站点名称是否正确')
+        message.error(`未找到匹配的站点：${fromCityStations.length === 0 ? fromStationName : ''}${toCityStations.length === 0 ? (fromCityStations.length === 0 ? '、' : '') + toStationName : ''}`)
         setAvailableTrips([])
         setLoadingTrips(false)
         return
       }
       
-      // 搜索未来7天的车次
-      for (let i = 0; i < 7; i++) {
-        const searchDate = dayjs().add(i, 'day').format('YYYY-MM-DD 00:00:00')
+      // 搜索未来一段时间内的车次（以今天为基准）
+      const baseDate = dayjs()
+      for (let i = 0; i < 15; i++) {
+        const searchDate = baseDate.add(i, 'day').format('YYYY-MM-DD 00:00:00')
         
         // 对每个站点组合进行搜索
         for (const fromStation of fromCityStations) {
@@ -201,15 +223,19 @@ function RefundChange() {
       
       // 去重、过滤和排序
       const filteredTrips = allTrips.filter(trip => {
-        // 过滤掉当前订单的车次
         const tripNo = trip.tripNumber || trip.tripNo
-        if (tripNo === currentTripNo) {
-          console.log('过滤掉当前车次：', tripNo)
-          return false
+        const departureTime = dayjs(trip.departureTime)
+
+        // 过滤掉当前订单本身（同一车次号且出发时间相同）
+        if (currentDepartureTime && tripNo === currentTripNo) {
+          const currentDep = dayjs(currentDepartureTime)
+          if (departureTime.isSame(currentDep)) {
+            console.log('过滤掉当前车次：', tripNo, departureTime.format('YYYY-MM-DD HH:mm'))
+            return false
+          }
         }
         
         // 只保留未来的车次
-        const departureTime = dayjs(trip.departureTime)
         if (!departureTime.isAfter(dayjs())) {
           console.log('过滤掉过去的车次：', tripNo, departureTime.format('YYYY-MM-DD HH:mm'))
           return false
@@ -280,9 +306,22 @@ function RefundChange() {
     setAvailableTrips([])
     form.resetFields()
     setChangeModalVisible(true)
-    // 注意：这里无法从 record 直接获取站点ID，需要从订单详情中获取
-    // 暂时使用示例数据，实际应该从后端获取完整订单信息
-  }, [form])
+    
+    // 自动搜索可用车次
+    if (stations.length > 0) {
+      // 延迟一下确保弹窗已打开
+      setTimeout(() => {
+        loadAvailableTrips(
+          record.fromStation, 
+          record.toStation,
+          record.tripNo,
+          record.departureTime
+        )
+      }, 100)
+    } else {
+      message.warning('站点信息加载中，请稍候再试')
+    }
+  }, [form, stations, loadAvailableTrips])
 
   // 处理退票
   const handleRefund = useCallback(() => {
@@ -361,11 +400,37 @@ function RefundChange() {
     
     try {
       const values = await form.validateFields()
+      const tripLabel = selectedTrip.tripNumber || selectedTrip.tripNo
       
       confirm({
         title: '确认改签',
         icon: <ExclamationCircleOutlined />,
-        content: `确定要改签到车次 ${selectedTrip.tripNumber || selectedTrip.tripNo} 吗？改签后原订单将失效。`,
+        content: changePricePreview ? (
+          <div>
+            <p>确定要改签到车次 {tripLabel} 吗？改签后原订单将失效。</p>
+            <p>
+              原订单金额：{formatPrice(changePricePreview.oldAmount)}，
+              新订单金额：{formatPrice(changePricePreview.newAmount)}，
+              {changePricePreview.diff > 0 && (
+                <span>
+                  需补差价
+                  <span style={{ marginLeft: 4, color: '#ff4d4f', fontWeight: 600 }}>
+                    {formatPrice(changePricePreview.diff)}
+                  </span>
+                </span>
+              )}
+              {changePricePreview.diff < 0 && (
+                <span>
+                  预计退回差价
+                  <span style={{ marginLeft: 4, color: '#52c41a', fontWeight: 600 }}>
+                    {formatPrice(-changePricePreview.diff)}
+                  </span>
+                </span>
+              )}
+              {changePricePreview.diff === 0 && '本次改签票价相同，无需补差价或退款。'}
+            </p>
+          </div>
+        ) : `确定要改签到车次 ${tripLabel} 吗？改签后原订单将失效。`,
         okText: '确认改签',
         cancelText: '取消',
         onOk: async () => {
@@ -425,7 +490,7 @@ function RefundChange() {
     } catch (error) {
       console.error('表单验证失败：', error)
     }
-  }, [selectedOrder, selectedTrip, form, loadOrders, pagination])
+  }, [selectedOrder, selectedTrip, form, loadOrders, pagination, changePricePreview])
 
   const handleTableChange = useCallback((newPagination) => {
     loadOrders(newPagination.current, newPagination.pageSize)
@@ -705,7 +770,8 @@ function RefundChange() {
                     loadAvailableTrips(
                       selectedOrder.fromStation, 
                       selectedOrder.toStation,
-                      selectedOrder.tripNo
+                      selectedOrder.tripNo,
+                      selectedOrder.departureTime
                     )
                   }}
                   disabled={loadingTrips || stations.length === 0}
@@ -740,7 +806,9 @@ function RefundChange() {
                     {availableTrips.map((trip) => {
                       const tripId = trip.tripId || trip.id
                       const tripNumber = trip.tripNumber || trip.tripNo
-                      const price = trip.basePrice || trip.price || trip.ticketPrice || 0
+                      const price = (trip.seats && trip.seats.price != null)
+                        ? trip.seats.price
+                        : (trip.basePrice || trip.price || trip.ticketPrice || 0)
                       const departureTime = dayjs(trip.departureTime)
                       const arrivalTime = dayjs(trip.arrivalTime)
                       
@@ -801,10 +869,61 @@ function RefundChange() {
                     </Descriptions.Item>
                     <Descriptions.Item label="票价" span={2}>
                       <span style={{ color: '#ff4d4f', fontSize: '16px', fontWeight: 600 }}>
-                        ¥{(selectedTrip.basePrice || selectedTrip.price || selectedTrip.ticketPrice || 0).toFixed(2)}
+                        ¥{(
+                          (selectedTrip.seats && selectedTrip.seats.price != null)
+                            ? selectedTrip.seats.price
+                            : (selectedTrip.basePrice || selectedTrip.price || selectedTrip.ticketPrice || 0)
+                        ).toFixed(2)}
                       </span>
                     </Descriptions.Item>
                   </Descriptions>
+
+                  {changePricePreview && (
+                    <div style={{ marginTop: 16 }}>
+                      <Alert
+                        message="改签价格预览"
+                        type="info"
+                        showIcon
+                        description={
+                          <div style={{ marginTop: 8 }}>
+                            <Space direction="vertical" style={{ width: '100%' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span>乘车人数：</span>
+                                <span style={{ fontWeight: 600 }}>{changePricePreview.passengerCount} 人</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span>原订单金额：</span>
+                                <span style={{ fontWeight: 600 }}>{formatPrice(changePricePreview.oldAmount)}</span>
+                              </div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span>新订单金额：</span>
+                                <span style={{ fontWeight: 600 }}>{formatPrice(changePricePreview.newAmount)}</span>
+                              </div>
+                              <Divider style={{ margin: '8px 0' }} />
+                              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: 14, fontWeight: 600 }}>本次改签差额：</span>
+                                {changePricePreview.diff > 0 && (
+                                  <span style={{ fontSize: 16, fontWeight: 600, color: '#ff4d4f' }}>
+                                    需补 {formatPrice(changePricePreview.diff)}
+                                  </span>
+                                )}
+                                {changePricePreview.diff < 0 && (
+                                  <span style={{ fontSize: 16, fontWeight: 600, color: '#52c41a' }}>
+                                    预计退回 {formatPrice(-changePricePreview.diff)}
+                                  </span>
+                                )}
+                                {changePricePreview.diff === 0 && (
+                                  <span style={{ fontSize: 16, fontWeight: 600 }}>
+                                    票价相同，无需补差价或退款
+                                  </span>
+                                )}
+                              </div>
+                            </Space>
+                          </div>
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
