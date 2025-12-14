@@ -1,0 +1,14 @@
+.page-admin-batch-trip-management .action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-admin-batch-trip-management .ant-table {
+  margin-top: 16px;
+}
+
+.page-admin-batch-trip-management .ant-upload-list {
+  margin-top: 16px;
+}

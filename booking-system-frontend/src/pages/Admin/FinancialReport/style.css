@@ -1,0 +1,16 @@
+.page-admin-financial-report .filter-bar {
+  margin-bottom: 24px;
+}
+
+.page-admin-financial-report .ant-statistic-title {
+  font-size: 14px;
+  color: #666;
+}
+
+.page-admin-financial-report .ant-statistic-content {
+  font-size: 24px;
+}
+
+.page-admin-financial-report .ant-table-summary {
+  background-color: #fafafa;
+}

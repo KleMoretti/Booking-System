@@ -154,3 +154,143 @@ export const updateTripPrice = (id, data) => {
     data,
   })
 }
+
+// ==================== 用户管理 ====================
+
+/**
+ * 搜索用户（按用户名/手机号/证件号）
+ */
+export const searchUsers = (params) => {
+  return request({
+    url: '/admin/users/search',
+    method: 'get',
+    params,
+  })
+}
+
+/**
+ * 重置用户密码
+ */
+export const resetUserPassword = (userId, data) => {
+  return request({
+    url: `/admin/users/${userId}/reset-password`,
+    method: 'post',
+    data,
+  })
+}
+
+/**
+ * 冻结用户账号
+ */
+export const freezeUser = (userId, data) => {
+  return request({
+    url: `/admin/users/${userId}/freeze`,
+    method: 'post',
+    data,
+  })
+}
+
+/**
+ * 解冻用户账号
+ */
+export const unfreezeUser = (userId) => {
+  return request({
+    url: `/admin/users/${userId}/unfreeze`,
+    method: 'post',
+  })
+}
+
+/**
+ * 获取用户详情（管理员视角）
+ */
+export const getUserDetail = (userId) => {
+  return request({
+    url: `/admin/users/${userId}`,
+    method: 'get',
+  })
+}
+
+// ==================== 批量车次管理 ====================
+
+/**
+ * 批量导入车次（Excel/CSV）
+ */
+export const batchImportTrips = (formData) => {
+  return request({
+    url: '/admin/trips/batch-import',
+    method: 'post',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
+
+/**
+ * 批量下线车次
+ */
+export const batchOfflineTrips = (data) => {
+  return request({
+    url: '/admin/trips/batch-offline',
+    method: 'post',
+    data,
+  })
+}
+
+/**
+ * 批量上线车次
+ */
+export const batchOnlineTrips = (data) => {
+  return request({
+    url: '/admin/trips/batch-online',
+    method: 'post',
+    data,
+  })
+}
+
+/**
+ * 下载车次导入模板
+ */
+export const downloadTripTemplate = () => {
+  return request({
+    url: '/admin/trips/template',
+    method: 'get',
+    responseType: 'blob',
+  })
+}
+
+// ==================== 财务报表 ====================
+
+/**
+ * 获取财务汇总报表
+ */
+export const getFinancialReport = (params) => {
+  return request({
+    url: '/admin/financial/report',
+    method: 'get',
+    params,
+  })
+}
+
+/**
+ * 获取销售数据统计
+ */
+export const getSalesStatistics = (params) => {
+  return request({
+    url: '/admin/financial/sales',
+    method: 'get',
+    params,
+  })
+}
+
+/**
+ * 导出财务报表
+ */
+export const exportFinancialReport = (params) => {
+  return request({
+    url: '/admin/financial/export',
+    method: 'get',
+    params,
+    responseType: 'blob',
+  })
+}

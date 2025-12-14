@@ -1,0 +1,15 @@
+.page-admin-user-management .search-bar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.page-admin-user-management .ant-table {
+  margin-top: 16px;
+}
+
+.page-admin-user-management .ant-descriptions-item-label {
+  font-weight: 500;
+  background-color: #fafafa;
+}

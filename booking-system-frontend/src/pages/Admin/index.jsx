@@ -6,10 +6,16 @@ import {
   EnvironmentOutlined,
   CarOutlined,
   DollarOutlined,
+  UserOutlined,
+  CloudUploadOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons'
 import StationManagement from './StationManagement'
 import TripManagement from './TripManagement'
 import PriceManagement from './PriceManagement'
+import UserManagement from './UserManagement'
+import BatchTripManagement from './BatchTripManagement'
+import FinancialReport from './FinancialReport'
 import { getStatistics } from '../../api/admin'
 import './style.css'
 
@@ -47,6 +53,11 @@ function Admin() {
       label: '数据总览',
     },
     {
+      key: 'users',
+      icon: <UserOutlined />,
+      label: '用户管理',
+    },
+    {
       key: 'stations',
       icon: <EnvironmentOutlined />,
       label: '站点管理',
@@ -57,9 +68,19 @@ function Admin() {
       label: '车次管理',
     },
     {
+      key: 'batch-trips',
+      icon: <CloudUploadOutlined />,
+      label: '批量车次管理',
+    },
+    {
       key: 'prices',
       icon: <DollarOutlined />,
       label: '票价管理',
+    },
+    {
+      key: 'financial',
+      icon: <BarChartOutlined />,
+      label: '财务报表',
     },
   ]
 
@@ -197,12 +218,18 @@ function Admin() {
             </Row>
           </div>
         )
+      case 'users':
+        return <UserManagement />
       case 'stations':
         return <StationManagement />
       case 'trips':
         return <TripManagement />
+      case 'batch-trips':
+        return <BatchTripManagement />
       case 'prices':
         return <PriceManagement />
+      case 'financial':
+        return <FinancialReport />
       default:
         return null
     }

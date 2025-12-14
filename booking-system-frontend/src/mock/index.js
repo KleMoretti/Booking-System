@@ -539,6 +539,342 @@ export function setupMock(axiosInstance) {
     }]
   })
 
+  // ==================== 用户管理 ====================
+  
+  // 生成Mock用户列表
+  const mockUsers = [
+    {
+      userId: 1,
+      username: 'testuser',
+      realName: '张三',
+      phone: '13800138000',
+      idCard: '110101199001011234',
+      email: 'zhangsan@example.com',
+      status: 0,
+      balance: 1000.00,
+      createTime: '2025-01-01 10:00:00',
+      lastLoginTime: '2025-12-14 08:00:00',
+      orderCount: 15,
+    },
+    {
+      userId: 2,
+      username: 'user02',
+      realName: '李四',
+      phone: '13900139000',
+      idCard: '110101199002021234',
+      email: 'lisi@example.com',
+      status: 0,
+      balance: 500.50,
+      createTime: '2025-02-15 14:30:00',
+      lastLoginTime: '2025-12-13 15:20:00',
+      orderCount: 8,
+    },
+    {
+      userId: 3,
+      username: 'frozen_user',
+      realName: '王五',
+      phone: '13700137000',
+      idCard: '110101199003031234',
+      email: 'wangwu@example.com',
+      status: 1, // 已冻结
+      balance: 200.00,
+      createTime: '2025-03-20 09:15:00',
+      lastLoginTime: '2025-10-01 10:00:00',
+      orderCount: 3,
+    },
+    {
+      userId: 4,
+      username: 'user04',
+      realName: '赵六',
+      phone: '13600136000',
+      idCard: '440301199004041234',
+      email: null,
+      status: 0,
+      balance: 2500.00,
+      createTime: '2025-05-10 16:45:00',
+      lastLoginTime: '2025-12-14 07:30:00',
+      orderCount: 32,
+    },
+  ]
+
+  // 搜索用户
+  mock.onGet('/admin/users/search').reply((config) => {
+    const { keyword, page = 1, pageSize = 10 } = config.params
+    console.log('Mock: 搜索用户', keyword)
+    
+    let results = mockUsers
+    if (keyword) {
+      results = mockUsers.filter(user => 
+        user.username.includes(keyword) ||
+        (user.phone && user.phone.includes(keyword)) ||
+        (user.idCard && user.idCard.includes(keyword)) ||
+        (user.realName && user.realName.includes(keyword))
+      )
+    }
+    
+    const start = (page - 1) * pageSize
+    const end = start + pageSize
+    
+    return [200, {
+      code: 200,
+      data: {
+        list: results.slice(start, end),
+        total: results.length,
+        page,
+        pageSize,
+      }
+    }]
+  })
+
+  // 获取用户详情
+  mock.onGet(/\/admin\/users\/\d+/).reply((config) => {
+    const userId = parseInt(config.url.split('/')[3])
+    console.log('Mock: 获取用户详情', userId)
+    
+    const user = mockUsers.find(u => u.userId === userId)
+    if (user) {
+      return [200, {
+        code: 200,
+        data: user,
+      }]
+    }
+    return [404, { code: 404, message: '用户不存在' }]
+  })
+
+  // 重置密码
+  mock.onPost(/\/admin\/users\/\d+\/reset-password/).reply((config) => {
+    const userId = parseInt(config.url.split('/')[3])
+    const data = JSON.parse(config.data)
+    console.log('Mock: 重置密码', userId, data)
+    
+    return [200, {
+      code: 200,
+      message: '密码重置成功',
+    }]
+  })
+
+  // 冻结用户
+  mock.onPost(/\/admin\/users\/\d+\/freeze/).reply((config) => {
+    const userId = parseInt(config.url.split('/')[3])
+    console.log('Mock: 冻结用户', userId)
+    
+    const user = mockUsers.find(u => u.userId === userId)
+    if (user) {
+      user.status = 1
+    }
+    
+    return [200, {
+      code: 200,
+      message: '账号已冻结',
+    }]
+  })
+
+  // 解冻用户
+  mock.onPost(/\/admin\/users\/\d+\/unfreeze/).reply((config) => {
+    const userId = parseInt(config.url.split('/')[3])
+    console.log('Mock: 解冻用户', userId)
+    
+    const user = mockUsers.find(u => u.userId === userId)
+    if (user) {
+      user.status = 0
+    }
+    
+    return [200, {
+      code: 200,
+      message: '账号已解冻',
+    }]
+  })
+
+  // ==================== 批量车次管理 ====================
+
+  // 获取管理员车次列表
+  mock.onGet('/admin/trips').reply((config) => {
+    const { page = 1, pageSize = 10 } = config.params
+    console.log('Mock: 获取管理员车次列表', page, pageSize)
+    
+    // 转换mockTrips数据为管理员视图格式
+    const adminTrips = mockTrips.map(trip => ({
+      id: trip.id,
+      tripNo: trip.tripNumber,
+      fromStation: trip.departureStation,
+      toStation: trip.arrivalStation,
+      departureTime: `${trip.date} ${trip.departureTime}:00`,
+      arrivalTime: `${trip.date} ${trip.arrivalTime}:00`,
+      price: trip.seats.price,
+      availableSeats: trip.seats.available,
+      totalSeats: trip.seats.total,
+      status: trip.status !== undefined ? trip.status : 1, // 默认运营中
+      createTime: '2025-11-01 10:00:00',
+    }))
+    
+    const start = (page - 1) * pageSize
+    const end = start + pageSize
+    
+    return [200, {
+      code: 200,
+      data: {
+        list: adminTrips.slice(start, end),
+        total: adminTrips.length,
+        page,
+        pageSize,
+      }
+    }]
+  })
+
+  // 批量导入车次
+  mock.onPost('/admin/trips/batch-import').reply((config) => {
+    console.log('Mock: 批量导入车次')
+    
+    // 模拟导入成功
+    const successCount = Math.floor(Math.random() * 50) + 10
+    
+    return [200, {
+      code: 200,
+      message: '导入成功',
+      data: {
+        successCount,
+        failCount: 0,
+      }
+    }]
+  })
+
+  // 批量下线车次
+  mock.onPost('/admin/trips/batch-offline').reply((config) => {
+    const { tripIds } = JSON.parse(config.data)
+    console.log('Mock: 批量下线车次', tripIds)
+    
+    tripIds.forEach(id => {
+      const trip = mockTrips.find(t => t.id === id)
+      if (trip) {
+        trip.status = 0
+      }
+    })
+    
+    return [200, {
+      code: 200,
+      message: `成功下线 ${tripIds.length} 个车次`,
+    }]
+  })
+
+  // 批量上线车次
+  mock.onPost('/admin/trips/batch-online').reply((config) => {
+    const { tripIds } = JSON.parse(config.data)
+    console.log('Mock: 批量上线车次', tripIds)
+    
+    tripIds.forEach(id => {
+      const trip = mockTrips.find(t => t.id === id)
+      if (trip) {
+        trip.status = 1
+      }
+    })
+    
+    return [200, {
+      code: 200,
+      message: `成功上线 ${tripIds.length} 个车次`,
+    }]
+  })
+
+  // 下载车次导入模板
+  mock.onGet('/admin/trips/template').reply(() => {
+    console.log('Mock: 下载车次导入模板')
+    
+    // 返回一个模拟的Excel文件
+    return [200, new Blob(['车次模板内容'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })]
+  })
+
+  // ==================== 财务报表 ====================
+
+  // 生成Mock财务数据
+  const generateFinancialData = (startDate, endDate, reportType) => {
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    const data = []
+    let totalSales = 0
+    let totalRefund = 0
+    let totalOrders = 0
+    let totalRefunds = 0
+    
+    let current = new Date(start)
+    while (current <= end) {
+      const sales = Math.random() * 50000 + 10000
+      const refund = Math.random() * 5000 + 1000
+      const orderCount = Math.floor(Math.random() * 100) + 20
+      const refundCount = Math.floor(Math.random() * 10) + 2
+      
+      data.push({
+        date: current.toISOString().split('T')[0],
+        sales: Math.round(sales * 100) / 100,
+        refund: Math.round(refund * 100) / 100,
+        netIncome: Math.round((sales - refund) * 100) / 100,
+        orderCount,
+        refundCount,
+        growth: Math.random() * 20 - 10, // -10% to +10%
+      })
+      
+      totalSales += sales
+      totalRefund += refund
+      totalOrders += orderCount
+      totalRefunds += refundCount
+      
+      // 根据报表类型增加日期
+      if (reportType === 'daily') {
+        current.setDate(current.getDate() + 1)
+      } else if (reportType === 'weekly') {
+        current.setDate(current.getDate() + 7)
+      } else {
+        current.setMonth(current.getMonth() + 1)
+      }
+    }
+    
+    return {
+      summary: {
+        totalSales: Math.round(totalSales * 100) / 100,
+        totalRefund: Math.round(totalRefund * 100) / 100,
+        netIncome: Math.round((totalSales - totalRefund) * 100) / 100,
+        orderCount: totalOrders,
+        refundCount: totalRefunds,
+      },
+      details: data,
+    }
+  }
+
+  // 获取财务报表
+  mock.onGet('/admin/financial/report').reply((config) => {
+    const { startDate, endDate, reportType } = config.params
+    console.log('Mock: 获取财务报表', startDate, endDate, reportType)
+    
+    const data = generateFinancialData(startDate, endDate, reportType)
+    
+    return [200, {
+      code: 200,
+      data,
+    }]
+  })
+
+  // 获取销售统计
+  mock.onGet('/admin/financial/sales').reply((config) => {
+    const { startDate, endDate } = config.params
+    console.log('Mock: 获取销售统计', startDate, endDate)
+    
+    return [200, {
+      code: 200,
+      data: {
+        totalSales: 156789.50,
+        totalOrders: 1234,
+        avgOrderAmount: 127.05,
+      }
+    }]
+  })
+
+  // 导出财务报表
+  mock.onGet('/admin/financial/export').reply((config) => {
+    const { startDate, endDate, reportType } = config.params
+    console.log('Mock: 导出财务报表', startDate, endDate, reportType)
+    
+    // 返回一个模拟的Excel文件
+    return [200, new Blob(['财务报表内容'], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })]
+  })
+
   console.log('✅ Mock API已启用')
   
   return mock
