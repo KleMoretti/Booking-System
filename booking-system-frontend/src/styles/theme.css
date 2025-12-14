@@ -49,52 +49,52 @@
   --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.16);
 }
 
-/* 夜间模式 */
+/* 夜间模式 - 柔和护眼配色 */
 :root[data-theme="dark"] {
-  /* 主色调 */
-  --color-primary: #ffffff;
-  --color-primary-hover: #d9d9d9;
-  --color-primary-active: #bfbfbf;
+  /* 主色调 - 柔和的米白色 */
+  --color-primary: #e8dcc8;
+  --color-primary-hover: #d4c5ab;
+  --color-primary-active: #c0ae8f;
   
-  /* 背景色 */
-  --color-bg-base: #141414;
-  --color-bg-container: #1f1f1f;
-  --color-bg-elevated: #2a2a2a;
-  --color-bg-layout: #0a0a0a;
-  --color-bg-spotlight: #262626;
-  --color-bg-mask: rgba(0, 0, 0, 0.65);
+  /* 背景色 - 深蓝灰色调，避免纯黑 */
+  --color-bg-base: #1a1d23;
+  --color-bg-container: #23272f;
+  --color-bg-elevated: #2d3139;
+  --color-bg-layout: #14161a;
+  --color-bg-spotlight: #2a2e36;
+  --color-bg-mask: rgba(20, 22, 26, 0.75);
   
-  /* 文字颜色 */
-  --color-text-base: #ffffff;
-  --color-text-secondary: #d9d9d9;
-  --color-text-tertiary: #8c8c8c;
-  --color-text-quaternary: #595959;
-  --color-text-disabled: #434343;
+  /* 文字颜色 - 暖色调米白，避免纯白 */
+  --color-text-base: #e8dcc8;
+  --color-text-secondary: #c9bda8;
+  --color-text-tertiary: #9a9080;
+  --color-text-quaternary: #6e6658;
+  --color-text-disabled: #4a453e;
   
-  /* 边框颜色 */
-  --color-border-base: #434343;
-  --color-border-secondary: #303030;
-  --color-border-tertiary: #3a3a3a;
+  /* 边框颜色 - 低对比度 */
+  --color-border-base: #3a3d45;
+  --color-border-secondary: #2d3038;
+  --color-border-tertiary: #34373f;
   
   /* 分割线 */
-  --color-split: rgba(255, 255, 255, 0.06);
+  --color-split: rgba(232, 220, 200, 0.08);
   
-  /* 链接 */
-  --color-link: #1890ff;
-  --color-link-hover: #40a9ff;
-  --color-link-active: #096dd9;
+  /* 链接 - 柔和的蓝色 */
+  --color-link: #5a9fd4;
+  --color-link-hover: #7bb3e0;
+  --color-link-active: #4389c4;
   
-  /* 状态颜色 */
-  --color-success: #52c41a;
-  --color-warning: #faad14;
-  --color-error: #ff4d4f;
-  --color-info: #1890ff;
+  /* 状态颜色 - 降低饱和度 */
+  --color-success: #6db359;
+  --color-warning: #d49a3a;
+  --color-error: #d46969;
+  --color-info: #5a9fd4;
   
-  /* 阴影 */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-base: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.6);
+  /* 阴影 - 柔和的深色 */
+  --shadow-sm: 0 1px 2px rgba(10, 11, 14, 0.4);
+  --shadow-base: 0 2px 8px rgba(10, 11, 14, 0.5);
+  --shadow-lg: 0 4px 16px rgba(10, 11, 14, 0.6);
+  --shadow-xl: 0 8px 32px rgba(10, 11, 14, 0.7);
 }
 
 /* View Transitions API 配置 */

@@ -230,61 +230,76 @@ function TripManagement() {
       >
         <Form
           form={searchForm}
-          layout="inline"
-          size="middle"
+          layout="vertical"
+          size="large"
           style={{
-            marginBottom: 16,
-            padding: 12,
-            background: '#fafafa',
-            borderRadius: 8,
+            marginBottom: 24,
+            padding: '24px 24px 0',
+            background: 'var(--color-bg-container)',
+            borderRadius: 12,
+            border: '1px solid var(--color-border-secondary)',
           }}
         >
-          <Form.Item label="车次号" name="tripNumber">
-            <Input placeholder="请输入车次号" allowClear style={{ width: 160 }} />
-          </Form.Item>
-          <Form.Item label="出发日期" name="departureDate">
-            <DatePicker allowClear style={{ width: 160 }} />
-          </Form.Item>
-          <Form.Item label="出发站" name="departureStation">
-            <Select
-              allowClear
-              showSearch
-              placeholder="请选择出发站"
-              style={{ width: 180 }}
-              optionFilterProp="children"
-            >
-              {stations.map(station => (
-                <Select.Option key={station.id} value={station.name}>
-                  {station.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item label="到达站" name="arrivalStation">
-            <Select
-              allowClear
-              showSearch
-              placeholder="请选择到达站"
-              style={{ width: 180 }}
-              optionFilterProp="children"
-            >
-              {stations.map(station => (
-                <Select.Option key={station.id} value={station.name}>
-                  {station.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            <Space>
-              <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
-                搜索
-              </Button>
-              <Button icon={<ReloadOutlined />} onClick={handleReset}>
-                重置
-              </Button>
-            </Space>
-          </Form.Item>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            <Form.Item label="车次号" name="tripNumber" style={{ marginBottom: 0 }}>
+              <Input 
+                placeholder="请输入车次号" 
+                allowClear 
+                style={{ width: '100%' }} 
+              />
+            </Form.Item>
+            <Form.Item label="出发日期" name="departureDate" style={{ marginBottom: 0 }}>
+              <DatePicker 
+                allowClear 
+                style={{ width: '100%' }} 
+                placeholder="选择日期"
+              />
+            </Form.Item>
+            <Form.Item label="出发站" name="departureStation" style={{ marginBottom: 0 }}>
+              <Select
+                allowClear
+                showSearch
+                placeholder="请选择出发站"
+                style={{ width: '100%' }}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {stations.map(station => (
+                  <Select.Option key={station.id} value={station.name}>
+                    {station.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label="到达站" name="arrivalStation" style={{ marginBottom: 0 }}>
+              <Select
+                allowClear
+                showSearch
+                placeholder="请选择到达站"
+                style={{ width: '100%' }}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {stations.map(station => (
+                  <Select.Option key={station.id} value={station.name}>
+                    {station.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </div>
+          <div style={{ marginTop: 16, paddingBottom: 20, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+            <Button icon={<ReloadOutlined />} onClick={handleReset} size="large">
+              重置
+            </Button>
+            <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch} size="large">
+              搜索
+            </Button>
+          </div>
         </Form>
 
         <Table
