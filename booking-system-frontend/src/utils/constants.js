@@ -21,11 +21,11 @@ export const API_CODE = {
 
 // 订单状态
 export const ORDER_STATUS = {
-  PENDING: 0,      // 未支付
-  PAID: 1,         // 已支付
-  CANCELLED: 2,    // 已取消
-  REFUNDED: 3,     // 已退款
-  COMPLETED: 4,    // 已完成
+  PENDING: 0,      // 待支付：订单已创建，等待支付
+  PAID: 1,         // 已支付：订单已支付，等待乘车
+  CANCELLED: 2,    // 已取消：订单已取消
+  REFUNDED: 3,     // 已退款：订单已退票退款
+  COMPLETED: 4,    // 已完成：车次已发车且乘车完毕
 }
 
 // 用户类型

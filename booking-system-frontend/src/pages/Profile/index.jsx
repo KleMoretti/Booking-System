@@ -1,11 +1,13 @@
 // 个人中心页面
 import { Card, Tabs, message } from 'antd'
-import { UserOutlined, LockOutlined, WalletOutlined } from '@ant-design/icons'
+import { UserOutlined, LockOutlined, WalletOutlined, TeamOutlined, FileTextOutlined } from '@ant-design/icons'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import UserInfo from './components/UserInfo'
 import ChangePassword from './components/ChangePassword'
 import BalanceManagement from './components/BalanceManagement'
+import PassengerManagement from './components/PassengerManagement'
+import InvoiceManagement from './components/InvoiceManagement'
 import { getUserProfile } from '../../store/slices/userSlice'
 import './style.css'
 
@@ -39,6 +41,26 @@ function Profile() {
         </span>
       ),
       children: <BalanceManagement userInfo={userInfo} />,
+    },
+    {
+      key: 'passengers',
+      label: (
+        <span>
+          <TeamOutlined />
+          常用联系人
+        </span>
+      ),
+      children: <PassengerManagement />,
+    },
+    {
+      key: 'invoices',
+      label: (
+        <span>
+          <FileTextOutlined />
+          发票管理
+        </span>
+      ),
+      children: <InvoiceManagement />,
     },
     {
       key: 'password',

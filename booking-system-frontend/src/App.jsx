@@ -8,9 +8,11 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import ErrorBoundary from './components/ErrorBoundary'
 import CompleteProfileModal from './components/CompleteProfileModal'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { getUserProfile } from './store/slices/userSlice'
 import { isAuthenticated as checkAuth } from './utils/auth'
 import { onRenderCallback, enableProfiler } from './utils/profiler'
+import './styles/theme.css'
 
 const { Content } = Layout
 
@@ -75,11 +77,13 @@ function AppContent() {
 function App() {
   return (
     <Provider store={store}>
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
+        </BrowserRouter>
+      </ThemeProvider>
     </Provider>
   )
 }

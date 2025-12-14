@@ -49,6 +49,8 @@ function PriceManagement() {
     setEditingRecord(record)
     form.setFieldsValue({
       price: record.seats?.price || 0,
+      availableSeats: record.seats?.available || 0,
+      totalSeats: record.seats?.total || 0,
     })
     setModalVisible(true)
   }
@@ -59,9 +61,11 @@ function PriceManagement() {
       
       await updateTripPrice(editingRecord.id, {
         price: values.price,
+        availableSeats: values.availableSeats,
+        totalSeats: values.totalSeats,
       })
       
-      message.success('票价更新成功')
+      message.success('票价和座位信息更新成功')
       setModalVisible(false)
       fetchData()
     } catch (error) {
@@ -105,6 +109,24 @@ function PriceManagement() {
       render: (_, record) => (
         <div style={{ fontSize: '13px', color: '#595959' }}>
           {record.departureTime}
+        </div>
+      ),
+    },
+    {
+      title: '座位信息',
+      key: 'seats',
+      width: 120,
+      align: 'center',
+      render: (_, record) => (
+        <div>
+          <div style={{ fontSize: '14px', color: '#262626', marginBottom: '4px' }}>
+            <span style={{ fontWeight: 600 }}>可售：</span>
+            <span style={{ color: '#52c41a' }}>{record.seats?.available || 0}</span>
+          </div>
+          <div style={{ fontSize: '13px', color: '#8c8c8c' }}>
+            <span>总数：</span>
+            <span>{record.seats?.total || 0}</span>
+          </div>
         </div>
       ),
     },
@@ -194,6 +216,41 @@ function PriceManagement() {
         )}
         
         <Form form={form} layout="vertical">
+          <Form.Item
+            name="totalSeats"
+            label="总座位数"
+            rules={[{ required: true, message: '请输入总座位数' }]}
+          >
+            <InputNumber
+              min={0}
+              style={{ width: '100%' }}
+              placeholder="请输入总座位数"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="availableSeats"
+            label="可售座位数"
+            rules={[
+              { required: true, message: '请输入可售座位数' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const total = getFieldValue('totalSeats')
+                  if (!value || value <= total) {
+                    return Promise.resolve()
+                  }
+                  return Promise.reject(new Error('可售座位数不能超过总座位数'))
+                },
+              }),
+            ]}
+          >
+            <InputNumber
+              min={0}
+              style={{ width: '100%' }}
+              placeholder="请输入可售座位数"
+            />
+          </Form.Item>
+
           <Form.Item
             name="price"
             label="票价（元）"

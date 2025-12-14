@@ -3,13 +3,14 @@ import { Card, Table, Tag, Button, Space, message, Modal, Descriptions, Tabs } f
 import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined } from '@ant-design/icons'
+import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, QrcodeOutlined } from '@ant-design/icons'
 import { getOrderList, cancelOrder } from '../../store/slices/orderSlice'
 import { formatDateTime, formatPrice, getOrderStatus, formatIdCard } from '../../utils/format'
 import { ORDER_STATUS, PAGINATION } from '../../utils/constants'
 import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import Loading from '../../components/Loading'
+import ETicketDetail from '../../components/ETicketDetail'
 import './style.css'
 
 
@@ -20,6 +21,8 @@ function OrderList() {
   const [detailModalVisible, setDetailModalVisible] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [activeTab, setActiveTab] = useState('all')
+  const [eTicketModalVisible, setETicketModalVisible] = useState(false)
+  const [selectedTicket, setSelectedTicket] = useState(null)
 
   const loadOrders = useCallback((page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
     dispatch(getOrderList({ page, pageSize }))
@@ -50,6 +53,11 @@ function OrderList() {
       setDetailModalVisible(true)
     }
   }, [orderList])
+
+  const handleViewETicket = useCallback((ticket, order) => {
+    setSelectedTicket({ ticket, order })
+    setETicketModalVisible(true)
+  }, [])
 
   // 根据标签页筛选订单
   const filteredOrders = useMemo(() => {
@@ -375,11 +383,47 @@ function OrderList() {
                       dataIndex: 'ticketStatusText',
                       key: 'ticketStatusText',
                     },
+                    {
+                      title: '操作',
+                      key: 'action',
+                      render: (_, ticket) => (
+                        selectedOrder.orderStatus >= ORDER_STATUS.PAID && (
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={<QrcodeOutlined />}
+                            onClick={() => handleViewETicket(ticket, selectedOrder)}
+                          >
+                            电子车票
+                          </Button>
+                        )
+                      ),
+                    },
                   ]}
                   dataSource={selectedOrder.tickets}
                 />
               )}
             </>
+          )}
+        </Modal>
+
+        {/* 电子车票Modal */}
+        <Modal
+          title="电子车票"
+          open={eTicketModalVisible}
+          onCancel={() => {
+            setETicketModalVisible(false)
+            setSelectedTicket(null)
+          }}
+          footer={null}
+          width={650}
+        >
+          {selectedTicket && (
+            <ETicketDetail
+              ticket={selectedTicket.ticket}
+              order={selectedTicket.order}
+              trip={selectedTicket.order}
+            />
           )}
         </Modal>
       </Card>

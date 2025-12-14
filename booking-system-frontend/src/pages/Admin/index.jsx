@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react'
 import { Layout, Menu, Card, Row, Col, Statistic, Typography } from 'antd'
 import {
   DashboardOutlined,
-  SwapOutlined,
+  EnvironmentOutlined,
   CarOutlined,
   DollarOutlined,
 } from '@ant-design/icons'
-import RefundChangeManagement from './RefundChangeManagement'
+import StationManagement from './StationManagement'
 import TripManagement from './TripManagement'
 import PriceManagement from './PriceManagement'
 import { getStatistics } from '../../api/admin'
@@ -47,9 +47,9 @@ function Admin() {
       label: '数据总览',
     },
     {
-      key: 'refund-change',
-      icon: <SwapOutlined />,
-      label: '改签退票管理',
+      key: 'stations',
+      icon: <EnvironmentOutlined />,
+      label: '站点管理',
     },
     {
       key: 'trips',
@@ -197,8 +197,8 @@ function Admin() {
             </Row>
           </div>
         )
-      case 'refund-change':
-        return <RefundChangeManagement />
+      case 'stations':
+        return <StationManagement />
       case 'trips':
         return <TripManagement />
       case 'prices':

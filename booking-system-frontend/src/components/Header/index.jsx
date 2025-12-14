@@ -1,10 +1,11 @@
 // 页面头部组件
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Layout, Menu, Dropdown, Avatar, message } from 'antd'
-import { UserOutlined, HomeOutlined, ProfileOutlined, OrderedListOutlined, DashboardOutlined, LogoutOutlined, SwapOutlined } from '@ant-design/icons'
+import { Layout, Menu, Dropdown, Avatar, message, Button } from 'antd'
+import { UserOutlined, HomeOutlined, ProfileOutlined, OrderedListOutlined, DashboardOutlined, LogoutOutlined, SwapOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons'
 import { useSelector, useDispatch } from 'react-redux'
 import { logout } from '../../store/slices/userSlice'
+import { useTheme } from '../../contexts/ThemeContext'
 import './style.css'
 
 const { Header: AntHeader } = Layout
@@ -22,6 +23,7 @@ function Header() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { userInfo, isAuthenticated } = useSelector((state) => state.user)
+  const { theme, isDark, toggleTheme } = useTheme()
   
   // 管理员检查（userType: 1 = 管理员，0 = 普通用户）
   const isAdmin = userInfo?.userType === 1
@@ -54,6 +56,7 @@ function Header() {
     <AntHeader className="app-header">
       <div className="app-header-left">
         <Link to="/home" className="app-logo">
+          <img src="/icon.svg" alt="logo" className="logo-icon" />
           <span className="logo-text">火车票预订</span>
         </Link>
       </div>
@@ -90,6 +93,15 @@ function Header() {
             <span className="user-entry-text">登录 / 注册</span>
           </Link>
         )}
+        
+        {/* 主题切换按钮 */}
+        <Button
+          type="text"
+          icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+          onClick={toggleTheme}
+          className="theme-toggle-btn"
+          title={isDark ? '切换到日间模式' : '切换到夜间模式'}
+        />
       </div>
     </AntHeader>
   )

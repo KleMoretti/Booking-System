@@ -152,6 +152,15 @@ function RefundChange() {
 
   // 打开退票弹窗
   const handleOpenRefund = useCallback((record) => {
+    // 检查是否已经发车
+    const departureTime = dayjs(record.departureTime)
+    const now = dayjs()
+    
+    if (now.isAfter(departureTime)) {
+      message.warning('该车次已发车，无法退票')
+      return
+    }
+    
     setSelectedOrder(record)
     const { fee, refund } = calculateRefundFee(record)
     setRefundFee(fee)
@@ -301,6 +310,15 @@ function RefundChange() {
 
   // 打开改签弹窗
   const handleOpenChange = useCallback((record) => {
+    // 检查是否已经发车
+    const departureTime = dayjs(record.departureTime)
+    const now = dayjs()
+    
+    if (now.isAfter(departureTime)) {
+      message.warning('该车次已发车，无法改签')
+      return
+    }
+    
     setSelectedOrder(record)
     setSelectedTrip(null)
     setAvailableTrips([])
@@ -502,12 +520,28 @@ function RefundChange() {
       dataIndex: 'orderNo',
       width: '18%',
       align: 'center',
+      render: (orderNo, record) => {
+        const isDeparted = dayjs().isAfter(dayjs(record.departureTime))
+        return (
+          <span style={{ color: isDeparted ? '#999' : 'inherit' }}>
+            {orderNo}
+          </span>
+        )
+      },
     },
     {
       title: '车次',
       dataIndex: 'tripNo',
       width: '10%',
       align: 'center',
+      render: (tripNo, record) => {
+        const isDeparted = dayjs().isAfter(dayjs(record.departureTime))
+        return (
+          <Tag color={isDeparted ? 'default' : 'blue'}>
+            {tripNo}
+          </Tag>
+        )
+      },
     },
     {
       title: '出发站',
@@ -526,14 +560,29 @@ function RefundChange() {
       dataIndex: 'departureTime',
       width: '15%',
       align: 'center',
-      render: (time) => formatDateTime(time),
+      render: (time, record) => {
+        const isDeparted = dayjs().isAfter(dayjs(time))
+        return (
+          <span style={{ color: isDeparted ? '#999' : 'inherit' }}>
+            {formatDateTime(time)}
+            {isDeparted && <Tag color="default" style={{ marginLeft: 8 }}>已发车</Tag>}
+          </span>
+        )
+      },
     },
     {
       title: '订单金额',
       dataIndex: 'totalPrice',
       width: '10%',
       align: 'center',
-      render: (price) => formatPrice(price),
+      render: (price, record) => {
+        const isDeparted = dayjs().isAfter(dayjs(record.departureTime))
+        return (
+          <span style={{ color: isDeparted ? '#999' : 'inherit' }}>
+            {formatPrice(price)}
+          </span>
+        )
+      },
     },
     {
       title: '订单状态',
@@ -550,25 +599,30 @@ function RefundChange() {
       key: 'action',
       width: '17%',
       align: 'center',
-      render: (_, record) => (
-        <Space size="small">
-          <Button 
-            type="link" 
-            icon={<SwapOutlined />}
-            onClick={() => handleOpenChange(record)}
-          >
-            改签
-          </Button>
-          <Button 
-            type="link" 
-            danger
-            icon={<RollbackOutlined />}
-            onClick={() => handleOpenRefund(record)}
-          >
-            退票
-          </Button>
-        </Space>
-      ),
+      render: (_, record) => {
+        const isDeparted = dayjs().isAfter(dayjs(record.departureTime))
+        return (
+          <Space size="small">
+            <Button 
+              type="link" 
+              icon={<SwapOutlined />}
+              onClick={() => handleOpenChange(record)}
+              disabled={isDeparted}
+            >
+              改签
+            </Button>
+            <Button 
+              type="link" 
+              danger
+              icon={<RollbackOutlined />}
+              onClick={() => handleOpenRefund(record)}
+              disabled={isDeparted}
+            >
+              退票
+            </Button>
+          </Space>
+        )
+      },
     },
   ], [handleOpenChange, handleOpenRefund])
 

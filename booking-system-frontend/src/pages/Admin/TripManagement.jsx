@@ -95,9 +95,6 @@ function TripManagement() {
       departureTime: record.departureTime ? dayjs(record.departureTime, 'HH:mm') : null,
       arrivalTime: record.arrivalTime ? dayjs(record.arrivalTime, 'HH:mm') : null,
       date: record.date ? dayjs(record.date) : null,
-      availableSeats: record.seats?.available || 0,
-      totalSeats: record.seats?.total || 0,
-      price: record.seats?.price || 0,
     })
     setModalVisible(true)
   }
@@ -112,17 +109,7 @@ function TripManagement() {
         departureTime: values.departureTime?.format('HH:mm'),
         arrivalTime: values.arrivalTime?.format('HH:mm'),
         date: values.date?.format('YYYY-MM-DD'),
-        seats: {
-          available: values.availableSeats,
-          total: values.totalSeats,
-          price: values.price,
-        },
       }
-
-      // 移除临时字段
-      delete formattedValues.availableSeats
-      delete formattedValues.totalSeats
-      delete formattedValues.price
 
       if (editingRecord) {
         await updateTrip(editingRecord.id, formattedValues)
@@ -198,37 +185,6 @@ function TripManagement() {
         <div style={{ fontSize: '13px', color: '#595959' }}>
           {record.departureTime} - {record.arrivalTime}
           <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: 2 }}>({record.duration})</div>
-        </div>
-      ),
-    },
-    {
-      title: '座位',
-      key: 'seats',
-      width: 100,
-      align: 'center',
-      render: (_, record) => (
-        <div style={{ fontSize: '14px', color: '#262626' }}>
-          {record.seats.available}<span style={{ color: '#8c8c8c' }}>/{record.seats.total}</span>
-        </div>
-      ),
-    },
-    {
-      title: '票价',
-      key: 'price',
-      width: 90,
-      align: 'center',
-      render: (_, record) => (
-        <div style={{ 
-          padding: '4px 12px',
-          background: '#f0f5ff',
-          border: '1px solid #d6e4ff',
-          borderRadius: '4px',
-          fontSize: '14px',
-          fontWeight: 600,
-          color: '#1d39c4',
-          display: 'inline-block'
-        }}>
-          ¥{record.seats.price}
         </div>
       ),
     },

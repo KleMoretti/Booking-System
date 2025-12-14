@@ -1,0 +1,238 @@
+/* 全局主题变量 */
+
+/* 日间模式（默认） */
+:root[data-theme="light"],
+:root {
+  /* 主色调 */
+  --color-primary: #000;
+  --color-primary-hover: #333;
+  --color-primary-active: #666;
+  
+  /* 背景色 */
+  --color-bg-base: #ffffff;
+  --color-bg-container: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-layout: #f0f2f5;
+  --color-bg-spotlight: #fafafa;
+  --color-bg-mask: rgba(0, 0, 0, 0.45);
+  
+  /* 文字颜色 */
+  --color-text-base: #000000;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+  --color-text-quaternary: #cccccc;
+  --color-text-disabled: #d9d9d9;
+  
+  /* 边框颜色 */
+  --color-border-base: #d9d9d9;
+  --color-border-secondary: #f0f0f0;
+  --color-border-tertiary: #e8e8e8;
+  
+  /* 分割线 */
+  --color-split: rgba(0, 0, 0, 0.06);
+  
+  /* 链接 */
+  --color-link: #1890ff;
+  --color-link-hover: #40a9ff;
+  --color-link-active: #096dd9;
+  
+  /* 状态颜色 */
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-error: #ff4d4f;
+  --color-info: #1890ff;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-base: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.16);
+}
+
+/* 夜间模式 */
+:root[data-theme="dark"] {
+  /* 主色调 */
+  --color-primary: #ffffff;
+  --color-primary-hover: #d9d9d9;
+  --color-primary-active: #bfbfbf;
+  
+  /* 背景色 */
+  --color-bg-base: #141414;
+  --color-bg-container: #1f1f1f;
+  --color-bg-elevated: #2a2a2a;
+  --color-bg-layout: #0a0a0a;
+  --color-bg-spotlight: #262626;
+  --color-bg-mask: rgba(0, 0, 0, 0.65);
+  
+  /* 文字颜色 */
+  --color-text-base: #ffffff;
+  --color-text-secondary: #d9d9d9;
+  --color-text-tertiary: #8c8c8c;
+  --color-text-quaternary: #595959;
+  --color-text-disabled: #434343;
+  
+  /* 边框颜色 */
+  --color-border-base: #434343;
+  --color-border-secondary: #303030;
+  --color-border-tertiary: #3a3a3a;
+  
+  /* 分割线 */
+  --color-split: rgba(255, 255, 255, 0.06);
+  
+  /* 链接 */
+  --color-link: #1890ff;
+  --color-link-hover: #40a9ff;
+  --color-link-active: #096dd9;
+  
+  /* 状态颜色 */
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-error: #ff4d4f;
+  --color-info: #1890ff;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-base: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* View Transitions API 配置 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 全局应用 */
+body {
+  background-color: var(--color-bg-layout);
+  color: var(--color-text-base);
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ant Design组件主题适配 */
+[data-theme="dark"] .ant-layout {
+  background: var(--color-bg-layout);
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] .ant-layout-header {
+  background: var(--color-bg-container);
+  border-bottom-color: var(--color-border-base);
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] .ant-card {
+  background: var(--color-bg-container);
+  border-color: var(--color-border-base);
+  color: var(--color-text-base);
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+              color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] .ant-table {
+  background: var(--color-bg-container);
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .ant-table-thead > tr > th {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-base);
+  border-color: var(--color-border-base);
+}
+
+[data-theme="dark"] .ant-table-tbody > tr > td {
+  border-color: var(--color-border-base);
+}
+
+[data-theme="dark"] .ant-table-tbody > tr:hover > td {
+  background: var(--color-bg-elevated);
+}
+
+[data-theme="dark"] .ant-input,
+[data-theme="dark"] .ant-input-number,
+[data-theme="dark"] .ant-select-selector,
+[data-theme="dark"] .ant-picker {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-base);
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .ant-input::placeholder,
+[data-theme="dark"] .ant-select-selection-placeholder,
+[data-theme="dark"] .ant-picker-input > input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+[data-theme="dark"] .ant-menu {
+  background: transparent;
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .ant-menu-item,
+[data-theme="dark"] .ant-menu-submenu-title {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .ant-menu-item:hover,
+[data-theme="dark"] .ant-menu-submenu-title:hover,
+[data-theme="dark"] .ant-menu-item-selected {
+  color: var(--color-text-base);
+  background: var(--color-bg-elevated);
+}
+
+[data-theme="dark"] .ant-modal-content {
+  background: var(--color-bg-container);
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .ant-modal-header {
+  background: var(--color-bg-container);
+  border-color: var(--color-border-base);
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .ant-modal-footer {
+  border-color: var(--color-border-base);
+}
+
+[data-theme="dark"] .ant-descriptions-item-label {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .ant-descriptions-item-content {
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .ant-btn-default {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-base);
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .ant-btn-default:hover {
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary-hover);
+}
+
+/* 平滑过渡 - 使用更自然的缓动函数 */
+*:not(.no-transition) {
+  transition-property: background-color, border-color, color, box-shadow, background, fill, stroke;
+  transition-duration: 0.4s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 特定元素使用更快的过渡 */
+button, a, .ant-btn {
+  transition-duration: 0.2s !important;
+}
+
+/* 避免过渡的元素 */
+.no-transition,
+.no-transition * {
+  transition: none !important;
+}

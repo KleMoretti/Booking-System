@@ -43,15 +43,15 @@
 .payment-methods {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
 }
 
 .payment-methods .ant-radio-button-wrapper {
   height: auto;
-  padding: 16px 20px;
-  border-radius: 8px;
-  border: 2px solid #d9d9d9;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
   display: flex;
   align-items: center;
   transition: all 0.3s;
@@ -75,8 +75,8 @@
 }
 
 .payment-icon {
-  font-size: 24px;
-  margin-right: 12px;
+  font-size: 20px;
+  margin-right: 10px;
 }
 
 .payment-icon.alipay {
@@ -88,13 +88,13 @@
 }
 
 .payment-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   margin-right: 8px;
 }
 
 .payment-balance {
-  font-size: 14px;
+  font-size: 13px;
   color: #8c8c8c;
 }
 

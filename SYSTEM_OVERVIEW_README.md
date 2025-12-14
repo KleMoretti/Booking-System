@@ -152,7 +152,76 @@
 
 ---
 
-## 8. 出问题时从哪里看？
+## 8. 数据库初始化与测试数据
+
+### 8.1 数据库结构
+
+系统使用MySQL数据库，包含以下核心表：
+- `users` – 用户表（含实名信息字段）
+- `stations` – 车站表
+- `trips` – 车次表
+- `seats` – 座位表
+- `orders` – 订单表
+- `tickets` – 车票表
+- `balance_changes` – 余额变动记录
+- `ticket_changes` – 改签退票记录
+
+### 8.2 初始化脚本
+
+**位置**: `booking-system-backend/src/main/resources/db/`
+
+1. **schema.sql** – 创建数据库和表结构
+2. **insert_trip_data.sql** – 插入测试车次数据（10天，130+班次，75000+座位）
+3. **DATA_INSERT_GUIDE.md** – 详细的数据导入指南
+
+### 8.3 快速初始化
+
+```bash
+# 1. 创建数据库和表
+mysql -u root -p < booking-system-backend/src/main/resources/db/schema.sql
+
+# 2. 导入测试数据（2025-12-14至2025-12-23）
+mysql -u root -p booking_system < booking-system-backend/src/main/resources/db/insert_trip_data.sql
+```
+
+### 8.4 测试数据概览
+
+- **时间范围**: 2025-12-14 至 2025-12-23（10天）
+- **车站数量**: 15个（北京、上海、广州、深圳、杭州等主要城市）
+- **车次总数**: 约130个班次
+- **主要线路**:
+  - G1/G2: 北京南 ⇄ 上海虹桥（553元）
+  - G7: 北京西 → 广州南（862元）
+  - G15: 北京南 → 深圳北（933.5元）
+  - D101: 上海虹桥 → 杭州东（73元）
+  - 更多线路详见 `DATA_INSERT_GUIDE.md`
+
+### 8.5 验证数据
+
+```sql
+-- 查看车站
+SELECT * FROM stations;
+
+-- 查看今日车次
+SELECT t.trip_number, ds.station_name AS departure, as_.station_name AS arrival, 
+       t.departure_time, t.base_price
+FROM trips t
+JOIN stations ds ON t.departure_station_id = ds.station_id
+JOIN stations as_ ON t.arrival_station_id = as_.station_id
+WHERE DATE(t.departure_time) = CURDATE()
+ORDER BY t.departure_time;
+
+-- 查看座位统计
+SELECT t.trip_number, COUNT(s.seat_id) AS seat_count
+FROM trips t
+LEFT JOIN seats s ON t.trip_id = s.trip_id
+GROUP BY t.trip_id
+LIMIT 10;
+```
+
+---
+
+## 9. 出问题时从哪里看？
 
 - 认证 / Token 问题 → 原 `AUTH_TROUBLESHOOTING.md`
 - 完善信息更新接口后端实现细节 → 原 `BACKEND_FIX_UPDATE_USER.md` / `PROFILE_UPDATE_FIX.md`

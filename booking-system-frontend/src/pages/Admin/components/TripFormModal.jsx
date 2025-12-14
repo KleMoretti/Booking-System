@@ -147,31 +147,6 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
             allowClear={false}
           />
         </Form.Item>
-
-        <h4>座位信息</h4>
-        <Space style={{ width: '100%' }} size="large">
-          <Form.Item 
-            name="availableSeats" 
-            label="可用座位"
-            rules={[{ required: true, message: '请输入可用座位' }]}
-          >
-            <InputNumber min={0} placeholder="0" style={{ width: '150px' }} />
-          </Form.Item>
-          <Form.Item 
-            name="totalSeats" 
-            label="总座位"
-            rules={[{ required: true, message: '请输入总座位' }]}
-          >
-            <InputNumber min={0} placeholder="0" style={{ width: '150px' }} />
-          </Form.Item>
-          <Form.Item 
-            name="price" 
-            label="票价（元）"
-            rules={[{ required: true, message: '请输入票价' }]}
-          >
-            <InputNumber min={0} placeholder="0" style={{ width: '150px' }} />
-          </Form.Item>
-        </Space>
       </Form>
     </Modal>
   )
