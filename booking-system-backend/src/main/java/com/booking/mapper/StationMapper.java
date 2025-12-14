@@ -15,5 +15,5 @@ public interface StationMapper {
     Station findById(@Param("stationId") Integer stationId);
     Station findByName(@Param("stationName") String stationName);
     List<Station> findAll();
+    int delete(@Param("stationId") Integer stationId);
 }
-

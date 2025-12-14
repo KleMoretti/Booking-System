@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Table, Card, Button, Space, Modal, Form, Input, message, Popconfirm } from 'antd'
 import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons'
-import { getStationList } from '../../api/ticket'
+import { getStationList, createStation, updateStation, deleteStation } from '../../api/ticket'
 
 function StationManagement() {
   const [form] = Form.useForm()
@@ -37,7 +37,11 @@ function StationManagement() {
 
   const showEditModal = (record) => {
     setEditingRecord(record)
-    form.setFieldsValue(record)
+    form.setFieldsValue({
+      ...record,
+      // 兼容后端返回字段名为 code 或 stationCode 的情况
+      code: record.code ?? record.stationCode,
+    })
     setModalVisible(true)
   }
 
@@ -45,12 +49,11 @@ function StationManagement() {
     try {
       const values = await form.validateFields()
       
-      // TODO: 调用创建或更新站点API
       if (editingRecord) {
-        // await updateStation(editingRecord.id, values)
+        await updateStation(editingRecord.id, values)
         message.success('更新成功')
       } else {
-        // await createStation(values)
+        await createStation(values)
         message.success('添加成功')
       }
       
@@ -67,8 +70,7 @@ function StationManagement() {
 
   const handleDelete = async (id) => {
     try {
-      // TODO: 调用删除站点API
-      // await deleteStation(id)
+      await deleteStation(id)
       message.success('删除成功')
       fetchData()
     } catch (error) {
@@ -102,6 +104,10 @@ function StationManagement() {
       key: 'code',
       width: 120,
       align: 'center',
+      render: (code, record) => {
+        const value = code ?? record.stationCode
+        return value || '-'
+      },
     },
     {
       title: '所在城市',

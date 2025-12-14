@@ -27,4 +27,9 @@ public interface StationService {
      * 更新车站
      */
     void updateStation(Station station);
+
+    /**
+     * 删除车站
+     */
+    void deleteStation(Integer stationId);
 }

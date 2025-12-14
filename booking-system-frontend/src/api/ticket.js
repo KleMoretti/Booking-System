@@ -55,6 +55,38 @@ export const getStationList = () => {
 }
 
 /**
+ * 新增车站
+ */
+export const createStation = (data) => {
+  return request({
+    url: '/station',
+    method: 'post',
+    data,
+  })
+}
+
+/**
+ * 更新车站
+ */
+export const updateStation = (id, data) => {
+  return request({
+    url: `/station/${id}`,
+    method: 'put',
+    data,
+  })
+}
+
+/**
+ * 删除车站
+ */
+export const deleteStation = (id) => {
+  return request({
+    url: `/station/${id}`,
+    method: 'delete',
+  })
+}
+
+/**
  * 查询票价
  */
 export const getTicketPrice = (params) => {

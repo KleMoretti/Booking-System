@@ -14,6 +14,7 @@ public class Station {
     private String stationName;
     
     private String city;
+    @JsonProperty("code")
     private String stationCode;
     private String address;
     private LocalDateTime createTime;
@@ -42,6 +43,7 @@ public class Station {
         this.city = city;
     }
 
+    @JsonProperty("code")
     public String getStationCode() {
         return stationCode;
     }

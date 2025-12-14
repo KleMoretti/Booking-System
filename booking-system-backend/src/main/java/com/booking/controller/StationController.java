@@ -57,4 +57,13 @@ public class StationController {
         stationService.updateStation(station);
         return Result.success();
     }
+
+    /**
+     * 删除车站（管理员功能）
+     */
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteStation(@PathVariable Integer id) {
+        stationService.deleteStation(id);
+        return Result.success();
+    }
 }

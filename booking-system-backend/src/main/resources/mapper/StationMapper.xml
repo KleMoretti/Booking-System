@@ -35,5 +35,9 @@
     <select id="findAll" resultMap="StationResultMap">
         SELECT * FROM stations
     </select>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM stations WHERE station_id = #{stationId}
+    </delete>
 </mapper>
 

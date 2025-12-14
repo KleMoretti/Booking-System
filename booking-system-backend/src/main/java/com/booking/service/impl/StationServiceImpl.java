@@ -36,4 +36,9 @@ public class StationServiceImpl implements StationService {
     public void updateStation(Station station) {
         stationMapper.update(station);
     }
+
+    @Override
+    public void deleteStation(Integer stationId) {
+        stationMapper.delete(stationId);
+    }
 }
