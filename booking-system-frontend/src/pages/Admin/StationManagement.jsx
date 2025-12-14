@@ -48,12 +48,17 @@ function StationManagement() {
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields()
-      
+      // 同步表单中的 code 到 stationCode，兼容后端字段名
+      const payload = {
+        ...values,
+        stationCode: values.code,
+      }
+
       if (editingRecord) {
-        await updateStation(editingRecord.id, values)
+        await updateStation(editingRecord.id, payload)
         message.success('更新成功')
       } else {
-        await createStation(values)
+        await createStation(payload)
         message.success('添加成功')
       }
       
