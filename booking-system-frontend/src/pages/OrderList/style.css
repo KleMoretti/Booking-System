@@ -3,3 +3,19 @@
 .page-order-list {
   padding-top: 24px;
 }
+
+/* 订单标签页样式 */
+.order-tabs {
+  margin: 20px 0;
+}
+
+.order-tabs .ant-tabs-tab {
+  padding: 12px 20px;
+  font-size: 15px;
+}
+
+.order-tabs .ant-tabs-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

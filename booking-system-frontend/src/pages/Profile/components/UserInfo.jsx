@@ -71,7 +71,7 @@ function UserInfo({ userInfo }) {
         bordered
         column={{ xs: 1, sm: 1, md: 2 }}
         items={items}
-        labelStyle={{ fontWeight: '600', width: '100px' }}
+        styles={{ label: { fontWeight: '600', width: '100px' } }}
         size="small"
       />
     </div>

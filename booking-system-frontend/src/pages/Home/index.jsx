@@ -1,12 +1,13 @@
 // 首页
-import { Card, Button, Form, DatePicker, Select, Row, Col, Typography, message } from 'antd'
+import { Card, Button, Form, DatePicker, Select, Row, Col, Typography, message, Space, Tag } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useState, useCallback, useMemo } from 'react'
-import { SwapOutlined } from '@ant-design/icons'
+import { SwapOutlined, HistoryOutlined, CloseOutlined, ClockCircleOutlined } from '@ant-design/icons'
 import { setSearchParams } from '../../store/slices/ticketSlice'
 import { getStationList } from '../../api/ticket'
 import { API_CODE } from '../../utils/constants'
+import { useSearchHistory } from '../../hooks/useSearchHistory'
 import dayjs from 'dayjs'
 import './style.css'
 
@@ -18,6 +19,7 @@ function Home() {
   const dispatch = useDispatch()
   const [stations, setStations] = useState([])
   const [loading, setLoading] = useState(false)
+  const { history, addHistory, removeHistory, clearHistory } = useSearchHistory()
 
   const loadStations = useCallback(async () => {
     try {
@@ -68,23 +70,81 @@ function Home() {
     // 保存搜索条件到Redux
     dispatch(setSearchParams(searchParams))
 
+    // 添加到搜索历史
+    const fromStation = stations.find(s => s.id === values.fromStationId)
+    const toStation = stations.find(s => s.id === values.toStationId)
+    addHistory({
+      ...searchParams,
+      fromStationName: fromStation?.name,
+      toStationName: toStation?.name,
+    })
+
     // 跳转到车票列表页
     navigate('/tickets', { state: { searchParams } })
   }
+
+  // 从历史记录中选择
+  const handleSelectHistory = useCallback((historyItem) => {
+    form.setFieldsValue({
+      fromStationId: historyItem.fromStationId,
+      toStationId: historyItem.toStationId,
+      departureDate: dayjs(historyItem.departureDate),
+    })
+  }, [form])
+
+  // 快速设置日期
+  const handleQuickDate = useCallback((days) => {
+    form.setFieldsValue({
+      departureDate: dayjs().add(days, 'day'),
+    })
+  }, [form])
 
   return (
     <div className="page-home page-container">
       <Card className="page-card" variant="borderless">
         <div className="home-header">
-          <div>
-            <Title level={3} className="page-title">
-              一站式火车票预订
-            </Title>
-            <Paragraph className="page-subtitle">
-              选择出发地、目的地和日期，快速查询车次与余票信息。
-            </Paragraph>
-          </div>
+          <Title level={1} className="page-title">
+            火车票预订
+          </Title>
+          <Paragraph className="page-subtitle">
+            快速查询车次信息
+          </Paragraph>
         </div>
+        {/* 历史搜索记录 */}
+        {history.length > 0 && (
+          <div className="history-section">
+            <div className="history-header">
+              <span className="history-title">最近搜索</span>
+              <Button type="text" size="small" onClick={clearHistory} className="clear-btn">
+                清空
+              </Button>
+            </div>
+            <div className="history-list">
+              {history.map((item, index) => (
+                <div
+                  key={index}
+                  className="history-item"
+                  onClick={() => handleSelectHistory(item)}
+                >
+                  <span className="history-route">
+                    {item.fromStationName} → {item.toStationName}
+                  </span>
+                  <span className="history-date">
+                    {dayjs(item.departureDate).format('MM-DD')}
+                  </span>
+                  <CloseOutlined 
+                    className="history-close"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeHistory(index)
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <Form
           form={form}
           layout="vertical"
@@ -163,6 +223,31 @@ function Home() {
               </Form.Item>
             </Col>
           </Row>
+          
+          {/* 快捷日期选择 */}
+          <div className="quick-date-section">
+            <Button 
+              type="text"
+              onClick={() => handleQuickDate(0)}
+              className="quick-date-btn"
+            >
+              今天
+            </Button>
+            <Button 
+              type="text"
+              onClick={() => handleQuickDate(1)}
+              className="quick-date-btn"
+            >
+              明天
+            </Button>
+            <Button 
+              type="text"
+              onClick={() => handleQuickDate(2)}
+              className="quick-date-btn"
+            >
+              后天
+            </Button>
+          </div>
         </Form>
       </Card>
     </div>

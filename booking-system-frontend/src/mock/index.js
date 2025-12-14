@@ -5,6 +5,7 @@ import {
   mockTrips,
   mockOrders,
   mockUser,
+  mockAdmin,
   mockAdminStats,
   mockRefundChangeRequests,
 } from './data'
@@ -23,12 +24,15 @@ export function setupMock(axiosInstance) {
     console.log('Mock: 用户登录', username)
     
     if (username && password) {
+      // 根据用户名返回不同用户数据
+      const user = username === 'admin' ? mockAdmin : mockUser
+      
       return [200, {
         code: 200,
         message: '登录成功',
         data: {
           token: 'mock-token-' + Date.now(),
-          user: mockUser,
+          user: user,
         }
       }]
     }
@@ -64,10 +68,13 @@ export function setupMock(axiosInstance) {
     const data = JSON.parse(config.data)
     console.log('Mock: 更新用户信息', data)
     
+    // 更新 mockUser 数据
+    Object.assign(mockUser, data)
+    
     return [200, {
       code: 200,
       message: '更新成功',
-      data: { ...mockUser, ...data },
+      data: mockUser,
     }]
   })
 

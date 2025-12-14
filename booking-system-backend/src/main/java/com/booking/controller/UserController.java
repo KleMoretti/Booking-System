@@ -3,6 +3,7 @@ package com.booking.controller;
 import com.booking.common.Result;
 import com.booking.dto.LoginDTO;
 import com.booking.dto.RegisterDTO;
+import com.booking.dto.UpdateProfileDTO;
 import com.booking.entity.BalanceChange;
 import com.booking.entity.User;
 import com.booking.mapper.BalanceChangeMapper;
@@ -67,8 +68,12 @@ public class UserController {
      * 获取用户信息
      */
     @GetMapping("/profile")
-    public Result<User> getProfile(@RequestHeader("Authorization") String token) {
+    public Result<User> getProfile(@RequestHeader(value = "Authorization", required = false) String token) {
         try {
+            if (token == null || token.isEmpty()) {
+                return Result.error("请先登录");
+            }
+            
             String jwt = token.replace("Bearer ", "");
             Integer userId = jwtUtil.getUserIdFromToken(jwt);
             User user = userService.getUserById(userId);
@@ -89,17 +94,23 @@ public class UserController {
      * 更新用户信息
      */
     @PutMapping("/profile")
-    public Result<Void> updateProfile(
-            @RequestHeader("Authorization") String token,
-            @RequestBody User user) {
+    public Result<User> updateProfile(
+            @RequestHeader(value = "Authorization", required = false) String token,
+            @Valid @RequestBody UpdateProfileDTO dto) {
         try {
+            if (token == null || token.isEmpty()) {
+                return Result.error("请先登录");
+            }
+            
             String jwt = token.replace("Bearer ", "");
             Integer userId = jwtUtil.getUserIdFromToken(jwt);
             
-            user.setUserId(userId);
-            userService.updateUser(user);
-
-            return Result.success("更新成功", null);
+            // 使用新的 updateProfile 方法
+            userService.updateProfile(userId, dto);
+            
+            // 返回更新后的用户信息
+            User updatedUser = userService.getUserById(userId);
+            return Result.success("更新成功", updatedUser);
         } catch (IllegalArgumentException e) {
             return Result.error(e.getMessage());
         } catch (Exception e) {
@@ -112,9 +123,13 @@ public class UserController {
      */
     @PutMapping("/password")
     public Result<Void> changePassword(
-            @RequestHeader("Authorization") String token,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestBody Map<String, String> passwordData) {
         try {
+            if (token == null || token.isEmpty()) {
+                return Result.error("请先登录");
+            }
+            
             String jwt = token.replace("Bearer ", "");
             Integer userId = jwtUtil.getUserIdFromToken(jwt);
             
@@ -136,9 +151,13 @@ public class UserController {
      */
     @PostMapping("/recharge")
     public Result<Void> recharge(
-            @RequestHeader("Authorization") String token,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestBody Map<String, Object> data) {
         try {
+            if (token == null || token.isEmpty()) {
+                return Result.error("请先登录");
+            }
+            
             String jwt = token.replace("Bearer ", "");
             Integer userId = jwtUtil.getUserIdFromToken(jwt);
 
@@ -155,15 +174,19 @@ public class UserController {
 
     @PostMapping("/balance/recharge")
     public Result<Void> rechargeBalance(
-            @RequestHeader("Authorization") String token,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestBody Map<String, Object> data) {
         return recharge(token, data);
     }
 
     @GetMapping("/balance/history")
     public Result<List<Map<String, Object>>> getBalanceHistory(
-            @RequestHeader("Authorization") String token) {
+            @RequestHeader(value = "Authorization", required = false) String token) {
         try {
+            if (token == null || token.isEmpty()) {
+                return Result.error("请先登录");
+            }
+            
             String jwt = token.replace("Bearer ", "");
             Integer userId = jwtUtil.getUserIdFromToken(jwt);
 

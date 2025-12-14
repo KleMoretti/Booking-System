@@ -1,7 +1,7 @@
 // 支付页面
-import { Card, Radio, Button, Space, message, Descriptions, Divider, Alert, Spin } from 'antd'
-import { AlipayOutlined, WechatOutlined, WalletOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
-import { useState, useEffect } from 'react'
+import { Card, Radio, Button, Space, message, Descriptions, Divider, Alert, Spin, Statistic, List } from 'antd'
+import { AlipayOutlined, WechatOutlined, WalletOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { getOrderDetail, payOrder } from '../../api/order'
@@ -9,6 +9,8 @@ import { formatDateTime, formatPrice } from '../../utils/format'
 import { API_CODE, PAYMENT_METHOD } from '../../utils/constants'
 import PageHeader from '../../components/PageHeader'
 import './style.css'
+
+const { Countdown } = Statistic
 
 function Payment() {
   const navigate = useNavigate()
@@ -22,6 +24,7 @@ function Payment() {
   const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHOD.BALANCE)
   const [paying, setPaying] = useState(false)
   const [paymentResult, setPaymentResult] = useState(null)
+  const [deadline, setDeadline] = useState(Date.now() + 15 * 60 * 1000) // 15分钟倒计时
 
   useEffect(() => {
     if (!orderId) {
@@ -31,6 +34,14 @@ function Payment() {
     }
     loadOrderDetail()
   }, [orderId])
+
+  // 倒计时结束处理
+  const handleCountdownFinish = useCallback(() => {
+    message.warning('支付超时，订单已取消')
+    setTimeout(() => {
+      navigate('/orders')
+    }, 2000)
+  }, [navigate])
 
   const loadOrderDetail = async () => {
     setOrderLoading(true)
@@ -172,6 +183,8 @@ function Payment() {
 
   const orderAmount = orderDetail?.totalAmount || orderDetail?.totalPrice || 0
   const userBalance = userInfo?.balance || 0
+  const ticketCount = orderDetail?.tickets?.length || 1
+  const ticketPrice = ticketCount > 0 ? orderAmount / ticketCount : orderAmount
 
   return (
     <div className="page-payment page-container">
@@ -179,6 +192,26 @@ function Payment() {
         <PageHeader
           title="订单支付"
           subtitle="请选择支付方式完成支付"
+        />
+        
+        {/* 支付倒计时 */}
+        <Alert
+          message={
+            <Space>
+              <ClockCircleOutlined />
+              <span>请在</span>
+              <Countdown 
+                value={deadline} 
+                format="mm:ss" 
+                onFinish={handleCountdownFinish}
+                valueStyle={{ fontSize: '16px', color: '#ff4d4f' }}
+              />
+              <span>内完成支付</span>
+            </Space>
+          }
+          type="warning"
+          showIcon={false}
+          style={{ marginBottom: 20, textAlign: 'center' }}
         />
 
         <div className="payment-content">
@@ -202,9 +235,31 @@ function Payment() {
               </Descriptions.Item>
             </Descriptions>
             <Divider />
-            <div className="order-amount">
-              <span>订单金额：</span>
-              <span className="amount">{formatPrice(orderAmount)}</span>
+            
+            {/* 价格明细 */}
+            <div className="price-detail">
+              <h4 style={{ marginBottom: 12, fontWeight: 600 }}>
+                <InfoCircleOutlined /> 价格明细
+              </h4>
+              <List
+                size="small"
+                dataSource={[
+                  { label: '票价', value: formatPrice(ticketPrice) },
+                  { label: '数量', value: `${ticketCount} 张` },
+                  { label: '服务费', value: '¥0.00' },
+                ]}
+                renderItem={(item) => (
+                  <List.Item style={{ padding: '8px 0', border: 'none' }}>
+                    <span>{item.label}</span>
+                    <span style={{ fontWeight: 500 }}>{item.value}</span>
+                  </List.Item>
+                )}
+              />
+              <Divider style={{ margin: '12px 0' }} />
+              <div className="order-amount">
+                <span>订单总额：</span>
+                <span className="amount">{formatPrice(orderAmount)}</span>
+              </div>
             </div>
           </Card>
 

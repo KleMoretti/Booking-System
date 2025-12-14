@@ -1,18 +1,48 @@
-/* Home页面样式 */
+/* Home页面样式 - 现代简洁 */
 
 .page-home {
-  padding-top: 24px;
+  min-height: calc(100vh - 64px - 150px);
+  display: flex;
+  align-items: center;
+  padding: 60px 24px;
+}
+
+.page-home .page-card {
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .home-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.home-header .page-title {
+  color: #000 !important;
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.home-header .page-subtitle {
+  color: #888 !important;
+  font-size: 16px;
+  font-weight: 400;
+  margin-bottom: 0 !important;
 }
 
 .home-search-form {
-  margin-top: 8px;
+  background: #fff;
+  padding: 48px 56px;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .swap-button-col {
@@ -23,11 +53,223 @@
 
 .swap-stations-btn {
   width: 100%;
-  height: 40px;
+  height: 44px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background: #fafafa;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.swap-stations-btn:hover {
+  border-color: #000;
+  background: #000;
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* 快捷日期选择样式 */
+.quick-date-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.quick-date-btn {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 24px;
+  background: #fafafa;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.25s ease;
+}
+
+.quick-date-btn:hover {
+  color: #fff;
+  background: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 历史搜索样式 */
+.history-section {
+  margin-bottom: 48px;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.history-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+
+.clear-btn {
+  color: #999;
+  font-size: 13px;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.clear-btn:hover {
+  color: #000;
+}
+
+.history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.history-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.history-item:hover {
+  background: #000;
+  border-color: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.history-item:hover .history-route,
+.history-item:hover .history-date {
+  color: #fff;
+}
+
+.history-item:hover .history-close {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.history-route {
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.history-date {
+  color: #999;
+  font-size: 12px;
+}
+
+.history-close {
+  color: #ccc;
+  font-size: 12px;
+  transition: color 0.2s ease;
+}
+
+.history-close:hover {
+  color: #666;
+}
+
+/* 表单样式优化 */
+.home-search-form .ant-form-item-label > label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.home-search-form .ant-input,
+.home-search-form .ant-select-selector,
+.home-search-form .ant-picker {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #fafafa;
+  transition: all 0.25s ease;
+  height: 44px;
+}
+
+.home-search-form .ant-input:hover,
+.home-search-form .ant-select-selector:hover,
+.home-search-form .ant-picker:hover {
+  border-color: #999;
+  background: #fff;
+}
+
+.home-search-form .ant-input:focus,
+.home-search-form .ant-select-focused .ant-select-selector,
+.home-search-form .ant-picker-focused {
+  border-color: #000;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.home-search-form .ant-btn-primary {
+  background: #000;
+  border-color: #000;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  height: 44px;
+  transition: all 0.25s ease;
+}
+
+.home-search-form .ant-btn-primary:hover {
+  background: #333;
+  border-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {
+  .page-home {
+    padding: 32px 16px;
+    min-height: auto;
+  }
+  
+  .home-header {
+    margin-bottom: 40px;
+  }
+  
+  .home-header .page-title {
+    font-size: 28px !important;
+  }
+  
+  .home-header .page-subtitle {
+    font-size: 14px;
+  }
+  
+  .home-search-form {
+    padding: 32px 24px;
+  }
+  
   .swap-button-col {
     display: none;
+  }
+  
+  .quick-date-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .quick-date-btn {
+    width: 100%;
+  }
+  
+  .history-list {
+    flex-direction: column;
+  }
+  
+  .history-item {
+    width: 100%;
   }
 }

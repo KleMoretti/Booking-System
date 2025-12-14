@@ -1,9 +1,12 @@
-/* Header组件样式 */
+/* Header组件样式 - 极简风格 */
 
 .app-header {
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 48px;
+  background: white !important;
+  border-bottom: 1px solid #e0e0e0;
+  height: 64px;
 }
 
 .app-header-left {
@@ -15,24 +18,43 @@
 .app-logo {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  color: #e5e7eb;
+  color: #000;
   font-weight: 600;
-  font-size: 18px;
+  font-size: 16px;
   text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: opacity 0.2s ease;
 }
 
 .app-logo:hover {
-  color: #ffffff;
+  opacity: 0.6;
 }
 
-.logo-mark {
-  font-size: 20px;
+.logo-text {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .app-header-menu {
   flex: 1;
   min-width: 0;
+  border-bottom: none;
+}
+
+.app-header-menu .ant-menu-item {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.app-header-menu .ant-menu-item:hover,
+.app-header-menu .ant-menu-item-selected {
+  color: #000;
+}
+
+.app-header-menu .ant-menu-item::after {
+  border-bottom: 2px solid #000;
 }
 
 .app-header-right {
@@ -43,13 +65,16 @@
 .user-entry {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  color: #e5e7eb;
+  gap: 8px;
+  color: #666;
   text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
 .user-entry:hover {
-  color: #ffffff;
+  color: #000;
 }
 
 .user-entry-text {
@@ -59,19 +84,21 @@
 .user-info {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   cursor: pointer;
-  color: #e5e7eb;
+  color: #666;
+  transition: color 0.2s ease;
 }
 
 .user-info:hover {
-  color: #ffffff;
+  color: #000;
 }
 
 .user-avatar {
-  background-color: #2563eb;
+  background: #000;
 }
 
 .user-name {
   font-size: 14px;
+  font-weight: 500;
 }

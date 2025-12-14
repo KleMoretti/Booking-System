@@ -342,16 +342,30 @@ export const mockOrders = [
   },
 ]
 
-// 用户信息
+// 用户信息（信息不完整，用于测试补充信息弹窗）
 export const mockUser = {
-  id: 1,
+  userId: 1,
   username: 'testuser',
-  name: '测试用户',
-  email: 'test@example.com',
+  realName: null, // 未填写
+  email: null,
   phone: '13800138000',
-  idNumber: '110101199001011234',
-  role: 'user',
+  idCard: null, // 未填写
+  userType: 0, // 0=普通用户，1=管理员
+  balance: 1000.00,
   createTime: '2024-01-01 10:00:00',
+}
+
+// 管理员用户
+export const mockAdmin = {
+  userId: 999,
+  username: 'admin',
+  realName: '系统管理员',
+  email: 'admin@example.com',
+  phone: '13900139000',
+  idCard: '110101198001011234',
+  userType: 1, // 1=管理员
+  balance: 10000.00,
+  createTime: '2024-01-01 00:00:00',
 }
 
 // 管理员统计数据

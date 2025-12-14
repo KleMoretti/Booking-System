@@ -2,6 +2,7 @@ package com.booking.service;
 
 import com.booking.dto.LoginDTO;
 import com.booking.dto.RegisterDTO;
+import com.booking.dto.UpdateProfileDTO;
 import com.booking.entity.User;
 
 import java.util.Map;
@@ -34,6 +35,11 @@ public interface IUserService {
      * 更新用户信息
      */
     void updateUser(User user);
+    
+    /**
+     * 更新用户个人信息（姓名、身份证、邮箱）
+     */
+    void updateProfile(Integer userId, UpdateProfileDTO dto);
 
     /**
      * 修改密码

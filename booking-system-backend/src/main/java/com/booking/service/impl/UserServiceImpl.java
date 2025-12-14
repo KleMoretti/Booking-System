@@ -2,6 +2,7 @@ package com.booking.service.impl;
 
 import com.booking.dto.LoginDTO;
 import com.booking.dto.RegisterDTO;
+import com.booking.dto.UpdateProfileDTO;
 import com.booking.entity.BalanceChange;
 import com.booking.entity.User;
 import com.booking.mapper.BalanceChangeMapper;
@@ -136,6 +137,31 @@ public class UserServiceImpl implements IUserService {
         user.setUserType(null);
 
         userMapper.updateById(user);
+    }
+    
+    @Override
+    @Transactional
+    public void updateProfile(Integer userId, UpdateProfileDTO dto) {
+        if (userId == null) {
+            throw new IllegalArgumentException("用户ID不能为空");
+        }
+        
+        // 检查用户是否存在
+        User existUser = userMapper.selectById(userId);
+        if (existUser == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+        
+        // 检查身份证号是否已被其他用户使用
+        if (dto.getIdCard() != null && !dto.getIdCard().isEmpty()) {
+            User userByIdCard = userMapper.selectByIdCard(dto.getIdCard());
+            if (userByIdCard != null && !userByIdCard.getUserId().equals(userId)) {
+                throw new IllegalArgumentException("该身份证号已被使用");
+            }
+        }
+        
+        // 使用专门的 updateProfile 方法更新
+        userMapper.updateProfile(userId, dto.getRealName(), dto.getIdCard(), dto.getEmail());
     }
 
     @Override

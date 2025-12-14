@@ -50,6 +50,10 @@
     <select id="selectByPhone" parameterType="string" resultMap="UserResultMap">
         SELECT * FROM users WHERE phone = #{phone} AND is_deleted = 0
     </select>
+    
+    <select id="selectByIdCard" parameterType="string" resultMap="UserResultMap">
+        SELECT * FROM users WHERE id_card_no = #{idCard} AND is_deleted = 0
+    </select>
 
     <select id="selectAll" resultMap="UserResultMap">
         SELECT * FROM users WHERE is_deleted = 0
@@ -61,5 +65,23 @@
 
     <update id="deleteById" parameterType="int">
         UPDATE users SET is_deleted = 1 WHERE user_id = #{userId}
+    </update>
+    
+    <!-- 更新用户个人信息（只更新 real_name, id_card_no, email） -->
+    <update id="updateProfile">
+        UPDATE users
+        <set>
+            <if test="realName != null and realName != ''">
+                real_name = #{realName},
+            </if>
+            <if test="idCard != null and idCard != ''">
+                id_card_no = #{idCard},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+            update_time = NOW()
+        </set>
+        WHERE user_id = #{userId}
     </update>
 </mapper>

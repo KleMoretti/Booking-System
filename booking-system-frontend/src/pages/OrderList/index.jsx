@@ -1,8 +1,9 @@
 // 订单列表页面
-import { Card, Table, Tag, Button, Space, message, Modal, Descriptions } from 'antd'
+import { Card, Table, Tag, Button, Space, message, Modal, Descriptions, Tabs } from 'antd'
 import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined } from '@ant-design/icons'
 import { getOrderList, cancelOrder } from '../../store/slices/orderSlice'
 import { formatDateTime, formatPrice, getOrderStatus, formatIdCard } from '../../utils/format'
 import { ORDER_STATUS, PAGINATION } from '../../utils/constants'
@@ -18,6 +19,7 @@ function OrderList() {
   const { orderList, loading, pagination } = useSelector((state) => state.order)
   const [detailModalVisible, setDetailModalVisible] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [activeTab, setActiveTab] = useState('all')
 
   const loadOrders = useCallback((page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
     dispatch(getOrderList({ page, pageSize }))
@@ -49,8 +51,34 @@ function OrderList() {
     }
   }, [orderList])
 
+  // 根据标签页筛选订单
+  const filteredOrders = useMemo(() => {
+    if (activeTab === 'all') return orderList
+    if (activeTab === 'pending') {
+      return orderList.filter(order => 
+        (order.orderStatus ?? order.status) === ORDER_STATUS.PENDING
+      )
+    }
+    if (activeTab === 'paid') {
+      return orderList.filter(order => 
+        (order.orderStatus ?? order.status) === ORDER_STATUS.PAID
+      )
+    }
+    if (activeTab === 'completed') {
+      return orderList.filter(order => 
+        (order.orderStatus ?? order.status) === ORDER_STATUS.COMPLETED
+      )
+    }
+    if (activeTab === 'cancelled') {
+      return orderList.filter(order => 
+        (order.orderStatus ?? order.status) === ORDER_STATUS.CANCELLED
+      )
+    }
+    return orderList
+  }, [orderList, activeTab])
+
   const displayOrderList = useMemo(
-    () => orderList.map((order) => ({
+    () => filteredOrders.map((order) => ({
       id: order.orderId ?? order.id,
       orderNo: order.orderNumber ?? order.orderNo,
       tripNo: order.tripNumber ?? order.tripNo,
@@ -60,8 +88,27 @@ function OrderList() {
       totalPrice: order.totalAmount ?? order.totalPrice,
       status: order.orderStatus ?? order.status,
     })),
-    [orderList]
+    [filteredOrders]
   )
+
+  // 计算各状态订单数量
+  const orderCounts = useMemo(() => {
+    const counts = {
+      all: orderList.length,
+      pending: 0,
+      paid: 0,
+      completed: 0,
+      cancelled: 0,
+    }
+    orderList.forEach(order => {
+      const status = order.orderStatus ?? order.status
+      if (status === ORDER_STATUS.PENDING) counts.pending++
+      if (status === ORDER_STATUS.PAID) counts.paid++
+      if (status === ORDER_STATUS.COMPLETED) counts.completed++
+      if (status === ORDER_STATUS.CANCELLED) counts.cancelled++
+    })
+    return counts
+  }, [orderList])
 
   const columns = useMemo(() => [
     {
@@ -160,6 +207,58 @@ function OrderList() {
     )
   }
 
+  // 标签页文本映射
+  const tabTextMap = {
+    all: '全部',
+    pending: '待支付',
+    paid: '已支付',
+    completed: '已完成',
+    cancelled: '已取消',
+  }
+
+  const tabItems = [
+    {
+      key: 'all',
+      label: (
+        <span>
+          <SyncOutlined /> 全部订单 {orderCounts.all > 0 && <Tag>{orderCounts.all}</Tag>}
+        </span>
+      ),
+    },
+    {
+      key: 'pending',
+      label: (
+        <span>
+          <ClockCircleOutlined /> 待支付 {orderCounts.pending > 0 && <Tag color="orange">{orderCounts.pending}</Tag>}
+        </span>
+      ),
+    },
+    {
+      key: 'paid',
+      label: (
+        <span>
+          <CheckCircleOutlined /> 已支付 {orderCounts.paid > 0 && <Tag color="blue">{orderCounts.paid}</Tag>}
+        </span>
+      ),
+    },
+    {
+      key: 'completed',
+      label: (
+        <span>
+          <CheckCircleOutlined /> 已完成 {orderCounts.completed > 0 && <Tag color="green">{orderCounts.completed}</Tag>}
+        </span>
+      ),
+    },
+    {
+      key: 'cancelled',
+      label: (
+        <span>
+          <CloseCircleOutlined /> 已取消 {orderCounts.cancelled > 0 && <Tag color="red">{orderCounts.cancelled}</Tag>}
+        </span>
+      ),
+    },
+  ]
+
   return (
     <div className="page-order-list page-container">
       <Card className="page-card" variant="borderless">
@@ -167,9 +266,17 @@ function OrderList() {
           title="我的订单"
           subtitle="查看历史订单和当前订单状态，支持退票、改签等操作"
         />
-        {orderList.length === 0 ? (
+        
+        <Tabs 
+          activeKey={activeTab} 
+          onChange={setActiveTab}
+          items={tabItems}
+          className="order-tabs"
+        />
+        
+        {displayOrderList.length === 0 ? (
           <EmptyState
-            description="您还没有订单"
+            description={activeTab === 'all' ? "您还没有订单" : `没有${tabTextMap[activeTab]}订单`}
             actionText="去订票"
             actionPath="/tickets"
           />
@@ -205,7 +312,7 @@ function OrderList() {
                 column={2}
                 size="small"
                 bordered
-                labelStyle={{ fontWeight: '600', width: '120px' }}
+                styles={{ label: { fontWeight: '600', width: '120px' } }}
               >
                 <Descriptions.Item label="订单号">
                   {selectedOrder.orderNumber || selectedOrder.orderNo}

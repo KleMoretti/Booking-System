@@ -2,6 +2,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import PrivateRoute from '../components/PrivateRoute'
+import AdminRoute from '../components/AdminRoute'
 import Loading from '../components/Loading'
 
 // 使用React.lazy进行代码分割
@@ -74,11 +75,11 @@ function AppRoutes() {
       <Route
         path="/admin"
         element={
-          <PrivateRoute>
+          <AdminRoute>
             <LazyLoad>
               <Admin />
             </LazyLoad>
-          </PrivateRoute>
+          </AdminRoute>
         }
       />
       <Route

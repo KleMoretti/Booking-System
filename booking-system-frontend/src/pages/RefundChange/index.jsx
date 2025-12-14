@@ -1,6 +1,6 @@
 // 退票改签页面
-import { Card, Table, Tag, Button, Space, message, Modal, Select, DatePicker, TimePicker, InputNumber, Form, Descriptions, Divider } from 'antd'
-import { SwapOutlined, RollbackOutlined, ExclamationCircleOutlined } from '@ant-design/icons'
+import { Card, Table, Tag, Button, Space, message, Modal, Select, DatePicker, TimePicker, InputNumber, Form, Descriptions, Divider, Alert, Statistic } from 'antd'
+import { SwapOutlined, RollbackOutlined, ExclamationCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getOrderList } from '../../store/slices/orderSlice'
@@ -24,6 +24,8 @@ function RefundChange() {
   const [processingRefund, setProcessingRefund] = useState(false)
   const [processingChange, setProcessingChange] = useState(false)
   const [form] = Form.useForm()
+  const [refundFee, setRefundFee] = useState(0)
+  const [refundAmount, setRefundAmount] = useState(0)
 
   const loadOrders = useCallback((page = PAGINATION.DEFAULT_PAGE, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
     dispatch(getOrderList({ page, pageSize }))
@@ -56,11 +58,38 @@ function RefundChange() {
     [eligibleOrders]
   )
 
+  // 计算退票费用
+  const calculateRefundFee = useCallback((order) => {
+    const totalPrice = order.totalPrice || 0
+    const departureTime = dayjs(order.departureTime)
+    const now = dayjs()
+    const hoursLeft = departureTime.diff(now, 'hour')
+
+    let feeRate = 0
+    if (hoursLeft >= 48) {
+      feeRate = 0.05 // 5%
+    } else if (hoursLeft >= 24) {
+      feeRate = 0.10 // 10%
+    } else if (hoursLeft >= 2) {
+      feeRate = 0.20 // 20%
+    } else {
+      feeRate = 1 // 不予退票
+    }
+
+    const fee = totalPrice * feeRate
+    const refund = totalPrice - fee
+
+    return { fee, refund, feeRate, hoursLeft }
+  }, [])
+
   // 打开退票弹窗
   const handleOpenRefund = useCallback((record) => {
     setSelectedOrder(record)
+    const { fee, refund } = calculateRefundFee(record)
+    setRefundFee(fee)
+    setRefundAmount(refund)
     setRefundModalVisible(true)
-  }, [])
+  }, [calculateRefundFee])
 
   // 打开改签弹窗
   const handleOpenChange = useCallback((record) => {
@@ -312,17 +341,47 @@ function RefundChange() {
             
             <Divider />
             
+            {/* 退票费用预览 */}
+            <Alert
+              message="退票费用预览"
+              description={
+                <div style={{ marginTop: 12 }}>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>订单金额：</span>
+                      <span style={{ fontWeight: 600 }}>{formatPrice(selectedOrder.totalPrice)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>退票手续费：</span>
+                      <span style={{ fontWeight: 600, color: '#ff4d4f' }}>-{formatPrice(refundFee)}</span>
+                    </div>
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 16, fontWeight: 600 }}>预计退款：</span>
+                      <span style={{ fontSize: 18, fontWeight: 600, color: '#52c41a' }}>{formatPrice(refundAmount)}</span>
+                    </div>
+                  </Space>
+                </div>
+              }
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            
             <div className="refund-rules">
-              <h4>退票规则</h4>
+              <h4><InfoCircleOutlined /> 退票规则</h4>
               <ul>
                 <li>开车前48小时以上：退票费5%</li>
                 <li>开车前24-48小时：退票费10%</li>
                 <li>开车前2-24小时：退票费20%</li>
                 <li>开车前2小时以内：不予退票</li>
               </ul>
-              <p className="refund-note">
-                <ExclamationCircleOutlined /> 退款将在3-5个工作日内退回原支付账户
-              </p>
+              <Alert
+                message="退款将在3-5个工作日内退回原支付账户"
+                type="warning"
+                showIcon
+                style={{ marginTop: 12 }}
+              />
             </div>
           </div>
         )}
@@ -432,16 +491,25 @@ function RefundChange() {
             <Divider />
 
             <div className="change-rules">
-              <h4>改签规则</h4>
+              <h4><InfoCircleOutlined /> 改签规则</h4>
               <ul>
                 <li>开车前48小时以上：免费改签</li>
                 <li>开车前24-48小时：改签费5%</li>
                 <li>开车前2-24小时：改签费10%</li>
                 <li>开车前2小时以内：不予改签</li>
               </ul>
-              <p className="change-note">
-                <ExclamationCircleOutlined /> 如有差价，将按照实际票价进行补收或退还
-              </p>
+              <Alert
+                message="如有差价，将按照实际票价进行补收或退还"
+                type="info"
+                showIcon
+                style={{ marginTop: 12 }}
+              />
+              <Alert
+                message="改签后的车次仅限同一路线，不支持跨线路改签"
+                type="warning"
+                showIcon
+                style={{ marginTop: 8 }}
+              />
             </div>
           </div>
         )}

@@ -1,19 +1,30 @@
-/* Footer组件样式 */
+/* Footer组件样式 - 极简风格 */
 
 .app-footer {
   text-align: center;
-  color: #94a3b8;
-  background-color: #0f172a;
-  padding: 16px 24px;
+  color: #999;
+  background: #fafafa;
+  padding: 32px 24px;
+  margin-top: 80px;
+  border-top: 1px solid #e0e0e0;
 }
 
 .app-footer-main {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.app-footer-main span {
+  transition: color 0.2s ease;
+}
+
+.app-footer-main span:hover:not(.footer-divider) {
+  color: #000;
 }
 
 .footer-divider {
-  color: #1e293b;
+  color: #e0e0e0;
 }

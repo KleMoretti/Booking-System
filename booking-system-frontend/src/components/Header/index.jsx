@@ -22,6 +22,9 @@ function Header() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const { userInfo, isAuthenticated } = useSelector((state) => state.user)
+  
+  // 管理员检查（userType: 1 = 管理员，0 = 普通用户）
+  const isAdmin = userInfo?.userType === 1
 
   const handleLogout = () => {
     dispatch(logout())
@@ -51,19 +54,26 @@ function Header() {
     <AntHeader className="app-header">
       <div className="app-header-left">
         <Link to="/home" className="app-logo">
-          <span className="logo-mark">🚄</span>
-          <span className="logo-text">火车票预订系统</span>
+          <span className="logo-text">火车票预订</span>
         </Link>
       </div>
       <Menu
-        theme="dark"
+        theme="light"
         mode="horizontal"
         selectedKeys={[navItems.find(item => location.pathname.startsWith(item.key))?.key || '/home']}
-        items={navItems.map(item => ({
-          key: item.key,
-          icon: item.icon,
-          label: <Link to={item.key}>{item.label}</Link>,
-        }))}
+        items={navItems
+          .filter(item => {
+            // 管理后台仅管理员可见
+            if (item.key === '/admin') {
+              return isAdmin
+            }
+            return true
+          })
+          .map(item => ({
+            key: item.key,
+            icon: item.icon,
+            label: <Link to={item.key}>{item.label}</Link>,
+          }))}
         className="app-header-menu"
       />
       <div className="app-header-right">
