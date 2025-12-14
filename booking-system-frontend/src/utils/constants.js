@@ -23,10 +23,10 @@ export const API_CODE = {
 export const ORDER_STATUS = {
   PENDING: 0,      // 待支付：订单已创建，等待支付
   PAID: 1,         // 已支付：订单已支付，等待乘车
-  CANCELLED: 2,    // 已取消：订单已取消
-  REFUNDED: 3,     // 已退款：订单已退票退款
-  COMPLETED: 4,    // 已完成：车次已发车且乘车完毕
-  TIMEOUT: 5,      // 已超时：订单超时未支付自动取消
+  CANCELLED: 2,    // 已取消：订单已取消（支付取消）
+  REFUNDED: 4,     // 已退票：订单已退票退款
+  CHANGED: 5,      // 已改签：订单已改签
+  TIMEOUT: 5,      // 已超时：订单超时未支付自动取消（实际与已改签共用状态码，需通过业务逻辑区分）
 }
 
 // 用户类型

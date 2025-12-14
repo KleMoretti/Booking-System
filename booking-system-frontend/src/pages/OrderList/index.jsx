@@ -60,6 +60,23 @@ function OrderList() {
     return createTime + ORDER_TIMEOUT
   }, [])
 
+  // 判断订单是否为超时取消
+  const isOrderTimeout = useCallback((order) => {
+    const status = order.orderStatus ?? order.status
+    if (status !== ORDER_STATUS.CANCELLED) {
+      return false
+    }
+    // 如果订单状态为已取消，且创建时间 + 15分钟 < 更新时间，则认为是超时取消
+    const createTime = dayjs(order.createTime)
+    const updateTime = dayjs(order.updateTime || order.createTime)
+    const deadline = createTime.add(ORDER_TIMEOUT, 'millisecond')
+    // 如果没有支付时间且更新时间在截止时间附近，则为超时
+    if (!order.payTime && updateTime.isAfter(deadline.subtract(1, 'minute'))) {
+      return true
+    }
+    return false
+  }, [])
+
   const handleTableChange = useCallback((newPagination) => {
     loadOrders(newPagination.current, newPagination.pageSize)
   }, [loadOrders])
@@ -86,19 +103,36 @@ function OrderList() {
       )
     }
     if (activeTab === 'paid') {
-      return orderList.filter(order => 
-        (order.orderStatus ?? order.status) === ORDER_STATUS.PAID
-      )
+      return orderList.filter(order => {
+        const status = order.orderStatus ?? order.status
+        // 已支付但发车时间未过的订单
+        if (status === ORDER_STATUS.PAID) {
+          const departureTime = order.departureTime
+          if (departureTime && dayjs(departureTime).isBefore(dayjs())) {
+            return false // 发车时间已过，不显示在已支付中
+          }
+          return true
+        }
+        return false
+      })
     }
     if (activeTab === 'completed') {
-      return orderList.filter(order => 
-        (order.orderStatus ?? order.status) === ORDER_STATUS.COMPLETED
-      )
+      return orderList.filter(order => {
+        const status = order.orderStatus ?? order.status
+        // 已支付且发车时间已过的订单显示为已完成
+        if (status === ORDER_STATUS.PAID) {
+          const departureTime = order.departureTime
+          return departureTime && dayjs(departureTime).isBefore(dayjs())
+        }
+        return false
+      })
     }
     if (activeTab === 'cancelled') {
-      return orderList.filter(order => 
-        (order.orderStatus ?? order.status) === ORDER_STATUS.CANCELLED
-      )
+      // 已取消包含：支付取消(2)和退票(4)
+      return orderList.filter(order => {
+        const status = order.orderStatus ?? order.status
+        return status === ORDER_STATUS.CANCELLED || status === ORDER_STATUS.REFUNDED
+      })
     }
     return orderList
   }, [orderList, activeTab])
@@ -128,10 +162,13 @@ function OrderList() {
     }
     orderList.forEach(order => {
       const status = order.orderStatus ?? order.status
+      const departureTime = order.departureTime
+      const isDeparted = departureTime && dayjs(departureTime).isBefore(dayjs())
+      
       if (status === ORDER_STATUS.PENDING) counts.pending++
-      if (status === ORDER_STATUS.PAID) counts.paid++
-      if (status === ORDER_STATUS.COMPLETED) counts.completed++
-      if (status === ORDER_STATUS.CANCELLED) counts.cancelled++
+      if (status === ORDER_STATUS.PAID && !isDeparted) counts.paid++
+      if (status === ORDER_STATUS.PAID && isDeparted) counts.completed++
+      if (status === ORDER_STATUS.CANCELLED || status === ORDER_STATUS.REFUNDED) counts.cancelled++
     })
     return counts
   }, [orderList])
@@ -181,9 +218,23 @@ function OrderList() {
       width: '12%',
       align: 'center',
       render: (status, record) => {
-        const statusInfo = getOrderStatus(status)
         const originalOrder = orderList.find(o => (o.orderId ?? o.id) === record.id)
         const deadline = originalOrder ? getOrderDeadline(originalOrder) : null
+        
+        // 检查是否已发车（已完成）
+        if (status === ORDER_STATUS.PAID && record.departureTime) {
+          const isDeparted = dayjs(record.departureTime).isBefore(dayjs())
+          if (isDeparted) {
+            return <Tag color="blue">已完成</Tag>
+          }
+        }
+        
+        // 检查是否为超时取消
+        if (status === ORDER_STATUS.CANCELLED && originalOrder && isOrderTimeout(originalOrder)) {
+          return <Tag color="volcano">已超时</Tag>
+        }
+        
+        const statusInfo = getOrderStatus(status)
         
         if (status === ORDER_STATUS.PENDING && deadline) {
           const now = Date.now()
@@ -243,7 +294,7 @@ function OrderList() {
         </Space>
       ),
     },
-  ], [handleCancelOrder, handleViewDetail, navigate, getOrderDeadline, orderList])
+  ], [handleCancelOrder, handleViewDetail, navigate, getOrderDeadline, isOrderTimeout, orderList])
 
   if (loading && orderList.length === 0) {
     return (

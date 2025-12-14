@@ -62,9 +62,9 @@ export const orderStatusMap = {
   0: { text: '待支付', color: 'orange' },
   1: { text: '已支付', color: 'green' },
   2: { text: '已取消', color: 'red' },
-  3: { text: '已退款', color: 'default' },
-  4: { text: '已完成', color: 'blue' },
-  5: { text: '已超时', color: 'volcano' },
+  4: { text: '已退票', color: 'volcano' },
+  5: { text: '已改签', color: 'purple' },
+  'timeout': { text: '已超时', color: 'volcano' }, // 超时取消
 }
 
 /**
