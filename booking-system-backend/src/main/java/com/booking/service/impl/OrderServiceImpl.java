@@ -60,6 +60,16 @@ public class OrderServiceImpl implements OrderService {
         if (trip == null) {
             throw new IllegalStateException("车次不存在");
         }
+        
+        // 校验发车时间，发车后不允许购票
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime departureTime = trip.getDepartureTime();
+        if (departureTime == null) {
+            throw new IllegalStateException("车次发车时间异常，无法购买车票");
+        }
+        if (!departureTime.isAfter(now)) {
+            throw new IllegalStateException("该车次已发车，无法购买车票");
+        }
 
         ensureSeatsForTrip(trip);
         
@@ -176,6 +186,25 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("订单状态异常");
         }
         
+        // 校验车次是否已发车，已发车订单不允许支付
+        List<Ticket> tickets = ticketMapper.findByOrderId(orderId);
+        if (tickets == null || tickets.isEmpty()) {
+            throw new IllegalStateException("订单没有关联的车票");
+        }
+        Ticket firstTicket = tickets.get(0);
+        Trip trip = tripMapper.findById(firstTicket.getTripId());
+        if (trip == null) {
+            throw new IllegalStateException("车次信息不存在");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime departureTime = trip.getDepartureTime();
+        if (departureTime == null) {
+            throw new IllegalStateException("车次发车时间异常，无法支付订单");
+        }
+        if (!departureTime.isAfter(now)) {
+            throw new IllegalStateException("该车次已发车，无法支付订单");
+        }
+        
         // 扣除余额（消费）
         balanceService.consume(userId, order.getTotalAmount());
         
@@ -187,7 +216,6 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(order);
         
         // 将锁定的座位改为已售
-        List<Ticket> tickets = ticketMapper.findByOrderId(orderId);
         for (Ticket ticket : tickets) {
             Seat seat = seatMapper.findById(ticket.getSeatId());
             if (seat != null && seat.getSeatStatus() == 1) {

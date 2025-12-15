@@ -30,4 +30,10 @@ public interface SeatMapper {
      * 根据车次ID删除所有座位
      */
     int deleteByTripId(@Param("tripId") Integer tripId);
+    
+    /**
+     * 释放过期的锁定座位
+     * 将状态为1（锁定）且 lock_expire_time 已过期的座位状态改为0（可用）
+     */
+    int releaseExpiredLockedSeats();
 }

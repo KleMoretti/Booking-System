@@ -63,7 +63,9 @@ function TicketList() {
           setPassengers(response.data)
         }
       } catch (error) {
-        console.error('获取常用乘客失败', error)
+        // 404错误说明用户没有常用乘客，这是正常情况，不需要显示错误
+        // 其他错误也静默处理，不影响订票流程
+        setPassengers([])
       }
     }
     loadPassengers()
@@ -387,7 +389,7 @@ function TicketList() {
                 value={sortBy}
                 onChange={setSortBy}
                 style={{ width: 140 }}
-                bordered={false}
+                variant="borderless"
                 options={[
                   { label: '出发时间', value: 'departureTime' },
                   { label: '到达时间', value: 'arrivalTime' },
@@ -499,7 +501,7 @@ function TicketList() {
           onCancel={handleCloseBookingModal}
           onOk={handleSubmitBooking}
           okText="提交订单"
-          destroyOnClose
+          destroyOnHidden
         >
           {selectedTrip && (
             <div style={{ marginBottom: 16 }}>

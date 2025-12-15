@@ -85,10 +85,14 @@ function Home() {
 
   // 从历史记录中选择
   const handleSelectHistory = useCallback((historyItem) => {
+    const historyDate = dayjs(historyItem.departureDate)
+    const today = dayjs().startOf('day')
+    const safeDate = historyDate.isBefore(today, 'day') ? today : historyDate
+
     form.setFieldsValue({
       fromStationId: historyItem.fromStationId,
       toStationId: historyItem.toStationId,
-      departureDate: dayjs(historyItem.departureDate),
+      departureDate: safeDate,
     })
   }, [form])
 

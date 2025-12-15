@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -27,6 +28,18 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public List<TripVO> searchTrips(Integer departureStationId, Integer arrivalStationId, LocalDateTime departureTimeFrom, LocalDateTime departureTimeTo) {
+        // 用户端查询时，发车时间已过的班次不再返回
+        if (departureTimeFrom != null || departureTimeTo != null) {
+            LocalDateTime now = LocalDateTime.now();
+            // 如果查询区间完全早于当前时间，则直接返回空列表
+            if (departureTimeTo != null && !departureTimeTo.isAfter(now)) {
+                return Collections.emptyList();
+            }
+            // 如果开始时间早于当前时间，则从当前时间开始查询
+            if (departureTimeFrom == null || departureTimeFrom.isBefore(now)) {
+                departureTimeFrom = now;
+            }
+        }
         return tripMapper.searchTrips(departureStationId, arrivalStationId, departureTimeFrom, departureTimeTo);
     }
 

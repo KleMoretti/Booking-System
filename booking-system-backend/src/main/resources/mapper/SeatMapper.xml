@@ -58,4 +58,15 @@
     <delete id="deleteByTripId" parameterType="int">
         DELETE FROM seats WHERE trip_id = #{tripId}
     </delete>
+    
+    <!-- 释放过期的锁定座位 -->
+    <update id="releaseExpiredLockedSeats">
+        UPDATE seats
+        SET seat_status = 0,
+            lock_expire_time = NULL,
+            update_time = NOW()
+        WHERE seat_status = 1
+        AND lock_expire_time IS NOT NULL
+        AND lock_expire_time &lt; NOW()
+    </update>
 </mapper>

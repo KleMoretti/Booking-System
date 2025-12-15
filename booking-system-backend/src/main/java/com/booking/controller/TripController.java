@@ -70,9 +70,14 @@ public class TripController {
 
     /**
      * 获取可用座位
+     * @param id 车次ID
+     * @param seatType 座位类型（可选，当前系统不区分座位类型，此参数保留用于未来扩展）
      */
     @GetMapping("/{id}/seats")
-    public Result<List<Seat>> getAvailableSeats(@PathVariable Integer id) {
+    public Result<List<Seat>> getAvailableSeats(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String seatType) {
+        // 当前系统不区分座位类型，seatType 参数保留用于未来扩展
         List<Seat> seats = seatService.listAvailableSeats(id);
         return Result.success(seats);
     }
