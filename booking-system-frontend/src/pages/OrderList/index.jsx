@@ -4,7 +4,7 @@ import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { ClockCircleOutlined, CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, QrcodeOutlined } from '@ant-design/icons'
-import { getOrderList, cancelOrder } from '../../store/slices/orderSlice'
+import { getOrderList, cancelOrder, setPagination } from '../../store/slices/orderSlice'
 import { formatDateTime, formatPrice, getOrderStatus, formatIdCard } from '../../utils/format'
 import { ORDER_STATUS, PAGINATION, ORDER_TIMEOUT } from '../../utils/constants'
 import PageHeader from '../../components/PageHeader'
@@ -78,8 +78,11 @@ function OrderList() {
   }, [])
 
   const handleTableChange = useCallback((newPagination) => {
-    loadOrders(newPagination.current, newPagination.pageSize)
-  }, [loadOrders])
+    dispatch(setPagination({
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+    }))
+  }, [dispatch])
 
   const handleViewDetail = useCallback((orderId) => {
     const fullOrder = orderList.find((order) => (order.orderId ?? order.id) === orderId)
@@ -172,6 +175,11 @@ function OrderList() {
     })
     return counts
   }, [orderList])
+
+  const handleTabChange = useCallback((key) => {
+    setActiveTab(key)
+    dispatch(setPagination({ current: 1 }))
+  }, [dispatch])
 
   const columns = useMemo(() => [
     {
@@ -368,7 +376,7 @@ function OrderList() {
         
         <Tabs 
           activeKey={activeTab} 
-          onChange={setActiveTab}
+          onChange={handleTabChange}
           items={tabItems}
           className="order-tabs"
         />
@@ -387,6 +395,7 @@ function OrderList() {
             loading={loading}
             pagination={{
               ...pagination,
+              total: displayOrderList.length,
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: (total) => `共 ${total} 条`,
