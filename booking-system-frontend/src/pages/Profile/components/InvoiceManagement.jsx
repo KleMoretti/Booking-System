@@ -57,6 +57,8 @@ function InvoiceList() {
   const [loading, setLoading] = useState(false)
   const [dataSource, setDataSource] = useState([])
   const [modalVisible, setModalVisible] = useState(false)
+  const [issueModalVisible, setIssueModalVisible] = useState(false)
+  const [issuingInvoice, setIssuingInvoice] = useState(null)
   const [titleList, setTitleList] = useState([])
 
   useEffect(() => {
@@ -130,15 +132,27 @@ function InvoiceList() {
     }
   }
 
-  const handleIssue = async (invoiceId) => {
+  const showIssueModal = (record) => {
+    setIssuingInvoice(record)
+    setIssueModalVisible(true)
+  }
+
+  const handleIssueConfirm = async () => {
+    if (!issuingInvoice) return
+    
     try {
-      const response = await issueInvoice(invoiceId)
+      setLoading(true)
+      const response = await issueInvoice(issuingInvoice.invoiceId)
       if (response.code === API_CODE.SUCCESS) {
         message.success('发票开具成功')
+        setIssueModalVisible(false)
+        setIssuingInvoice(null)
         fetchData()
       }
     } catch (error) {
       message.error('开具失败')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -228,7 +242,7 @@ function InvoiceList() {
             <Button
               type="link"
               size="small"
-              onClick={() => handleIssue(record.invoiceId)}
+              onClick={() => showIssueModal(record)}
             >
               开具
             </Button>
@@ -365,6 +379,86 @@ function InvoiceList() {
             <TextArea rows={3} placeholder="其他说明（可选）" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 开具发票模态框 */}
+      <Modal
+        title="开具发票"
+        open={issueModalVisible}
+        onOk={handleIssueConfirm}
+        onCancel={() => {
+          setIssueModalVisible(false)
+          setIssuingInvoice(null)
+        }}
+        confirmLoading={loading}
+        width={600}
+        okText="确认开具"
+        cancelText="取消"
+      >
+        {issuingInvoice && (
+          <div style={{ padding: '20px 0' }}>
+            <div style={{ 
+              background: '#f5f5f5', 
+              padding: '20px', 
+              borderRadius: '8px',
+              marginBottom: '16px'
+            }}>
+              <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '16px', fontWeight: 600 }}>
+                发票信息
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '12px', fontSize: '14px' }}>
+                <div style={{ color: '#666' }}>订单号：</div>
+                <div style={{ fontWeight: 500 }}>{issuingInvoice.orderNumber}</div>
+                
+                <div style={{ color: '#666' }}>发票抬头：</div>
+                <div style={{ fontWeight: 500 }}>{issuingInvoice.invoiceTitle}</div>
+                
+                <div style={{ color: '#666' }}>发票类型：</div>
+                <div style={{ fontWeight: 500 }}>
+                  {issuingInvoice.invoiceType === 0 ? '电子普通发票' : '增值税专用发票'}
+                </div>
+                
+                <div style={{ color: '#666' }}>纳税人识别号：</div>
+                <div style={{ fontWeight: 500 }}>
+                  {issuingInvoice.taxNumber || '无'}
+                </div>
+                
+                <div style={{ color: '#666' }}>开票金额：</div>
+                <div style={{ fontSize: '18px', color: '#ff4d4f', fontWeight: 600 }}>
+                  ¥{issuingInvoice.invoiceAmount?.toFixed(2) || '0.00'}
+                </div>
+                
+                <div style={{ color: '#666' }}>申请时间：</div>
+                <div style={{ fontWeight: 500 }}>{issuingInvoice.applyTime}</div>
+                
+                {issuingInvoice.email && (
+                  <>
+                    <div style={{ color: '#666' }}>接收邮箱：</div>
+                    <div style={{ fontWeight: 500 }}>{issuingInvoice.email}</div>
+                  </>
+                )}
+                
+                {issuingInvoice.note && (
+                  <>
+                    <div style={{ color: '#666' }}>备注：</div>
+                    <div style={{ fontWeight: 500 }}>{issuingInvoice.note}</div>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            <div style={{ 
+              padding: '12px', 
+              background: '#fff7e6', 
+              border: '1px solid #ffd666',
+              borderRadius: '4px',
+              fontSize: '13px',
+              color: '#ad6800'
+            }}>
+              <strong>提示：</strong>点击"确认开具"后，系统将自动生成发票并发送至接收邮箱。
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

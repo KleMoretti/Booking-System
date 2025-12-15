@@ -1,6 +1,6 @@
 // 车次表单模态框组件
 import React, { useEffect } from 'react'
-import { Modal, Form, Input, Select, InputNumber, TimePicker, DatePicker, Space } from 'antd'
+import { Modal, Form, Input, Select, InputNumber, DatePicker, Space } from 'antd'
 import dayjs from 'dayjs'
 import { TRAIN_TYPE } from '../../../utils/constants'
 
@@ -11,20 +11,23 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
     const arrivalTime = form.getFieldValue('arrivalTime')
     
     if (departureTime && arrivalTime) {
-      const depTime = dayjs(departureTime.format('HH:mm'), 'HH:mm')
-      let arrTime = dayjs(arrivalTime.format('HH:mm'), 'HH:mm')
-      
-      // 如果到达时间早于出发时间，说明是第二天
-      if (arrTime.isBefore(depTime)) {
-        arrTime = arrTime.add(1, 'day')
-      }
-      
-      const diff = arrTime.diff(depTime, 'minute')
-      const hours = Math.floor(diff / 60)
+      const diff = arrivalTime.diff(departureTime, 'minute')
+      const days = Math.floor(diff / (24 * 60))
+      const hours = Math.floor((diff % (24 * 60)) / 60)
       const minutes = diff % 60
       
-      const duration = `${hours}小时${minutes > 0 ? minutes + '分' : ''}`
-      form.setFieldsValue({ duration })
+      let duration = ''
+      if (days > 0) {
+        duration += `${days}天`
+      }
+      if (hours > 0) {
+        duration += `${hours}小时`
+      }
+      if (minutes > 0) {
+        duration += `${minutes}分`
+      }
+      
+      form.setFieldsValue({ duration: duration || '0分' })
     }
   }
 
@@ -80,7 +83,13 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
             rules={[{ required: true, message: '请选择出发站' }]}
             style={{ flex: 1 }}
           >
-            <Select placeholder="请选择" showSearch>
+            <Select 
+              placeholder="请选择" 
+              showSearch
+              style={{ minWidth: '200px' }}
+              dropdownStyle={{ minWidth: '250px' }}
+              optionFilterProp="children"
+            >
               {stations.map(station => (
                 <Select.Option key={station.id} value={station.name}>
                   {station.name}
@@ -95,7 +104,13 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
             rules={[{ required: true, message: '请选择到达站' }]}
             style={{ flex: 1 }}
           >
-            <Select placeholder="请选择" showSearch>
+            <Select 
+              placeholder="请选择" 
+              showSearch
+              style={{ minWidth: '200px' }}
+              dropdownStyle={{ minWidth: '250px' }}
+              optionFilterProp="children"
+            >
               {stations.map(station => (
                 <Select.Option key={station.id} value={station.name}>
                   {station.name}
@@ -105,29 +120,62 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
           </Form.Item>
         </Space>
 
-        <Space style={{ width: '100%' }} size="large">
+        <Space style={{ width: '100%', display: 'flex', gap: '12px' }}>
           <Form.Item
             name="departureTime"
             label="出发时间"
             rules={[{ required: true, message: '请选择出发时间' }]}
+            style={{ flex: 1 }}
           >
-            <TimePicker format="HH:mm" onChange={handleTimeChange} inputReadOnly allowClear={false} />
+            <DatePicker 
+              showTime 
+              format="YYYY-MM-DD HH:mm" 
+              onChange={handleTimeChange} 
+              inputReadOnly 
+              allowClear={false}
+              style={{ width: '100%' }}
+              disabledDate={(current) => current && current < dayjs().startOf('day')}
+            />
           </Form.Item>
 
           <Form.Item
             name="arrivalTime"
             label="到达时间"
-            rules={[{ required: true, message: '请选择到达时间' }]}
+            rules={[
+              { required: true, message: '请选择到达时间' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const departureTime = getFieldValue('departureTime')
+                  if (!value || !departureTime || value.isAfter(departureTime)) {
+                    return Promise.resolve()
+                  }
+                  return Promise.reject(new Error('到达时间必须晚于出发时间'))
+                },
+              }),
+            ]}
+            style={{ flex: 1 }}
           >
-            <TimePicker format="HH:mm" onChange={handleTimeChange} inputReadOnly allowClear={false} />
+            <DatePicker 
+              showTime 
+              format="YYYY-MM-DD HH:mm" 
+              onChange={handleTimeChange} 
+              inputReadOnly 
+              allowClear={false}
+              style={{ width: '100%' }}
+              disabledDate={(current) => {
+                const departureTime = form.getFieldValue('departureTime')
+                return current && departureTime && current < departureTime.startOf('day')
+              }}
+            />
           </Form.Item>
 
           <Form.Item
             name="duration"
             label="历时"
             rules={[{ required: true, message: '请输入历时' }]}
+            style={{ flex: 1 }}
           >
-            <Input placeholder="自动计算" disabled style={{ backgroundColor: '#f5f5f5' }} />
+            <Input placeholder="自动计算" disabled style={{ backgroundColor: '#f5f5f5', width: '100%' }} />
           </Form.Item>
         </Space>
 

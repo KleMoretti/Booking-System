@@ -92,10 +92,30 @@ function TripManagement() {
 
   const showEditModal = (record) => {
     setEditingRecord(record)
+    // 组合日期和时间为完整的日期时间
+    const departureDateTime = record.date && record.departureTime 
+      ? dayjs(`${record.date} ${record.departureTime}`, 'YYYY-MM-DD HH:mm')
+      : null
+    
+    // 到达时间可能跨天，需要根据历时计算
+    let arrivalDateTime = null
+    if (record.date && record.arrivalTime) {
+      const baseArrivalTime = dayjs(`${record.date} ${record.arrivalTime}`, 'YYYY-MM-DD HH:mm')
+      // 如果到达时间早于出发时间，说明是第二天或更晚
+      if (departureDateTime && baseArrivalTime.isBefore(departureDateTime)) {
+        // 从历时字符串中提取天数
+        const durationMatch = record.duration?.match(/(\d+)天/)
+        const days = durationMatch ? parseInt(durationMatch[1]) : 1
+        arrivalDateTime = baseArrivalTime.add(days, 'day')
+      } else {
+        arrivalDateTime = baseArrivalTime
+      }
+    }
+    
     form.setFieldsValue({
       ...record,
-      departureTime: record.departureTime ? dayjs(record.departureTime, 'HH:mm') : null,
-      arrivalTime: record.arrivalTime ? dayjs(record.arrivalTime, 'HH:mm') : null,
+      departureTime: departureDateTime,
+      arrivalTime: arrivalDateTime,
       date: record.date ? dayjs(record.date) : null,
     })
     setModalVisible(true)
@@ -110,7 +130,8 @@ function TripManagement() {
         ...values,
         departureTime: values.departureTime?.format('HH:mm'),
         arrivalTime: values.arrivalTime?.format('HH:mm'),
-        date: values.date?.format('YYYY-MM-DD'),
+        // 使用出发时间的日期作为发车日期
+        date: values.departureTime?.format('YYYY-MM-DD') || values.date?.format('YYYY-MM-DD'),
       }
 
       let res
