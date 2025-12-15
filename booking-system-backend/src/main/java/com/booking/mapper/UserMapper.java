@@ -24,4 +24,15 @@ public interface UserMapper {
     List<User> selectAll();
     Long countActiveUsers();
     int deleteById(@Param("userId") Integer userId);
+    
+    // 管理员用户管理相关方法
+    List<User> searchUsers(@Param("keyword") String keyword, 
+                          @Param("offset") Integer offset, 
+                          @Param("pageSize") Integer pageSize);
+    Long countSearchUsers(@Param("keyword") String keyword);
+    List<User> getAllUsersWithPagination(@Param("offset") Integer offset, 
+                                          @Param("pageSize") Integer pageSize);
+    int updatePassword(@Param("userId") Integer userId, @Param("password") String password);
+    int updateStatus(@Param("userId") Integer userId, @Param("status") Byte status);
+    Long countUserOrders(@Param("userId") Integer userId);
 }

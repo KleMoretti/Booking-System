@@ -84,4 +84,62 @@
         </set>
         WHERE user_id = #{userId}
     </update>
+    
+    <!-- 管理员用户管理相关SQL -->
+    
+    <!-- 搜索用户（按用户名、手机号、身份证号） -->
+    <select id="searchUsers" resultMap="UserResultMap">
+        SELECT * FROM users
+        WHERE is_deleted = 0
+        AND (
+            username LIKE CONCAT('%', #{keyword}, '%')
+            OR phone LIKE CONCAT('%', #{keyword}, '%')
+            OR id_card_no LIKE CONCAT('%', #{keyword}, '%')
+            OR real_name LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <!-- 统计搜索结果数量 -->
+    <select id="countSearchUsers" resultType="long">
+        SELECT COUNT(*) FROM users
+        WHERE is_deleted = 0
+        AND (
+            username LIKE CONCAT('%', #{keyword}, '%')
+            OR phone LIKE CONCAT('%', #{keyword}, '%')
+            OR id_card_no LIKE CONCAT('%', #{keyword}, '%')
+            OR real_name LIKE CONCAT('%', #{keyword}, '%')
+        )
+    </select>
+    
+    <!-- 分页获取所有用户 -->
+    <select id="getAllUsersWithPagination" resultMap="UserResultMap">
+        SELECT * FROM users
+        WHERE is_deleted = 0
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <!-- 更新用户密码 -->
+    <update id="updatePassword">
+        UPDATE users
+        SET password = #{password},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+    </update>
+    
+    <!-- 更新用户状态（0=正常，1=冻结） -->
+    <update id="updateStatus">
+        UPDATE users
+        SET user_type = #{status},
+            update_time = NOW()
+        WHERE user_id = #{userId}
+    </update>
+    
+    <!-- 统计用户订单数量 -->
+    <select id="countUserOrders" resultType="long">
+        SELECT COUNT(*) FROM orders
+        WHERE user_id = #{userId}
+    </select>
 </mapper>

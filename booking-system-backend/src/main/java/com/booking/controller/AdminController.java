@@ -4,14 +4,17 @@ import com.booking.common.PageListResult;
 import com.booking.common.Result;
 import com.booking.dto.TripDTO;
 import com.booking.dto.TripManagementVO;
+import com.booking.dto.UserManagementVO;
 import com.booking.entity.Order;
 import com.booking.entity.Station;
+import com.booking.entity.User;
 import com.booking.mapper.OrderMapper;
 import com.booking.mapper.StationMapper;
 import com.booking.mapper.TicketMapper;
 import com.booking.mapper.UserMapper;
 import com.booking.service.OrderService;
 import com.booking.service.TripService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -24,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 管理员控制器
@@ -50,6 +54,9 @@ public class AdminController {
     @Resource
     private OrderMapper orderMapper;
     
+    @Resource
+    private PasswordEncoder passwordEncoder;
+    
     /**
      * 获取统计数据
      */
@@ -74,14 +81,65 @@ public class AdminController {
      * 获取用户列表
      */
     @GetMapping("/users")
-    public Result<List<Object>> getUserList(
+    public Result<PageListResult<UserManagementVO>> getUserList(
             @RequestParam(required = false) String username,
             @RequestParam(required = false, defaultValue = "1") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
         
-        // TODO: 实现分页和搜索
-        // 暂时返回空列表
-        return Result.success(List.of());
+        // 参数验证
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
+        }
+        if (pageSize > 100) {
+            pageSize = 100;
+        }
+        
+        // 计算偏移量
+        Integer offset = (page - 1) * pageSize;
+        
+        try {
+            List<User> users;
+            Long total;
+            
+            // 如果有用户名搜索条件，使用搜索查询
+            if (username != null && !username.trim().isEmpty()) {
+                users = userMapper.searchUsers(username.trim(), offset, pageSize);
+                total = userMapper.countSearchUsers(username.trim());
+            } else {
+                // 否则查询所有用户
+                users = userMapper.getAllUsersWithPagination(offset, pageSize);
+                total = userMapper.countActiveUsers();
+            }
+            
+            // 转换为VO
+            List<UserManagementVO> userVOs = users.stream().map(user -> {
+                UserManagementVO vo = new UserManagementVO();
+                vo.setUserId(user.getUserId());
+                vo.setUsername(user.getUsername());
+                vo.setRealName(user.getRealName());
+                vo.setPhone(user.getPhone());
+                vo.setEmail(user.getEmail());
+                vo.setIdCard(user.getIdCardNo());
+                vo.setUserType(user.getUserType() != null ? user.getUserType().intValue() : 0);
+                vo.setBalance(user.getBalance());
+                vo.setCreateTime(user.getCreateTime());
+                vo.setUpdateTime(user.getUpdateTime());
+                
+                // 查询订单数量
+                Long orderCount = userMapper.countUserOrders(user.getUserId());
+                vo.setOrderCount(orderCount);
+                
+                return vo;
+            }).collect(Collectors.toList());
+            
+            PageListResult<UserManagementVO> result = new PageListResult<>(userVOs, total);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("获取用户列表失败：" + e.getMessage());
+        }
     }
     
     /**
@@ -357,5 +415,143 @@ public class AdminController {
             return Result.error("查询失败: " + e.getMessage());
         }
     }
+    
+    // ==================== 用户管理 ====================
+    
+    /**
+     * 搜索用户
+     */
+    @GetMapping("/users/search")
+    public Result<PageListResult<UserManagementVO>> searchUsers(
+            @RequestParam String keyword,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
+        
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Result.error("搜索关键词不能为空");
+        }
+        
+        // 参数验证
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
+        }
+        if (pageSize > 100) {
+            pageSize = 100;
+        }
+        
+        // 计算偏移量
+        Integer offset = (page - 1) * pageSize;
+        
+        try {
+            // 搜索用户
+            List<User> users = userMapper.searchUsers(keyword.trim(), offset, pageSize);
+            Long total = userMapper.countSearchUsers(keyword.trim());
+            
+            // 转换为VO
+            List<UserManagementVO> userVOs = users.stream().map(user -> {
+                UserManagementVO vo = new UserManagementVO();
+                vo.setUserId(user.getUserId());
+                vo.setUsername(user.getUsername());
+                vo.setRealName(user.getRealName());
+                vo.setPhone(user.getPhone());
+                vo.setEmail(user.getEmail());
+                vo.setIdCard(user.getIdCardNo());
+                vo.setUserType(user.getUserType() != null ? user.getUserType().intValue() : 0);
+                vo.setBalance(user.getBalance());
+                vo.setCreateTime(user.getCreateTime());
+                vo.setUpdateTime(user.getUpdateTime());
+                
+                // 查询订单数量
+                Long orderCount = userMapper.countUserOrders(user.getUserId());
+                vo.setOrderCount(orderCount);
+                
+                return vo;
+            }).collect(Collectors.toList());
+            
+            PageListResult<UserManagementVO> result = new PageListResult<>(userVOs, total);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("搜索用户失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取用户详情
+     */
+    @GetMapping("/users/{userId}")
+    public Result<UserManagementVO> getUserDetail(@PathVariable Integer userId) {
+        try {
+            User user = userMapper.selectById(userId);
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+            
+            UserManagementVO vo = new UserManagementVO();
+            vo.setUserId(user.getUserId());
+            vo.setUsername(user.getUsername());
+            vo.setRealName(user.getRealName());
+            vo.setPhone(user.getPhone());
+            vo.setEmail(user.getEmail());
+            vo.setIdCard(user.getIdCardNo());
+            vo.setUserType(user.getUserType() != null ? user.getUserType().intValue() : 0);
+            vo.setBalance(user.getBalance());
+            vo.setCreateTime(user.getCreateTime());
+            vo.setUpdateTime(user.getUpdateTime());
+            
+            // 查询订单数量
+            Long orderCount = userMapper.countUserOrders(userId);
+            vo.setOrderCount(orderCount);
+            
+            return Result.success(vo);
+        } catch (Exception e) {
+            return Result.error("获取用户详情失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 重置用户密码
+     */
+    @PostMapping("/users/{userId}/reset-password")
+    public Result<Void> resetUserPassword(@PathVariable Integer userId, @RequestBody Map<String, String> data) {
+        try {
+            String newPassword = data.get("newPassword");
+            String reason = data.get("reason");
+            
+            if (newPassword == null || newPassword.trim().isEmpty()) {
+                return Result.error("新密码不能为空");
+            }
+            
+            if (newPassword.length() < 6 || newPassword.length() > 20) {
+                return Result.error("密码长度必须在6-20位之间");
+            }
+            
+            if (reason == null || reason.trim().isEmpty()) {
+                return Result.error("重置原因不能为空");
+            }
+            
+            // 检查用户是否存在
+            User user = userMapper.selectById(userId);
+            if (user == null) {
+                return Result.error("用户不存在");
+            }
+            
+            // 加密新密码
+            String encodedPassword = passwordEncoder.encode(newPassword);
+            
+            // 更新密码
+            int result = userMapper.updatePassword(userId, encodedPassword);
+            
+            if (result > 0) {
+                // TODO: 记录操作日志
+                return Result.success("密码重置成功", null);
+            } else {
+                return Result.error("密码重置失败");
+            }
+        } catch (Exception e) {
+            return Result.error("重置密码失败：" + e.getMessage());
+        }
+    }
 }
-

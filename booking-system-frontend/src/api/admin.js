@@ -180,27 +180,6 @@ export const resetUserPassword = (userId, data) => {
 }
 
 /**
- * 冻结用户账号
- */
-export const freezeUser = (userId, data) => {
-  return request({
-    url: `/admin/users/${userId}/freeze`,
-    method: 'post',
-    data,
-  })
-}
-
-/**
- * 解冻用户账号
- */
-export const unfreezeUser = (userId) => {
-  return request({
-    url: `/admin/users/${userId}/unfreeze`,
-    method: 'post',
-  })
-}
-
-/**
  * 获取用户详情（管理员视角）
  */
 export const getUserDetail = (userId) => {

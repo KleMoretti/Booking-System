@@ -1,8 +1,8 @@
 // 管理员 - 用户管理页面
-import { Card, Table, Button, Space, Input, message, Modal, Form, Select, Tag, Descriptions } from 'antd'
-import { SearchOutlined, ReloadOutlined, LockOutlined, UnlockOutlined, EyeOutlined } from '@ant-design/icons'
-import { useState, useCallback } from 'react'
-import { searchUsers, resetUserPassword, freezeUser, unfreezeUser, getUserDetail } from '../../../api/admin'
+import { Card, Table, Button, Space, Input, message, Modal, Form, Tag, Descriptions } from 'antd'
+import { SearchOutlined, ReloadOutlined, LockOutlined, EyeOutlined } from '@ant-design/icons'
+import { useState, useCallback, useEffect } from 'react'
+import { getUserList, searchUsers, resetUserPassword, getUserDetail } from '../../../api/admin'
 import { formatDateTime, formatIdCard } from '../../../utils/format'
 import { API_CODE, PAGINATION } from '../../../utils/constants'
 import PageHeader from '../../../components/PageHeader'
@@ -25,21 +25,50 @@ function UserManagement() {
   const [userDetail, setUserDetail] = useState(null)
   const [form] = Form.useForm()
 
-  // 搜索用户
-  const handleSearch = useCallback(async (keyword = searchKeyword, page = 1, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
-    if (!keyword.trim()) {
-      message.warning('请输入搜索关键词')
-      return
-    }
-    
+  // 加载用户列表（无关键词，调用 /admin/users）
+  const loadUserList = useCallback(async (page = 1, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
     setLoading(true)
     try {
-      const response = await searchUsers({
-        keyword: keyword.trim(),
+      const response = await getUserList({
         page,
         pageSize,
       })
-      
+
+      if (response.code === API_CODE.SUCCESS) {
+        setUserList(response.data.list || [])
+        setPagination({
+          current: page,
+          pageSize,
+          total: response.data.total || 0,
+        })
+      } else {
+        message.error(response.message || '获取用户列表失败')
+      }
+    } catch (error) {
+      console.error('获取用户列表失败：', error)
+      message.error('网络错误，请稍后重试')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // 搜索用户（有关键词时调用 /admin/users/search，没关键词时调用 /admin/users）
+  const handleSearch = useCallback(async (keyword = searchKeyword, page = 1, pageSize = PAGINATION.DEFAULT_PAGE_SIZE) => {
+    const trimmed = keyword ? keyword.trim() : ''
+    if (!trimmed) {
+      // 无关键词时，查询全部用户
+      loadUserList(page, pageSize)
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await searchUsers({
+        keyword: trimmed,
+        page,
+        pageSize,
+      })
+
       if (response.code === API_CODE.SUCCESS) {
         setUserList(response.data.list || [])
         setPagination({
@@ -56,7 +85,12 @@ function UserManagement() {
     } finally {
       setLoading(false)
     }
-  }, [searchKeyword])
+  }, [searchKeyword, loadUserList])
+
+  // 初始进入页面时加载一页用户列表
+  useEffect(() => {
+    loadUserList()
+  }, [loadUserList])
 
   // 表格分页变化
   const handleTableChange = (newPagination) => {
@@ -110,59 +144,6 @@ function UserManagement() {
     }
   }
 
-  // 冻结账号
-  const handleFreezeUser = (user) => {
-    Modal.confirm({
-      title: '冻结账号',
-      content: (
-        <div>
-          <p>确定要冻结用户「{user.username}」的账号吗？</p>
-          <p style={{ color: '#ff4d4f', fontSize: '12px' }}>冻结后用户将无法登录系统</p>
-        </div>
-      ),
-      onOk: async () => {
-        try {
-          const response = await freezeUser(user.userId, {
-            reason: '管理员操作',
-          })
-          
-          if (response.code === API_CODE.SUCCESS) {
-            message.success('账号已冻结')
-            handleSearch(searchKeyword, pagination.current, pagination.pageSize)
-          } else {
-            message.error(response.message || '冻结失败')
-          }
-        } catch (error) {
-          console.error('冻结账号失败：', error)
-          message.error('网络错误')
-        }
-      },
-    })
-  }
-
-  // 解冻账号
-  const handleUnfreezeUser = (user) => {
-    Modal.confirm({
-      title: '解冻账号',
-      content: `确定要解冻用户「${user.username}」的账号吗？`,
-      onOk: async () => {
-        try {
-          const response = await unfreezeUser(user.userId)
-          
-          if (response.code === API_CODE.SUCCESS) {
-            message.success('账号已解冻')
-            handleSearch(searchKeyword, pagination.current, pagination.pageSize)
-          } else {
-            message.error(response.message || '解冻失败')
-          }
-        } catch (error) {
-          console.error('解冻账号失败：', error)
-          message.error('网络错误')
-        }
-      },
-    })
-  }
-
   const columns = [
     {
       title: '用户ID',
@@ -192,15 +173,16 @@ function UserManagement() {
       render: (idCard) => idCard ? formatIdCard(idCard) : '-',
     },
     {
-      title: '账号状态',
-      dataIndex: 'status',
+      title: '用户类型',
+      dataIndex: 'userType',
       width: '10%',
       align: 'center',
-      render: (status) => {
-        if (status === 1) {
-          return <Tag color="red">已冻结</Tag>
+      render: (userType) => {
+        const typeValue = Number(userType)
+        if (typeValue === 1) {
+          return <Tag color="blue">管理员</Tag>
         }
-        return <Tag color="green">正常</Tag>
+        return <Tag color="green">普通用户</Tag>
       },
     },
     {
@@ -240,26 +222,6 @@ function UserManagement() {
           >
             重置密码
           </Button>
-          {record.status === 1 ? (
-            <Button
-              type="link"
-              size="small"
-              icon={<UnlockOutlined />}
-              onClick={() => handleUnfreezeUser(record)}
-            >
-              解冻
-            </Button>
-          ) : (
-            <Button
-              type="link"
-              danger
-              size="small"
-              icon={<LockOutlined />}
-              onClick={() => handleFreezeUser(record)}
-            >
-              冻结
-            </Button>
-          )}
         </Space>
       ),
     },
@@ -269,7 +231,7 @@ function UserManagement() {
     <div className="page-admin-user-management page-container">
       <PageHeader
         title="用户管理"
-        description="搜索用户、重置密码、冻结/解冻账号"
+        description="搜索用户、查看详情、重置密码"
       />
 
       <Card className="page-card" variant="borderless">
@@ -288,15 +250,10 @@ function UserManagement() {
             icon={<ReloadOutlined />}
             onClick={() => {
               setSearchKeyword('')
-              setUserList([])
-              setPagination({
-                current: 1,
-                pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
-                total: 0,
-              })
+              loadUserList(1, PAGINATION.DEFAULT_PAGE_SIZE)
             }}
           >
-            清空
+            刷新
           </Button>
         </div>
 
@@ -371,11 +328,11 @@ function UserManagement() {
             <Descriptions.Item label="手机号">{userDetail.phone || '-'}</Descriptions.Item>
             <Descriptions.Item label="身份证号">{userDetail.idCard ? formatIdCard(userDetail.idCard) : '-'}</Descriptions.Item>
             <Descriptions.Item label="邮箱">{userDetail.email || '-'}</Descriptions.Item>
-            <Descriptions.Item label="账号状态">
-              {userDetail.status === 1 ? (
-                <Tag color="red">已冻结</Tag>
+            <Descriptions.Item label="用户类型">
+              {Number(userDetail.userType) === 1 ? (
+                <Tag color="blue">管理员</Tag>
               ) : (
-                <Tag color="green">正常</Tag>
+                <Tag color="green">普通用户</Tag>
               )}
             </Descriptions.Item>
             <Descriptions.Item label="账户余额">
@@ -383,9 +340,6 @@ function UserManagement() {
             </Descriptions.Item>
             <Descriptions.Item label="注册时间" span={2}>
               {formatDateTime(userDetail.createTime)}
-            </Descriptions.Item>
-            <Descriptions.Item label="最近登录" span={2}>
-              {userDetail.lastLoginTime ? formatDateTime(userDetail.lastLoginTime) : '未登录'}
             </Descriptions.Item>
             <Descriptions.Item label="订单数量" span={2}>
               总订单：{userDetail.orderCount || 0} 笔
