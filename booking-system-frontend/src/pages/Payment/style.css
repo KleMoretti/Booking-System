@@ -40,62 +40,38 @@
   border-radius: 8px;
 }
 
-.payment-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
+.balance-payment-info {
+  padding: 8px 0;
 }
 
-.payment-methods .ant-radio-button-wrapper {
-  height: auto;
-  padding: 10px 14px;
-  border-radius: 6px;
-  border: 1px solid #d9d9d9;
+.payment-method-item {
   display: flex;
   align-items: center;
-  transition: all 0.3s;
-}
-
-.payment-methods .ant-radio-button-wrapper:hover {
-  border-color: #1890ff;
-}
-
-.payment-methods .ant-radio-button-wrapper-checked {
-  border-color: #1890ff !important;
-  background: #e6f7ff;
-}
-
-.payment-methods .ant-radio-button-wrapper::before {
-  display: none;
-}
-
-.payment-option {
-  position: relative;
+  padding: 12px 0;
 }
 
 .payment-icon {
-  font-size: 20px;
-  margin-right: 10px;
+  font-size: 24px;
+  color: #1890ff;
+  margin-right: 12px;
 }
 
-.payment-icon.alipay {
-  color: #1677ff;
-}
-
-.payment-icon.wechat {
-  color: #09bb07;
-}
-
-.payment-name {
-  font-size: 14px;
+.payment-label {
+  font-size: 16px;
   font-weight: 500;
-  margin-right: 8px;
+  color: #262626;
 }
 
-.payment-balance {
-  font-size: 13px;
-  color: #8c8c8c;
+.balance-sufficient {
+  color: #52c41a;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.balance-insufficient {
+  color: #ff4d4f;
+  font-weight: 600;
+  font-size: 16px;
 }
 
 /* 支付按钮区域 */
@@ -157,16 +133,12 @@
     gap: 8px;
   }
 
-  .payment-methods .ant-radio-button-wrapper {
-    padding: 12px 16px;
-  }
-
   .payment-icon {
     font-size: 20px;
   }
 
-  .payment-name {
-    font-size: 14px;
+  .payment-label {
+    font-size: 15px;
   }
 
   .payment-result h2 {

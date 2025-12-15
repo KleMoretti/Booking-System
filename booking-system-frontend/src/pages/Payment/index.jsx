@@ -1,6 +1,6 @@
 // 支付页面
-import { Card, Radio, Button, Space, message, Descriptions, Divider, Alert, Spin, Statistic, List } from 'antd'
-import { AlipayOutlined, WechatOutlined, WalletOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
+import { Card, Button, Space, message, Descriptions, Divider, Alert, Spin, Statistic, List } from 'antd'
+import { WalletOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -22,7 +22,6 @@ function Payment() {
   const [loading, setLoading] = useState(false)
   const [orderLoading, setOrderLoading] = useState(true)
   const [orderDetail, setOrderDetail] = useState(null)
-  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_METHOD.BALANCE)
   const [paying, setPaying] = useState(false)
   const [paymentResult, setPaymentResult] = useState(null)
   const [deadline, setDeadline] = useState(Date.now() + ORDER_TIMEOUT)
@@ -88,24 +87,17 @@ function Payment() {
   }
 
   const handlePayment = async () => {
-    if (!paymentMethod) {
-      message.warning('请选择支付方式')
+    // 检查余额
+    const userBalance = userInfo?.balance || 0
+    const orderAmount = orderDetail?.totalAmount || orderDetail?.totalPrice || 0
+    if (userBalance < orderAmount) {
+      message.error('余额不足，请先充值')
       return
-    }
-
-    // 检查余额支付
-    if (paymentMethod === PAYMENT_METHOD.BALANCE) {
-      const userBalance = userInfo?.balance || 0
-      const orderAmount = orderDetail?.totalAmount || orderDetail?.totalPrice || 0
-      if (userBalance < orderAmount) {
-        message.error('余额不足，请充值或选择其他支付方式')
-        return
-      }
     }
 
     setPaying(true)
     try {
-      const response = await payOrder(orderId, paymentMethod)
+      const response = await payOrder(orderId, PAYMENT_METHOD.BALANCE)
       if (response.code === API_CODE.SUCCESS) {
         setPaymentResult({
           success: true,
@@ -289,39 +281,44 @@ function Payment() {
             </div>
           </Card>
 
-          {/* 支付方式选择 */}
+          {/* 余额支付信息 */}
           <Card className="payment-method-card" title="支付方式">
-            <Radio.Group 
-              value={paymentMethod} 
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="payment-methods"
-            >
-              <Radio.Button value={PAYMENT_METHOD.BALANCE} className="payment-option">
+            <div className="balance-payment-info">
+              <div className="payment-method-item">
                 <WalletOutlined className="payment-icon" />
-                <span className="payment-name">余额支付</span>
-                <span className="payment-balance">
-                  （余额：{formatPrice(userBalance)}）
-                </span>
-              </Radio.Button>
-              <Radio.Button value={PAYMENT_METHOD.ALIPAY} className="payment-option">
-                <AlipayOutlined className="payment-icon alipay" />
-                <span className="payment-name">支付宝</span>
-              </Radio.Button>
-              <Radio.Button value={PAYMENT_METHOD.WECHAT} className="payment-option">
-                <WechatOutlined className="payment-icon wechat" />
-                <span className="payment-name">微信支付</span>
-              </Radio.Button>
-            </Radio.Group>
+                <span className="payment-label">余额支付</span>
+              </div>
+              <Divider style={{ margin: '16px 0' }} />
+              <Descriptions column={1} size="small">
+                <Descriptions.Item label="当前余额">
+                  <span className={userBalance >= orderAmount ? 'balance-sufficient' : 'balance-insufficient'}>
+                    {formatPrice(userBalance)}
+                  </span>
+                </Descriptions.Item>
+                <Descriptions.Item label="订单金额">
+                  <span style={{ fontWeight: 600, color: '#ff4d4f' }}>
+                    {formatPrice(orderAmount)}
+                  </span>
+                </Descriptions.Item>
+                {userBalance < orderAmount && (
+                  <Descriptions.Item label="差额">
+                    <span style={{ color: '#ff4d4f', fontWeight: 500 }}>
+                      {formatPrice(orderAmount - userBalance)}
+                    </span>
+                  </Descriptions.Item>
+                )}
+              </Descriptions>
+            </div>
 
-            {paymentMethod === PAYMENT_METHOD.BALANCE && userBalance < orderAmount && (
+            {userBalance < orderAmount && (
               <Alert
                 message="余额不足"
-                description={`当前余额：${formatPrice(userBalance)}，订单金额：${formatPrice(orderAmount)}，差额：${formatPrice(orderAmount - userBalance)}`}
+                description="请先充值后再完成支付"
                 type="warning"
                 showIcon
                 style={{ marginTop: '16px' }}
                 action={
-                  <Button size="small" onClick={() => navigate('/profile')}>
+                  <Button size="small" type="primary" onClick={() => navigate('/profile')}>
                     去充值
                   </Button>
                 }
@@ -340,7 +337,7 @@ function Payment() {
                 size="large"
                 loading={paying}
                 onClick={handlePayment}
-                disabled={paymentMethod === PAYMENT_METHOD.BALANCE && userBalance < orderAmount}
+                disabled={userBalance < orderAmount}
               >
                 确认支付 {formatPrice(orderAmount)}
               </Button>

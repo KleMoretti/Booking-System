@@ -23,22 +23,22 @@ public class BalanceServiceImpl implements BalanceService {
     @Override
     @Transactional
     public void recharge(Integer userId, BigDecimal amount) {
-        changeBalance(userId, amount, (byte)0);
+        changeBalance(userId, amount, (byte)0, "用户充值");
     }
 
     @Override
     @Transactional
-    public void consume(Integer userId, BigDecimal amount) {
-        changeBalance(userId, amount.negate(), (byte)1);
+    public void consume(Integer userId, BigDecimal amount, String note) {
+        changeBalance(userId, amount.negate(), (byte)1, note);
     }
 
     @Override
     @Transactional
-    public void refund(Integer userId, BigDecimal amount) {
-        changeBalance(userId, amount, (byte)2);
+    public void refund(Integer userId, BigDecimal amount, String note) {
+        changeBalance(userId, amount, (byte)2, note);
     }
 
-    private void changeBalance(Integer userId, BigDecimal delta, byte type) {
+    private void changeBalance(Integer userId, BigDecimal delta, byte type, String note) {
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new IllegalArgumentException("用户不存在");
@@ -57,6 +57,7 @@ public class BalanceServiceImpl implements BalanceService {
         record.setBalanceAfter(after);
         record.setChangeAmount(delta);
         record.setChangeType(type);
+        record.setNote(note);
         balanceChangeMapper.insert(record);
     }
 }

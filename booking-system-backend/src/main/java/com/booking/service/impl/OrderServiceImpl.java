@@ -24,7 +24,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -53,6 +55,15 @@ public class OrderServiceImpl implements OrderService {
         // 验证乘客信息
         if (passengers == null || passengers.isEmpty()) {
             throw new IllegalStateException("乘客信息不能为空");
+        }
+        
+        // 验证：同一乘客不能在同一车次出现多次
+        Set<String> passengerIdCards = new HashSet<>();
+        for (CreateOrderDTO.PassengerInfo passenger : passengers) {
+            String idCard = passenger.getIdCard();
+            if (idCard != null && !passengerIdCards.add(idCard)) {
+                throw new IllegalStateException("同一乘客不能购买同一车次的多张车票");
+            }
         }
         
         // 验证车次是否存在
@@ -205,8 +216,9 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("该车次已发车，无法支付订单");
         }
         
-        // 扣除余额（消费）
-        balanceService.consume(userId, order.getTotalAmount());
+        // 扫除余额（消费）
+        String paymentNote = "支付订单" + order.getOrderNumber();
+        balanceService.consume(userId, order.getTotalAmount(), paymentNote);
         
         // 更新订单状态
         order.setOrderStatus((byte) 1); // 1=已支付
@@ -307,7 +319,8 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal refundAmount = totalAmount.subtract(refundFee);
         
         // 退款到用户余额
-        balanceService.refund(userId, refundAmount);
+        String refundNote = "退票订单" + order.getOrderNumber() + "，退票费" + refundFee.toPlainString() + "元";
+        balanceService.refund(userId, refundAmount, refundNote);
         
         // 更新订单状态
         order.setOrderStatus((byte) 4); // 4=已退票
@@ -387,10 +400,12 @@ public class OrderServiceImpl implements OrderService {
         
         // 如果需要补差价
         if (priceDiff.compareTo(BigDecimal.ZERO) > 0) {
-            balanceService.consume(userId, priceDiff);
+            String consumeNote = "改签订单" + order.getOrderNumber() + "，补差价" + priceDiff.toPlainString() + "元";
+            balanceService.consume(userId, priceDiff, consumeNote);
         } else if (priceDiff.compareTo(BigDecimal.ZERO) < 0) {
             // 如果新车次便宜，退还差价
-            balanceService.refund(userId, priceDiff.abs());
+            String refundNote = "改签订单" + order.getOrderNumber() + "，退差价" + priceDiff.abs().toPlainString() + "元";
+            balanceService.refund(userId, priceDiff.abs(), refundNote);
         }
         
         // 释放原座位

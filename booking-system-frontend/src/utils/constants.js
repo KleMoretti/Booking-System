@@ -51,9 +51,10 @@ export const TRAIN_TYPE = {
 
 // 支付方式
 export const PAYMENT_METHOD = {
-  BALANCE: 'BALANCE',    // 余额支付
-  ALIPAY: 'ALIPAY',      // 支付宝
-  WECHAT: 'WECHAT',      // 微信支付
+  BALANCE: 'BALANCE',    // 余额支付（当前唯一支持的支付方式）
+  // 以下支付方式已废弃，仅支持余额支付
+  // ALIPAY: 'ALIPAY',      // 支付宝（已废弃）
+  // WECHAT: 'WECHAT',      // 微信支付（已废弃）
 }
 
 // 订单支付超时时间（毫秒）

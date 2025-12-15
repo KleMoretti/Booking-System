@@ -274,7 +274,7 @@ function OrderList() {
               去支付
             </Button>
           )}
-          {(record.status === ORDER_STATUS.PENDING || record.status === ORDER_STATUS.PAID) && (
+          {record.status === ORDER_STATUS.PENDING && (
             <Button
               type="link"
               danger
