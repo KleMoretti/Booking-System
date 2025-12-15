@@ -2,8 +2,11 @@ package com.booking.service.impl;
 
 import com.booking.entity.Station;
 import com.booking.mapper.StationMapper;
+import com.booking.mapper.TripMapper;
 import com.booking.service.StationService;
+import com.booking.service.TripService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -16,6 +19,12 @@ public class StationServiceImpl implements StationService {
 
     @Resource
     private StationMapper stationMapper;
+
+    @Resource
+    private TripMapper tripMapper;
+
+    @Resource
+    private TripService tripService;
 
     @Override
     public List<Station> getAllStations() {
@@ -38,7 +47,17 @@ public class StationServiceImpl implements StationService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteStation(Integer stationId) {
+        // 先删除所有使用该站点的车次
+        List<Integer> tripIds = tripMapper.findTripIdsByStationId(stationId);
+        if (tripIds != null && !tripIds.isEmpty()) {
+            for (Integer tripId : tripIds) {
+                tripService.deleteTrip(tripId);
+            }
+        }
+
+        // 再删除车站本身
         stationMapper.delete(stationId);
     }
 }

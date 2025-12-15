@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booking.mapper.InvoiceTitleMapper">
+    <resultMap id="InvoiceTitleResultMap" type="com.booking.entity.InvoiceTitle">
+        <id property="titleId" column="title_id" />
+        <result property="userId" column="user_id" />
+        <result property="titleType" column="title_type" />
+        <result property="titleName" column="title_name" />
+        <result property="taxNumber" column="tax_number" />
+        <result property="bankName" column="bank_name" />
+        <result property="bankAccount" column="bank_account" />
+        <result property="companyAddress" column="company_address" />
+        <result property="companyPhone" column="company_phone" />
+        <result property="isDefault" column="is_default" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <result property="isDeleted" column="is_deleted" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.booking.entity.InvoiceTitle" useGeneratedKeys="true" keyProperty="titleId">
+        INSERT INTO invoice_titles(user_id, title_type, title_name, tax_number, bank_name, bank_account, company_address, company_phone, is_default)
+        VALUES(#{userId}, #{titleType}, #{titleName}, #{taxNumber}, #{bankName}, #{bankAccount}, #{companyAddress}, #{companyPhone}, #{isDefault})
+    </insert>
+
+    <update id="update" parameterType="com.booking.entity.InvoiceTitle">
+        UPDATE invoice_titles
+        SET title_type = #{titleType},
+            title_name = #{titleName},
+            tax_number = #{taxNumber},
+            bank_name = #{bankName},
+            bank_account = #{bankAccount},
+            company_address = #{companyAddress},
+            company_phone = #{companyPhone},
+            is_default = #{isDefault}
+        WHERE title_id = #{titleId}
+          AND user_id = #{userId}
+    </update>
+
+    <select id="findById" parameterType="int" resultMap="InvoiceTitleResultMap">
+        SELECT * FROM invoice_titles WHERE title_id = #{titleId}
+    </select>
+
+    <select id="findByUserId" parameterType="int" resultMap="InvoiceTitleResultMap">
+        SELECT *
+        FROM invoice_titles
+        WHERE user_id = #{userId}
+          AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="findDefaultByUserId" parameterType="int" resultMap="InvoiceTitleResultMap">
+        SELECT *
+        FROM invoice_titles
+        WHERE user_id = #{userId}
+          AND is_default = 1
+          AND is_deleted = 0
+        LIMIT 1
+    </select>
+
+    <update id="deleteLogical">
+        UPDATE invoice_titles
+        SET is_deleted = 1
+        WHERE title_id = #{titleId}
+          AND user_id = #{userId}
+    </update>
+
+    <update id="clearDefaultByUserId">
+        UPDATE invoice_titles
+        SET is_default = 0
+        WHERE user_id = #{userId}
+    </update>
+</mapper>

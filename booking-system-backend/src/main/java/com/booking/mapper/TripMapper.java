@@ -41,5 +41,9 @@ public interface TripMapper {
                     @Param("departureStation") String departureStation,
                     @Param("arrivalStation") String arrivalStation);
     int updatePrice(@Param("tripId") Integer tripId, @Param("basePrice") BigDecimal basePrice);
-}
 
+    /**
+     * 根据站点ID查询所有使用该站点的车次ID（出发站或到达站）
+     */
+    List<Integer> findTripIdsByStationId(@Param("stationId") Integer stationId);
+}

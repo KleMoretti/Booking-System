@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booking.mapper.PassengerMapper">
+    <resultMap id="PassengerResultMap" type="com.booking.entity.Passenger">
+        <id property="passengerId" column="passenger_id" />
+        <result property="userId" column="user_id" />
+        <result property="passengerName" column="passenger_name" />
+        <result property="idCardType" column="id_card_type" />
+        <result property="idCardNo" column="id_card_no" />
+        <result property="phone" column="phone" />
+        <result property="passengerType" column="passenger_type" />
+        <result property="isDefault" column="is_default" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <result property="isDeleted" column="is_deleted" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.booking.entity.Passenger" useGeneratedKeys="true" keyProperty="passengerId">
+        INSERT INTO passengers(user_id, passenger_name, id_card_type, id_card_no, phone, passenger_type, is_default)
+        VALUES(#{userId}, #{passengerName}, #{idCardType}, #{idCardNo}, #{phone}, #{passengerType}, #{isDefault})
+    </insert>
+
+    <update id="update" parameterType="com.booking.entity.Passenger">
+        UPDATE passengers
+        SET passenger_name = #{passengerName},
+            id_card_type = #{idCardType},
+            id_card_no = #{idCardNo},
+            phone = #{phone},
+            passenger_type = #{passengerType},
+            is_default = #{isDefault}
+        WHERE passenger_id = #{passengerId}
+          AND user_id = #{userId}
+    </update>
+
+    <select id="findById" parameterType="int" resultMap="PassengerResultMap">
+        SELECT * FROM passengers WHERE passenger_id = #{passengerId}
+    </select>
+
+    <select id="findByUserId" parameterType="int" resultMap="PassengerResultMap">
+        SELECT *
+        FROM passengers
+        WHERE user_id = #{userId}
+          AND is_deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="findDefaultByUserId" parameterType="int" resultMap="PassengerResultMap">
+        SELECT *
+        FROM passengers
+        WHERE user_id = #{userId}
+          AND is_default = 1
+          AND is_deleted = 0
+        LIMIT 1
+    </select>
+
+    <update id="deleteLogical">
+        UPDATE passengers
+        SET is_deleted = 1
+        WHERE passenger_id = #{passengerId}
+          AND user_id = #{userId}
+    </update>
+
+    <update id="clearDefaultByUserId">
+        UPDATE passengers
+        SET is_default = 0
+        WHERE user_id = #{userId}
+    </update>
+</mapper>

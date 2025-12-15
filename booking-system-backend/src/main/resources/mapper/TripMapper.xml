@@ -122,6 +122,14 @@
         WHERE trip_id = #{tripId}
     </update>
 
+    <!-- 根据站点ID查询所有使用该站点的车次ID（出发站或到达站） -->
+    <select id="findTripIdsByStationId" parameterType="int" resultType="int">
+        SELECT trip_id
+        FROM trips
+        WHERE departure_station_id = #{stationId}
+           OR arrival_station_id = #{stationId}
+    </select>
+
     <!-- 车次管理视图对象的结果映射 -->
     <resultMap id="TripManagementVOResultMap" type="com.booking.dto.TripManagementVO">
         <id property="tripId" column="trip_id" />

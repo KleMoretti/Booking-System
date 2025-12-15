@@ -42,8 +42,8 @@ TRUNCATE TABLE stations;
 SELECT '✓ 已清空 stations 表' AS status;
 
 -- 8. 清空用户表
-TRUNCATE TABLE users;
-SELECT '✓ 已清空 users 表' AS status;
+-- TRUNCATE TABLE users;
+-- SELECT '✓ 已清空 users 表' AS status;
 
 -- 重新启用外键检查
 SET FOREIGN_KEY_CHECKS = 1;

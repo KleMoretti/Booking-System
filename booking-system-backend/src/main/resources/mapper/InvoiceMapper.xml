@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booking.mapper.InvoiceMapper">
+    <resultMap id="InvoiceResultMap" type="com.booking.entity.Invoice">
+        <id property="invoiceId" column="invoice_id" />
+        <result property="userId" column="user_id" />
+        <result property="orderId" column="order_id" />
+        <result property="invoiceType" column="invoice_type" />
+        <result property="invoiceTitle" column="invoice_title" />
+        <result property="taxNumber" column="tax_number" />
+        <result property="invoiceAmount" column="invoice_amount" />
+        <result property="invoiceStatus" column="invoice_status" />
+        <result property="invoiceNumber" column="invoice_number" />
+        <result property="invoiceUrl" column="invoice_url" />
+        <result property="email" column="email" />
+        <result property="applyTime" column="apply_time" />
+        <result property="issueTime" column="issue_time" />
+        <result property="sendTime" column="send_time" />
+        <result property="note" column="note" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.booking.entity.Invoice" useGeneratedKeys="true" keyProperty="invoiceId">
+        INSERT INTO invoices(user_id, order_id, invoice_type, invoice_title, tax_number, invoice_amount, invoice_status, invoice_number, invoice_url, email, apply_time, issue_time, send_time, note)
+        VALUES(#{userId}, #{orderId}, #{invoiceType}, #{invoiceTitle}, #{taxNumber}, #{invoiceAmount}, #{invoiceStatus}, #{invoiceNumber}, #{invoiceUrl}, #{email}, #{applyTime}, #{issueTime}, #{sendTime}, #{note})
+    </insert>
+
+    <update id="update" parameterType="com.booking.entity.Invoice">
+        UPDATE invoices
+        SET invoice_type = #{invoiceType},
+            invoice_title = #{invoiceTitle},
+            tax_number = #{taxNumber},
+            invoice_amount = #{invoiceAmount},
+            invoice_status = #{invoiceStatus},
+            invoice_number = #{invoiceNumber},
+            invoice_url = #{invoiceUrl},
+            email = #{email},
+            apply_time = #{applyTime},
+            issue_time = #{issueTime},
+            send_time = #{sendTime},
+            note = #{note}
+        WHERE invoice_id = #{invoiceId}
+    </update>
+
+    <select id="findById" parameterType="long" resultMap="InvoiceResultMap">
+        SELECT * FROM invoices WHERE invoice_id = #{invoiceId}
+    </select>
+
+    <select id="findByUserId" parameterType="int" resultMap="InvoiceResultMap">
+        SELECT *
+        FROM invoices
+        WHERE user_id = #{userId}
+        ORDER BY apply_time DESC
+    </select>
+</mapper>
