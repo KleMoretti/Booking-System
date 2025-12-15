@@ -57,12 +57,12 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalStateException("乘客信息不能为空");
         }
         
-        // 验证：同一乘客不能在同一车次出现多次
+        // 验证：请求内同一乘客不能在同一车次出现多次
         Set<String> passengerIdCards = new HashSet<>();
         for (CreateOrderDTO.PassengerInfo passenger : passengers) {
             String idCard = passenger.getIdCard();
             if (idCard != null && !passengerIdCards.add(idCard)) {
-                throw new IllegalStateException("同一乘客不能购买同一车次的多张车票");
+                throw new IllegalStateException("同一乘客不能在一次购买中选择多张本车次车票");
             }
         }
         
@@ -80,6 +80,17 @@ public class OrderServiceImpl implements OrderService {
         }
         if (!departureTime.isAfter(now)) {
             throw new IllegalStateException("该车次已发车，无法购买车票");
+        }
+
+        // 校验：同一乘客不能重复购买同一车次已支付且未退票的车票
+        for (String idCard : passengerIdCards) {
+            if (idCard == null || idCard.isEmpty()) {
+                continue;
+            }
+            Long existingCount = ticketMapper.countActiveTicketsByTripAndPassenger(tripId, idCard);
+            if (existingCount != null && existingCount > 0) {
+                throw new IllegalStateException("乘客" + idCard + "已购买该车次的车票，如需再次购票，请先办理退票");
+            }
         }
 
         ensureSeatsForTrip(trip);
@@ -165,6 +176,7 @@ public class OrderServiceImpl implements OrderService {
         for (int i = 1; i <= totalSeats; i++) {
             Seat seat = new Seat();
             seat.setTripId(trip.getTripId());
+            // 使用与初始化脚本/TripServiceImpl 相同的规则生成座位号，例如：1车01A
             seat.setSeatNumber(generateSeatNumber(i));
             seat.setSeatStatus((byte) 0);
             seatMapper.insert(seat);
@@ -172,10 +184,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private String generateSeatNumber(int index) {
-        int rowIndex = (index - 1) / 10;
-        int numberInRow = (index - 1) % 10 + 1;
-        char rowChar = (char) ('A' + rowIndex);
-        return rowChar + String.valueOf(numberInRow);
+        // 每个车厢 100 个座位，每排 5 个座位（A-E）
+        int seatsPerCar = 100;
+        int seatsPerRow = 5;
+
+        int carNum = (index - 1) / seatsPerCar + 1;          // 车厢号，从 1 开始
+        int indexInCar = (index - 1) % seatsPerCar;           // 当前车厢内的序号 0..99
+        int rowNum = indexInCar / seatsPerRow + 1;            // 排号，从 1 开始
+        int seatIndexInRow = indexInCar % seatsPerRow;        // 本排中的第几个座位 0..4
+        char seatLetter = (char) ('A' + seatIndexInRow);      // A-E
+
+        return carNum + "车" + String.format("%02d", rowNum) + seatLetter;
     }
 
     @Override
@@ -215,7 +234,19 @@ public class OrderServiceImpl implements OrderService {
         if (!departureTime.isAfter(now)) {
             throw new IllegalStateException("该车次已发车，无法支付订单");
         }
-        
+
+        // 再次校验：订单中的乘客是否已拥有该车次已支付且未退票车票
+        for (Ticket ticket : tickets) {
+            String idCard = ticket.getPassengerIdCard();
+            if (idCard == null || idCard.isEmpty()) {
+                continue;
+            }
+            Long existingCount = ticketMapper.countActiveTicketsByTripAndPassenger(trip.getTripId(), idCard);
+            if (existingCount != null && existingCount > 0) {
+                throw new IllegalStateException("乘客" + idCard + "已购买该车次的车票，如需再次购票，请先办理退票");
+            }
+        }
+
         // 扫除余额（消费）
         String paymentNote = "支付订单" + order.getOrderNumber();
         balanceService.consume(userId, order.getTotalAmount(), paymentNote);

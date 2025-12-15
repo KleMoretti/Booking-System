@@ -3,6 +3,7 @@ package com.booking.service.impl;
 import com.booking.dto.TripDTO;
 import com.booking.dto.TripManagementVO;
 import com.booking.dto.TripVO;
+import com.booking.entity.Seat;
 import com.booking.entity.Trip;
 import com.booking.mapper.SeatMapper;
 import com.booking.mapper.TripMapper;
@@ -119,15 +120,18 @@ public class TripServiceImpl implements TripService {
      * 为新车次创建座位
      */
     private void createSeatsForTrip(Integer tripId, Integer totalSeats) {
-        // TODO: 实现座位创建逻辑
-        // 可以按照A1-A5, B1-B5等方式创建座位号
-        // for (int i = 1; i <= totalSeats; i++) {
-        //     Seat seat = new Seat();
-        //     seat.setTripId(tripId);
-        //     seat.setSeatNumber(generateSeatNumber(i));
-        //     seat.setSeatStatus((byte) 0); // 可售
-        //     seatMapper.insert(seat);
-        // }
+        if (tripId == null || totalSeats == null || totalSeats <= 0) {
+            return;
+        }
+
+        // 按与初始化脚本相同的规则生成座位号，例如：1车01A
+        for (int i = 1; i <= totalSeats; i++) {
+            Seat seat = new Seat();
+            seat.setTripId(tripId);
+            seat.setSeatNumber(generateSeatNumber(i));
+            seat.setSeatStatus((byte) 0); // 可售
+            seatMapper.insert(seat);
+        }
     }
     
     /**
@@ -137,6 +141,24 @@ public class TripServiceImpl implements TripService {
         // TODO: 实现座位调整逻辑
         // 如果新座位数大于旧座位数，创建新座位
         // 如果新座位数小于旧座位数，删除多余座位（只删除未售出的）
+    }
+
+    /**
+     * 生成座位号，规则与 insert_trip_data.sql 中的存储过程 generate_seats 保持一致
+     * 例如：1车01A、1车01B ...
+     */
+    private String generateSeatNumber(int index) {
+        // 每个车厢 100 个座位，每排 5 个座位（A-E）
+        int seatsPerCar = 100;
+        int seatsPerRow = 5;
+
+        int carNum = (index - 1) / seatsPerCar + 1;          // 车厢号，从 1 开始
+        int indexInCar = (index - 1) % seatsPerCar;           // 当前车厢内的序号 0..99
+        int rowNum = indexInCar / seatsPerRow + 1;            // 排号，从 1 开始
+        int seatIndexInRow = indexInCar % seatsPerRow;        // 本排中的第几个座位 0..4
+        char seatLetter = (char) ('A' + seatIndexInRow);      // A-E
+
+        return carNum + "车" + String.format("%02d", rowNum) + seatLetter;
     }
 }
 

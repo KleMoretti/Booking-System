@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
-import { Table, Card, Button, Space, Modal, Form, InputNumber, message, Tag } from 'antd'
-import { EditOutlined, DollarOutlined } from '@ant-design/icons'
+import { Table, Card, Button, Space, Modal, Form, InputNumber, message, Tag, Input, DatePicker, Select } from 'antd'
+import { EditOutlined, DollarOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons'
 import { getAdminTripList, updateTripPrice } from '../../api/admin'
+import { getStationList } from '../../api/ticket'
 
 function PriceManagement() {
+  const [searchForm] = Form.useForm()
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [dataSource, setDataSource] = useState([])
+  const [stations, setStations] = useState([])
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -22,9 +25,16 @@ function PriceManagement() {
   const fetchData = async () => {
     setLoading(true)
     try {
+      const values = searchForm.getFieldsValue()
       const response = await getAdminTripList({
         page: pagination.current,
         pageSize: pagination.pageSize,
+        tripNumber: values.tripNumber,
+        departureDate: values.departureDate ? values.departureDate.format('YYYY-MM-DD') : undefined,
+        departureStation: values.departureStation,
+        arrivalStation: values.arrivalStation,
+        sortBy: values.sortBy,
+        sortOrder: values.sortOrder,
       })
       
       if (response.data) {
@@ -41,8 +51,34 @@ function PriceManagement() {
     }
   }
 
+  const fetchStations = async () => {
+    try {
+      const response = await getStationList()
+      if (response.data) {
+        setStations(response.data)
+      }
+    } catch (error) {
+      console.error('获取车站列表失败', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchStations()
+  }, [])
+
   const handleTableChange = (newPagination) => {
     setPagination(newPagination)
+  }
+
+  const handleSearch = () => {
+    setPagination(prev => ({ ...prev, current: 1 }))
+    fetchData()
+  }
+
+  const handleReset = () => {
+    searchForm.resetFields(['tripNumber', 'departureDate', 'departureStation', 'arrivalStation', 'sortBy', 'sortOrder'])
+    setPagination(prev => ({ ...prev, current: 1 }))
+    fetchData()
   }
 
   const showEditModal = (record) => {
@@ -108,7 +144,7 @@ function PriceManagement() {
       align: 'center',
       render: (_, record) => (
         <div style={{ fontSize: '13px', color: '#595959' }}>
-          {record.departureTime}
+          {record.date ? `${record.date} ${record.departureTime}` : record.departureTime}
         </div>
       ),
     },
@@ -178,6 +214,102 @@ function PriceManagement() {
         }
         variant="borderless"
       >
+        <Form
+          form={searchForm}
+          layout="vertical"
+          size="middle"
+          style={{
+            marginBottom: 16,
+            padding: '16px 16px 0',
+            background: 'var(--color-bg-container)',
+            borderRadius: 12,
+            border: '1px solid var(--color-border-secondary)',
+          }}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+            <Form.Item label="车次号" name="tripNumber" style={{ marginBottom: 0 }}>
+              <Input 
+                placeholder="请输入车次号" 
+                allowClear 
+                style={{ width: '100%' }} 
+              />
+            </Form.Item>
+            <Form.Item label="出发日期" name="departureDate" style={{ marginBottom: 0 }}>
+              <DatePicker 
+                allowClear 
+                style={{ width: '100%' }} 
+                placeholder="选择日期"
+              />
+            </Form.Item>
+            <Form.Item label="出发站" name="departureStation" style={{ marginBottom: 0 }}>
+              <Select
+                allowClear
+                showSearch
+                placeholder="请选择出发站"
+                style={{ width: '100%' }}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {stations.map(station => (
+                  <Select.Option key={station.id} value={station.name}>
+                    {station.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label="到达站" name="arrivalStation" style={{ marginBottom: 0 }}>
+              <Select
+                allowClear
+                showSearch
+                placeholder="请选择到达站"
+                style={{ width: '100%' }}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {stations.map(station => (
+                  <Select.Option key={station.id} value={station.name}>
+                    {station.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label="排序字段" name="sortBy" style={{ marginBottom: 0 }}>
+              <Select
+                allowClear
+                placeholder="选择排序字段"
+                style={{ width: '100%' }}
+              >
+                <Select.Option value="tripNumber">车次号</Select.Option>
+                <Select.Option value="date">日期</Select.Option>
+                <Select.Option value="departureTime">出发时间</Select.Option>
+                <Select.Option value="departureStation">出发站</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item label="排序方向" name="sortOrder" style={{ marginBottom: 0 }}>
+              <Select
+                allowClear
+                placeholder="选择排序方向"
+                style={{ width: '100%' }}
+              >
+                <Select.Option value="asc">升序</Select.Option>
+                <Select.Option value="desc">降序</Select.Option>
+              </Select>
+            </Form.Item>
+          </div>
+          <div style={{ marginTop: 12, paddingBottom: 12, display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <Button icon={<ReloadOutlined />} onClick={handleReset}>
+              重置
+            </Button>
+            <Button type="primary" icon={<SearchOutlined />} onClick={handleSearch}>
+              搜索
+            </Button>
+          </div>
+        </Form>
+
         <Table
           columns={columns}
           dataSource={dataSource}

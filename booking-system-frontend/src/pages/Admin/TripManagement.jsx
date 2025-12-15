@@ -113,16 +113,20 @@ function TripManagement() {
         date: values.date?.format('YYYY-MM-DD'),
       }
 
+      let res
       if (editingRecord) {
-        await updateTrip(editingRecord.id, formattedValues)
-        message.success('更新成功')
+        res = await updateTrip(editingRecord.id, formattedValues)
       } else {
-        await createTrip(formattedValues)
-        message.success('添加成功')
+        res = await createTrip(formattedValues)
       }
-      
-      setModalVisible(false)
-      fetchData()
+
+      if (res && res.code === 200) {
+        message.success(editingRecord ? '更新成功' : '添加成功')
+        setModalVisible(false)
+        fetchData()
+      } else {
+        message.error(res?.message || '操作失败')
+      }
     } catch (error) {
       if (error.errorFields) {
         message.warning('请填写完整信息')

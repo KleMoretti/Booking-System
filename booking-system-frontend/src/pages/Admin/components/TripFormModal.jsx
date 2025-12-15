@@ -131,6 +131,36 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
           </Form.Item>
         </Space>
 
+        <Space style={{ width: '100%' }} size="large">
+          <Form.Item
+            name={['seats', 'total']}
+            label="总座位数"
+            rules={[{ required: true, message: '请输入总座位数' }]}
+            style={{ flex: 1 }}
+          >
+            <InputNumber
+              min={0}
+              style={{ width: '100%' }}
+              placeholder="请输入总座位数"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name={['seats', 'price']}
+            label="票价（元）"
+            rules={[{ required: true, message: '请输入票价' }]}
+            style={{ flex: 1 }}
+          >
+            <InputNumber
+              min={0}
+              step={10}
+              style={{ width: '100%' }}
+              placeholder="请输入票价"
+              prefix="¥"
+            />
+          </Form.Item>
+        </Space>
+
         <Form.Item
           name="date"
           label="发车日期"

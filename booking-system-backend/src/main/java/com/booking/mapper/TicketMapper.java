@@ -16,4 +16,10 @@ public interface TicketMapper {
     List<Ticket> findByOrderId(@Param("orderId") Long orderId);
     List<Ticket> findByTripId(@Param("tripId") Integer tripId);
     Long countTodayTickets();
+
+    /**
+     * 统计某车次下指定乘客（身份证号）已支付且未退票的车票数量
+     */
+    Long countActiveTicketsByTripAndPassenger(@Param("tripId") Integer tripId,
+                                              @Param("passengerIdCard") String passengerIdCard);
 }
