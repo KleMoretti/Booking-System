@@ -16,6 +16,20 @@ export const applyInvoice = (data) => {
 }
 
 /**
+ * 开具发票
+ */
+export const issueInvoice = (invoiceId) => {
+  return request.post(`/invoices/${invoiceId}/issue`)
+}
+
+/**
+ * 删除发票
+ */
+export const deleteInvoice = (invoiceId) => {
+  return request.delete(`/invoices/${invoiceId}`)
+}
+
+/**
  * 下载发票
  */
 export const downloadInvoice = (invoiceId) => {

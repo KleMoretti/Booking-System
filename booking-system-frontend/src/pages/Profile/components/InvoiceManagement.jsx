@@ -10,12 +10,16 @@ import {
 } from '@ant-design/icons'
 import { 
   getInvoiceList, 
-  applyInvoice, 
+  applyInvoice,
+  issueInvoice,
+  deleteInvoice,
+  downloadInvoice, 
   getInvoiceTitleList, 
   createInvoiceTitle, 
   updateInvoiceTitle, 
   deleteInvoiceTitle 
 } from '../../../api/invoice'
+import { API_CODE } from '../../../utils/constants'
 
 const { Option } = Select
 const { TextArea } = Input
@@ -53,22 +57,35 @@ function InvoiceList() {
   const [loading, setLoading] = useState(false)
   const [dataSource, setDataSource] = useState([])
   const [modalVisible, setModalVisible] = useState(false)
+  const [titleList, setTitleList] = useState([])
 
   useEffect(() => {
     fetchData()
+    fetchTitles()
   }, [])
 
   const fetchData = async () => {
     setLoading(true)
     try {
       const response = await getInvoiceList()
-      if (response.success && response.data) {
+      if (response.code === API_CODE.SUCCESS && response.data) {
         setDataSource(response.data)
       }
     } catch (error) {
       message.error('获取发票记录失败')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchTitles = async () => {
+    try {
+      const response = await getInvoiceTitleList()
+      if (response.code === API_CODE.SUCCESS && response.data) {
+        setTitleList(response.data)
+      }
+    } catch (error) {
+      console.error('获取发票抬头失败', error)
     }
   }
 
@@ -83,7 +100,7 @@ function InvoiceList() {
       setLoading(true)
 
       const response = await applyInvoice(values)
-      if (response.success) {
+      if (response.code === API_CODE.SUCCESS) {
         message.success('发票申请成功')
         setModalVisible(false)
         fetchData()
@@ -95,11 +112,56 @@ function InvoiceList() {
     }
   }
 
-  const handleDownload = (url) => {
-    if (url) {
-      window.open(url, '_blank')
-    } else {
-      message.warning('发票尚未生成')
+  const handleDownload = async (invoiceId) => {
+    try {
+      const blob = await downloadInvoice(invoiceId)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `invoice_${invoiceId}.txt`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      message.success('发票下载成功')
+    } catch (error) {
+      console.error('下载错误:', error)
+      message.error('发票下载失败')
+    }
+  }
+
+  const handleIssue = async (invoiceId) => {
+    try {
+      const response = await issueInvoice(invoiceId)
+      if (response.code === API_CODE.SUCCESS) {
+        message.success('发票开具成功')
+        fetchData()
+      }
+    } catch (error) {
+      message.error('开具失败')
+    }
+  }
+
+  const handleDelete = async (invoiceId) => {
+    try {
+      const response = await deleteInvoice(invoiceId)
+      if (response.code === API_CODE.SUCCESS) {
+        message.success('删除成功')
+        fetchData()
+      }
+    } catch (error) {
+      message.error('删除失败')
+    }
+  }
+
+  const handleTitleSelect = (titleId) => {
+    const selectedTitle = titleList.find(t => t.titleId === titleId)
+    if (selectedTitle) {
+      form.setFieldsValue({
+        invoiceType: selectedTitle.titleType === 1 ? 1 : 0,
+        invoiceTitle: selectedTitle.titleName,
+        taxNumber: selectedTitle.taxNumber || '',
+      })
     }
   }
 
@@ -162,16 +224,35 @@ function InvoiceList() {
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
+          {record.invoiceStatus === 0 && (
+            <Button
+              type="link"
+              size="small"
+              onClick={() => handleIssue(record.invoiceId)}
+            >
+              开具
+            </Button>
+          )}
           {record.invoiceStatus >= 1 && (
             <Button
               type="link"
               size="small"
               icon={<DownloadOutlined />}
-              onClick={() => handleDownload(record.invoiceUrl)}
+              onClick={() => handleDownload(record.invoiceId)}
             >
               下载
             </Button>
           )}
+          <Popconfirm
+            title="确定删除此发票记录？"
+            onConfirm={() => handleDelete(record.invoiceId)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button type="link" size="small" danger icon={<DeleteOutlined />}>
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -209,6 +290,22 @@ function InvoiceList() {
         cancelText="取消"
       >
         <Form form={form} layout="vertical" style={{ marginTop: 24 }}>
+          {titleList.length > 0 && (
+            <Form.Item label="选择发票抬头（可选）">
+              <Select
+                placeholder="选择常用抬头快速填充"
+                onChange={handleTitleSelect}
+                allowClear
+              >
+                {titleList.map(title => (
+                  <Option key={title.titleId} value={title.titleId}>
+                    {title.titleName} {title.titleType === 1 ? '(企业)' : '(个人)'}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          )}
+
           <Form.Item
             label="订单号"
             name="orderNumber"
@@ -289,7 +386,7 @@ function InvoiceTitleList() {
     setLoading(true)
     try {
       const response = await getInvoiceTitleList()
-      if (response.success && response.data) {
+      if (response.code === API_CODE.SUCCESS && response.data) {
         setDataSource(response.data)
       }
     } catch (error) {
@@ -318,14 +415,14 @@ function InvoiceTitleList() {
 
       if (editingRecord) {
         const response = await updateInvoiceTitle(editingRecord.titleId, values)
-        if (response.success) {
+        if (response.code === API_CODE.SUCCESS) {
           message.success('更新成功')
           setModalVisible(false)
           fetchData()
         }
       } else {
         const response = await createInvoiceTitle(values)
-        if (response.success) {
+        if (response.code === API_CODE.SUCCESS) {
           message.success('添加成功')
           setModalVisible(false)
           fetchData()
@@ -341,7 +438,7 @@ function InvoiceTitleList() {
   const handleDelete = async (titleId) => {
     try {
       const response = await deleteInvoiceTitle(titleId)
-      if (response.success) {
+      if (response.code === API_CODE.SUCCESS) {
         message.success('删除成功')
         fetchData()
       }

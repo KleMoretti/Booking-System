@@ -87,4 +87,72 @@ public class InvoiceServiceImpl implements InvoiceService {
     public Invoice getById(Long invoiceId) {
         return invoiceMapper.findById(invoiceId);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteInvoice(Integer userId, Long invoiceId) {
+        Invoice invoice = invoiceMapper.findById(invoiceId);
+        if (invoice == null || !userId.equals(invoice.getUserId())) {
+            throw new IllegalArgumentException("发票不存在或无权删除");
+        }
+        invoiceMapper.delete(invoiceId, userId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void issueInvoice(Integer userId, Long invoiceId) {
+        Invoice invoice = invoiceMapper.findById(invoiceId);
+        if (invoice == null || !userId.equals(invoice.getUserId())) {
+            throw new IllegalArgumentException("发票不存在或无权操作");
+        }
+        if (invoice.getInvoiceStatus() != 0) {
+            throw new IllegalArgumentException("发票已开具，无需重复操作");
+        }
+        
+        // 生成发票号码
+        String invoiceNumber = "INV" + System.currentTimeMillis();
+        
+        invoice.setInvoiceStatus((byte) 1);
+        invoice.setInvoiceNumber(invoiceNumber);
+        invoice.setIssueTime(LocalDateTime.now());
+        invoiceMapper.update(invoice);
+    }
+
+    @Override
+    public byte[] generateInvoicePdf(Long invoiceId) throws Exception {
+        Invoice invoice = invoiceMapper.findById(invoiceId);
+        if (invoice == null) {
+            throw new IllegalArgumentException("发票不存在");
+        }
+
+        // 获取订单信息
+        Order order = orderMapper.findById(invoice.getOrderId());
+        if (order == null) {
+            throw new IllegalArgumentException("关联订单不存在");
+        }
+
+        // 生成简单的PDF内容（这里使用纯文本模拟，实际项目中应使用iText或其他PDF库）
+        StringBuilder pdfContent = new StringBuilder();
+        pdfContent.append("=== 电子发票 ===").append("\n\n");
+        pdfContent.append("发票号码: ").append(invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "待生成").append("\n");
+        pdfContent.append("发票类型: ").append(invoice.getInvoiceType() == 0 ? "电子普通发票" : "增值税专用发票").append("\n");
+        pdfContent.append("发票抬头: ").append(invoice.getInvoiceTitle()).append("\n");
+        if (invoice.getTaxNumber() != null && !invoice.getTaxNumber().isEmpty()) {
+            pdfContent.append("纳税人识别号: ").append(invoice.getTaxNumber()).append("\n");
+        }
+        pdfContent.append("\n");
+        pdfContent.append("订单号: ").append(order.getOrderNumber()).append("\n");
+        pdfContent.append("金额: ¥").append(invoice.getInvoiceAmount()).append("\n");
+        pdfContent.append("开票日期: ").append(invoice.getApplyTime()).append("\n");
+        pdfContent.append("\n");
+        pdfContent.append("接收邮箱: ").append(invoice.getEmail()).append("\n");
+        if (invoice.getNote() != null && !invoice.getNote().isEmpty()) {
+            pdfContent.append("备注: ").append(invoice.getNote()).append("\n");
+        }
+        pdfContent.append("\n");
+        pdfContent.append("=== 此为电子发票 ===").append("\n");
+
+        // 返回文本内容的字节数组（实际应该生成真实的PDF）
+        return pdfContent.toString().getBytes("UTF-8");
+    }
 }

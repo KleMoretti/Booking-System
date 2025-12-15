@@ -18,4 +18,10 @@ public interface InvoiceService {
                       String note);
 
     Invoice getById(Long invoiceId);
+
+    void deleteInvoice(Integer userId, Long invoiceId);
+
+    void issueInvoice(Integer userId, Long invoiceId);
+
+    byte[] generateInvoicePdf(Long invoiceId) throws Exception;
 }

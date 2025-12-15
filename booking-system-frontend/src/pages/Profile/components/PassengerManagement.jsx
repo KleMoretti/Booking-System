@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Table, Button, Space, Modal, Form, Input, Select, message, Popconfirm, Tag } from 'antd'
 import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons'
 import { getPassengerList, createPassenger, updatePassenger, deletePassenger } from '../../../api/passenger'
+import { API_CODE } from '../../../utils/constants'
 
 const { Option } = Select
 
@@ -21,7 +22,7 @@ function PassengerManagement() {
     setLoading(true)
     try {
       const response = await getPassengerList()
-      if (response.success && response.data) {
+      if (response.code === API_CODE.SUCCESS && response.data) {
         setDataSource(response.data)
       }
     } catch (error) {
@@ -51,7 +52,7 @@ function PassengerManagement() {
       if (editingRecord) {
         // 编辑
         const response = await updatePassenger(editingRecord.passengerId, values)
-        if (response.success) {
+        if (response.code === API_CODE.SUCCESS) {
           message.success('更新成功')
           setModalVisible(false)
           fetchData()
@@ -59,7 +60,7 @@ function PassengerManagement() {
       } else {
         // 新增
         const response = await createPassenger(values)
-        if (response.success) {
+        if (response.code === API_CODE.SUCCESS) {
           message.success('添加成功')
           setModalVisible(false)
           fetchData()
@@ -75,7 +76,7 @@ function PassengerManagement() {
   const handleDelete = async (passengerId) => {
     try {
       const response = await deletePassenger(passengerId)
-      if (response.success) {
+      if (response.code === API_CODE.SUCCESS) {
         message.success('删除成功')
         fetchData()
       }

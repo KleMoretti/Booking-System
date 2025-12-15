@@ -15,4 +15,6 @@ public interface InvoiceMapper {
     Invoice findById(@Param("invoiceId") Long invoiceId);
 
     List<Invoice> findByUserId(@Param("userId") Integer userId);
+
+    int delete(@Param("invoiceId") Long invoiceId, @Param("userId") Integer userId);
 }

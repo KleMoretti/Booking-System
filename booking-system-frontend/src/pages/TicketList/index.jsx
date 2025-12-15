@@ -10,7 +10,8 @@ import { formatTime, formatPrice, getSeatTypeName } from '../../utils/format'
 import PageHeader from '../../components/PageHeader'
 import EmptyState from '../../components/EmptyState'
 import Loading from '../../components/Loading'
-import { usePassengers } from '../../hooks/usePassengers'
+import { getPassengerList } from '../../api/passenger'
+import { API_CODE } from '../../utils/constants'
 import dayjs from 'dayjs'
 import './style.css'
 
@@ -25,7 +26,7 @@ function TicketList() {
   const [selectedTrip, setSelectedTrip] = useState(null)
   const [purchaseType, setPurchaseType] = useState('self')
   const [form] = Form.useForm()
-  const { passengers, addPassenger } = usePassengers()
+  const [passengers, setPassengers] = useState([])
   
   // 筛选和排序状态
   const [filterExpanded, setFilterExpanded] = useState(false)
@@ -53,6 +54,20 @@ function TicketList() {
     if (params) {
       dispatch(searchTrips(params))
     }
+
+    // 加载当前用户的常用乘客列表
+    const loadPassengers = async () => {
+      try {
+        const response = await getPassengerList()
+        if (response.code === API_CODE.SUCCESS && response.data) {
+          setPassengers(response.data)
+        }
+      } catch (error) {
+        console.error('获取常用乘客失败', error)
+      }
+    }
+    loadPassengers()
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -188,14 +203,6 @@ function TicketList() {
         },
       ]
 
-      // 保存为常用乘客（如果勾选了保存）
-      if (values.saveAsFrequent) {
-        addPassenger({
-          name: values.passengerName,
-          idCard: values.passengerIdCard,
-        })
-      }
-
       const orderData = {
         tripId: selectedTrip.id,
         passengers: passengerData,
@@ -226,8 +233,8 @@ function TicketList() {
   // 选择常用乘客
   const handleSelectPassenger = useCallback((passenger) => {
     form.setFieldsValue({
-      passengerName: passenger.name,
-      passengerIdCard: passenger.idCard,
+      passengerName: passenger.passengerName,
+      passengerIdCard: passenger.idCardNo,
     })
     setPurchaseType('other')
   }, [form])
@@ -516,18 +523,18 @@ function TicketList() {
               </Radio.Group>
             </Form.Item>
             
-            {/* 常用乘客选择 */}
+            {/* 常用乘客选择（来自个人中心-常用联系人） */}
             {passengers.length > 0 && purchaseType === 'other' && (
               <Form.Item label="常用乘客">
                 <Space wrap>
                   {passengers.map((passenger) => (
                     <Tag
-                      key={passenger.id}
+                      key={passenger.passengerId}
                       color="blue"
                       style={{ cursor: 'pointer', padding: '4px 12px' }}
                       onClick={() => handleSelectPassenger(passenger)}
                     >
-                      {passenger.name} ({passenger.idCard.slice(-4)})
+                      {passenger.passengerName} ({passenger.idCardNo ? passenger.idCardNo.slice(-4) : ''})
                     </Tag>
                   ))}
                 </Space>
@@ -552,11 +559,7 @@ function TicketList() {
               <Input placeholder="请输入身份证号" maxLength={18} />
             </Form.Item>
             
-            {purchaseType === 'other' && (
-              <Form.Item name="saveAsFrequent" valuePropName="checked">
-                <Checkbox>保存为常用乘客</Checkbox>
-              </Form.Item>
-            )}
+            {/* 为他人购票时，这里不再单独保存到本地常用乘客，而是统一使用个人中心的常用联系人 */}
           </Form>
         </Modal>
       </Card>

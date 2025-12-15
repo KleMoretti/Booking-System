@@ -51,4 +51,10 @@
         WHERE user_id = #{userId}
         ORDER BY apply_time DESC
     </select>
+
+    <delete id="delete">
+        DELETE FROM invoices
+        WHERE invoice_id = #{invoiceId}
+          AND user_id = #{userId}
+    </delete>
 </mapper>

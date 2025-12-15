@@ -79,10 +79,14 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
-    const { data, status } = response
+    const { data, status, config } = response
     
     // 处理成功响应
     if (status === HTTP_STATUS.OK) {
+      // 如果是blob类型响应（文件下载），直接返回blob
+      if (config.responseType === 'blob') {
+        return data
+      }
       return data
     }
     

@@ -3,6 +3,10 @@ package com.booking.controller;
 import com.booking.common.Result;
 import com.booking.service.InvoiceService;
 import com.booking.utils.JwtUtil;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -58,6 +62,65 @@ public class InvoiceController {
             return Result.error(e.getMessage());
         } catch (Exception e) {
             return Result.error("发票申请失败：" + e.getMessage());
+        }
+    }
+
+    @PostMapping("/{invoiceId}/issue")
+    public Result<Void> issueInvoice(@RequestHeader(value = "Authorization", required = false) String token,
+                                     @PathVariable Long invoiceId) {
+        try {
+            if (token == null || token.isEmpty()) {
+                return Result.error("请先登录");
+            }
+            String jwt = token.replace("Bearer ", "");
+            Integer userId = jwtUtil.getUserIdFromToken(jwt);
+            invoiceService.issueInvoice(userId, invoiceId);
+            return Result.success("受票开具成功", null);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("开具发票失败：" + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{invoiceId}")
+    public Result<Void> deleteInvoice(@RequestHeader(value = "Authorization", required = false) String token,
+                                      @PathVariable Long invoiceId) {
+        try {
+            if (token == null || token.isEmpty()) {
+                return Result.error("请先登录");
+            }
+            String jwt = token.replace("Bearer ", "");
+            Integer userId = jwtUtil.getUserIdFromToken(jwt);
+            invoiceService.deleteInvoice(userId, invoiceId);
+            return Result.success("删除成功", null);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        } catch (Exception e) {
+            return Result.error("删除发票失败：" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{invoiceId}/download")
+    public ResponseEntity<byte[]> downloadInvoice(@RequestHeader(value = "Authorization", required = false) String token,
+                                                   @PathVariable Long invoiceId) {
+        try {
+            if (token == null || token.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            String jwt = token.replace("Bearer ", "");
+            Integer userId = jwtUtil.getUserIdFromToken(jwt);
+
+            byte[] pdfData = invoiceService.generateInvoicePdf(invoiceId);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "invoice_" + invoiceId + ".txt");
+            headers.setContentLength(pdfData.length);
+
+            return new ResponseEntity<>(pdfData, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
