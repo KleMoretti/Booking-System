@@ -235,41 +235,157 @@
     padding: 32px 16px;
     min-height: auto;
   }
-  
+
   .home-header {
     margin-bottom: 40px;
   }
-  
+
   .home-header .page-title {
     font-size: 28px !important;
   }
-  
+
   .home-header .page-subtitle {
     font-size: 14px;
   }
-  
+
   .home-search-form {
     padding: 32px 24px;
   }
-  
+
   .swap-button-col {
     display: none;
   }
-  
+
   .quick-date-section {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .quick-date-btn {
     width: 100%;
   }
-  
+
   .history-list {
     flex-direction: column;
   }
-  
+
   .history-item {
     width: 100%;
   }
+}
+
+/* 夜间模式适配 */
+[data-theme="dark"] .home-header .page-title {
+  color: var(--color-text-base) !important;
+}
+
+[data-theme="dark"] .home-header .page-subtitle {
+  color: var(--color-text-secondary) !important;
+}
+
+[data-theme="dark"] .home-search-form {
+  background: var(--color-bg-container);
+  box-shadow: var(--shadow-base);
+  border-color: var(--color-border-base);
+}
+
+[data-theme="dark"] .swap-stations-btn {
+  border-color: var(--color-border-base);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .swap-stations-btn:hover {
+  border-color: var(--color-link);
+  background: var(--color-link);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .quick-date-section {
+  border-top-color: var(--color-border-base);
+}
+
+[data-theme="dark"] .quick-date-btn {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-elevated);
+}
+
+[data-theme="dark"] .quick-date-btn:hover {
+  color: #ffffff;
+  background: var(--color-link);
+}
+
+[data-theme="dark"] .history-title {
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .clear-btn {
+  color: var(--color-text-tertiary);
+}
+
+[data-theme="dark"] .clear-btn:hover {
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .history-item {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-base);
+}
+
+[data-theme="dark"] .history-item:hover {
+  background: var(--color-link);
+  border-color: var(--color-link);
+}
+
+[data-theme="dark"] .history-route {
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .history-date {
+  color: var(--color-text-tertiary);
+}
+
+[data-theme="dark"] .history-close {
+  color: var(--color-text-quaternary);
+}
+
+[data-theme="dark"] .history-close:hover {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .home-search-form .ant-form-item-label > label {
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .home-search-form .ant-input,
+[data-theme="dark"] .home-search-form .ant-select-selector,
+[data-theme="dark"] .home-search-form .ant-picker {
+  border-color: var(--color-border-base);
+  background: var(--color-bg-base);
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .home-search-form .ant-input:hover,
+[data-theme="dark"] .home-search-form .ant-select-selector:hover,
+[data-theme="dark"] .home-search-form .ant-picker:hover {
+  border-color: var(--color-border-tertiary);
+  background: var(--color-bg-elevated);
+}
+
+[data-theme="dark"] .home-search-form .ant-input:focus,
+[data-theme="dark"] .home-search-form .ant-select-focused .ant-select-selector,
+[data-theme="dark"] .home-search-form .ant-picker-focused {
+  border-color: var(--color-link);
+  background: var(--color-bg-elevated);
+  box-shadow: 0 0 0 3px rgba(83, 155, 245, 0.15);
+}
+
+[data-theme="dark"] .home-search-form .ant-btn-primary {
+  background: var(--color-link);
+  border-color: var(--color-link);
+}
+
+[data-theme="dark"] .home-search-form .ant-btn-primary:hover {
+  background: var(--color-link-hover);
+  border-color: var(--color-link-hover);
 }

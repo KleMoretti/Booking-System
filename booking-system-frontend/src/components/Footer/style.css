@@ -28,3 +28,18 @@
 .footer-divider {
   color: #e0e0e0;
 }
+
+/* 夜间模式适配 */
+[data-theme="dark"] .app-footer {
+  background: var(--color-bg-container);
+  border-top-color: var(--color-border-base);
+  color: var(--color-text-tertiary);
+}
+
+[data-theme="dark"] .app-footer-main span:hover:not(.footer-divider) {
+  color: var(--color-text-base);
+}
+
+[data-theme="dark"] .footer-divider {
+  color: var(--color-border-base);
+}

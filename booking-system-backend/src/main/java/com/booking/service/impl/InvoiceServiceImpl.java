@@ -2,8 +2,10 @@ package com.booking.service.impl;
 
 import com.booking.entity.Invoice;
 import com.booking.entity.Order;
+import com.booking.entity.User;
 import com.booking.mapper.InvoiceMapper;
 import com.booking.mapper.OrderMapper;
+import com.booking.mapper.UserMapper;
 import com.booking.service.InvoiceService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,9 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Resource
     private OrderMapper orderMapper;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Override
     public List<Map<String, Object>> listInvoices(Integer userId) {
@@ -101,9 +106,19 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void issueInvoice(Integer userId, Long invoiceId) {
+        // 检查用户是否为管理员
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("用户不存在");
+        }
+        if (user.getUserType() == null || user.getUserType() != 1) {
+            throw new IllegalArgumentException("无权操作：只有管理员可以开具发票");
+        }
+        
+        // 检查发票是否存在
         Invoice invoice = invoiceMapper.findById(invoiceId);
-        if (invoice == null || !userId.equals(invoice.getUserId())) {
-            throw new IllegalArgumentException("发票不存在或无权操作");
+        if (invoice == null) {
+            throw new IllegalArgumentException("发票不存在");
         }
         if (invoice.getInvoiceStatus() != 0) {
             throw new IllegalArgumentException("发票已开具，无需重复操作");

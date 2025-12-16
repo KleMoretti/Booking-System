@@ -20,6 +20,7 @@ import {
   deleteInvoiceTitle 
 } from '../../../api/invoice'
 import { API_CODE } from '../../../utils/constants'
+import { useAuth } from '../../../hooks/useAuth'
 
 const { Option } = Select
 const { TextArea } = Input
@@ -53,6 +54,7 @@ function InvoiceManagement() {
 
 // 发票记录列表
 function InvoiceList() {
+  const { isAdmin } = useAuth()
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [dataSource, setDataSource] = useState([])
@@ -184,20 +186,26 @@ function InvoiceList() {
       title: '订单号',
       dataIndex: 'orderNumber',
       key: 'orderNumber',
-      width: 160,
+      width: 220,
+      align: 'center',
+      ellipsis: {
+        showTitle: true,
+      },
     },
     {
       title: '发票抬头',
       dataIndex: 'invoiceTitle',
       key: 'invoiceTitle',
-      width: 200,
+      align: 'center',
+      width: 180,
       ellipsis: true,
     },
     {
       title: '发票类型',
       dataIndex: 'invoiceType',
       key: 'invoiceType',
-      width: 120,
+      align: 'center',
+      width: 140,
       render: (type) => {
         const typeMap = { 0: '电子普通发票', 1: '增值税专用发票' }
         return typeMap[type] || '未知'
@@ -208,6 +216,7 @@ function InvoiceList() {
       dataIndex: 'invoiceAmount',
       key: 'invoiceAmount',
       width: 100,
+      align: 'center',
       render: (amount) => `¥${amount?.toFixed(2) || '0.00'}`,
     },
     {
@@ -215,6 +224,7 @@ function InvoiceList() {
       dataIndex: 'invoiceStatus',
       key: 'invoiceStatus',
       width: 100,
+      align: 'center',
       render: (status) => {
         const statusMap = {
           0: { text: '待开具', color: 'orange' },
@@ -229,16 +239,19 @@ function InvoiceList() {
       title: '申请时间',
       dataIndex: 'applyTime',
       key: 'applyTime',
-      width: 160,
+      align: 'center',
+      width: 170,
     },
     {
       title: '操作',
       key: 'action',
-      width: 100,
+      width: 180,
+      align: 'center',
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
-          {record.invoiceStatus === 0 && (
+          {/* 开具按钮：只有管理员且发票状态为待开具时可见 */}
+          {isAdmin && record.invoiceStatus === 0 && (
             <Button
               type="link"
               size="small"
@@ -287,10 +300,12 @@ function InvoiceList() {
         rowKey="invoiceId"
         pagination={{
           pageSize: 10,
-          showSizeChanger: false,
+          showSizeChanger: true,
           showTotal: (total) => `共 ${total} 条`,
         }}
-        scroll={{ x: 900 }}
+        scroll={{ x: 'max-content' }}
+        size="middle"
+        bordered={false}
       />
 
       <Modal
@@ -546,13 +561,15 @@ function InvoiceTitleList() {
       title: '抬头名称',
       dataIndex: 'titleName',
       key: 'titleName',
-      width: 200,
+      width: 220,
+      ellipsis: true,
     },
     {
       title: '抬头类型',
       dataIndex: 'titleType',
       key: 'titleType',
       width: 100,
+      align: 'center',
       render: (type) => {
         const typeMap = { 0: '个人', 1: '企业' }
         return typeMap[type] || '未知'
@@ -562,7 +579,8 @@ function InvoiceTitleList() {
       title: '纳税人识别号',
       dataIndex: 'taxNumber',
       key: 'taxNumber',
-      width: 180,
+      width: 200,
+      ellipsis: true,
       render: (text) => text || '-',
     },
     {
@@ -570,12 +588,14 @@ function InvoiceTitleList() {
       dataIndex: 'isDefault',
       key: 'isDefault',
       width: 80,
+      align: 'center',
       render: (isDefault) => (isDefault === 1 ? <Tag color="red">默认</Tag> : '-'),
     },
     {
       title: '操作',
       key: 'action',
-      width: 150,
+      width: 180,
+      align: 'center',
       fixed: 'right',
       render: (_, record) => (
         <Space size="small">
@@ -617,10 +637,12 @@ function InvoiceTitleList() {
         rowKey="titleId"
         pagination={{
           pageSize: 10,
-          showSizeChanger: false,
+          showSizeChanger: true,
           showTotal: (total) => `共 ${total} 条`,
         }}
-        scroll={{ x: 900 }}
+        scroll={{ x: 'max-content' }}
+        size="middle"
+        bordered={false}
       />
 
       <Modal

@@ -88,14 +88,14 @@ function StationManagement() {
       title: '站点ID',
       dataIndex: 'id',
       key: 'id',
-      width: 100,
+      width: 80,
       align: 'center',
     },
     {
       title: '站点名称',
       dataIndex: 'name',
       key: 'name',
-      width: 200,
+      width: 150,
       render: (name) => (
         <div style={{ fontWeight: 500, fontSize: '14px' }}>
           <EnvironmentOutlined style={{ marginRight: 8, color: '#1890ff' }} />
@@ -107,7 +107,7 @@ function StationManagement() {
       title: '站点代码',
       dataIndex: 'code',
       key: 'code',
-      width: 120,
+      width: 100,
       align: 'center',
       render: (code, record) => {
         const value = code ?? record.stationCode
@@ -118,7 +118,7 @@ function StationManagement() {
       title: '所在城市',
       dataIndex: 'city',
       key: 'city',
-      width: 150,
+      width: 120,
       align: 'center',
     },
     {
@@ -126,6 +126,7 @@ function StationManagement() {
       dataIndex: 'address',
       key: 'address',
       ellipsis: true,
+      render: (text) => text || '-',
     },
     {
       title: '操作',
@@ -185,7 +186,10 @@ function StationManagement() {
             showSizeChanger: true,
             showTotal: (total) => `共 ${total} 个站点`,
           }}
-          scroll={{ x: 1000 }}
+          scroll={{ x: 'max-content' }}
+          size="middle"
+          bordered={false}
+          style={{ marginTop: 16 }}
         />
       </Card>
 

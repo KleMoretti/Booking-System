@@ -132,7 +132,7 @@
 }
 
 .theme-toggle-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 50%;
@@ -173,12 +173,12 @@
 
 /* 夜间模式下的主题切换按钮 */
 [data-theme="dark"] .theme-toggle-btn {
-  color: #d9d9d9;
+  color: var(--color-text-secondary);
 }
 
 [data-theme="dark"] .theme-toggle-btn:hover {
-  color: #fff;
-  background: #2a2a2a;
+  color: var(--color-text-base);
+  background: var(--color-bg-elevated);
 }
 
 /* 夜间模式其他元素适配 */
@@ -193,6 +193,10 @@
 [data-theme="dark"] .app-header-menu .ant-menu-item:hover,
 [data-theme="dark"] .app-header-menu .ant-menu-item-selected {
   color: var(--color-text-base);
+}
+
+[data-theme="dark"] .app-header-menu .ant-menu-item::after {
+  border-bottom-color: var(--color-link);
 }
 
 [data-theme="dark"] .user-entry {
@@ -212,5 +216,6 @@
 }
 
 [data-theme="dark"] .user-avatar {
-  background: var(--color-primary);
+  background: var(--color-link);
+  color: #ffffff;
 }
