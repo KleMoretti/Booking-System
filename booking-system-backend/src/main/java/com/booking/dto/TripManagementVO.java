@@ -27,6 +27,9 @@ public class TripManagementVO {
     @JsonProperty("date")
     private String date;
     
+    @JsonProperty("arrivalDate")
+    private String arrivalDate;
+    
     @JsonProperty("departureTime")
     private String departureTime;
     
@@ -127,6 +130,14 @@ public class TripManagementVO {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public String getArrivalDate() {
+        return arrivalDate;
+    }
+
+    public void setArrivalDate(String arrivalDate) {
+        this.arrivalDate = arrivalDate;
     }
 
     public String getDepartureTime() {

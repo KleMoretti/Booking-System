@@ -105,7 +105,9 @@ function TripManagement() {
     
     // 到达时间可能跨天，需要根据历时计算
     let arrivalDateTime = null
-    if (record.date && record.arrivalTime) {
+    if (record.arrivalDate && record.arrivalTime) {
+      arrivalDateTime = dayjs(`${record.arrivalDate} ${record.arrivalTime}`, 'YYYY-MM-DD HH:mm')
+    } else if (record.date && record.arrivalTime) {
       const baseArrivalTime = dayjs(`${record.date} ${record.arrivalTime}`, 'YYYY-MM-DD HH:mm')
       // 如果到达时间早于出发时间，说明是第二天或更晚
       if (departureDateTime && baseArrivalTime.isBefore(departureDateTime)) {
@@ -138,6 +140,8 @@ function TripManagement() {
         arrivalTime: values.arrivalTime?.format('HH:mm'),
         // 使用出发时间的日期作为发车日期
         date: values.departureTime?.format('YYYY-MM-DD') || values.date?.format('YYYY-MM-DD'),
+        // 使用到达时间的日期作为到达日期，支持跨天/多天
+        arrivalDate: values.arrivalTime?.format('YYYY-MM-DD'),
       }
 
       let res

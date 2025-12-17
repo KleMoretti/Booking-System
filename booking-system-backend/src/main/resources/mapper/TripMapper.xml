@@ -141,6 +141,7 @@
         <result property="departureStationName" column="departure_station_name" />
         <result property="arrivalStationName" column="arrival_station_name" />
         <result property="date" column="trip_date" />
+        <result property="arrivalDate" column="arrival_date" />
         <result property="departureTime" column="departure_time_only" />
         <result property="arrivalTime" column="arrival_time_only" />
         <result property="duration" column="duration" />
@@ -162,6 +163,7 @@
             ds.station_name AS departure_station_name,
             arr_station.station_name AS arrival_station_name,
             DATE_FORMAT(t.departure_time, '%Y-%m-%d') AS trip_date,
+            DATE_FORMAT(t.arrival_time, '%Y-%m-%d') AS arrival_date,
             DATE_FORMAT(t.departure_time, '%H:%i') AS departure_time_only,
             DATE_FORMAT(t.arrival_time, '%H:%i') AS arrival_time_only,
             CONCAT(

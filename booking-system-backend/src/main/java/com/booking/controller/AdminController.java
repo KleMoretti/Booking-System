@@ -327,26 +327,39 @@ public class AdminController {
         tripDTO.setDepartureStationId(departureStation.getStationId());
         tripDTO.setArrivalStationId(arrivalStation.getStationId());
 
-        String dateStr = tripVO.getDate();
+        String departureDateStr = tripVO.getDate();
+        String arrivalDateStr = tripVO.getArrivalDate();
         String departureTimeStr = tripVO.getDepartureTime();
         String arrivalTimeStr = tripVO.getArrivalTime();
 
-        if (dateStr == null || departureTimeStr == null || arrivalTimeStr == null) {
+        if (departureDateStr == null || departureTimeStr == null || arrivalTimeStr == null) {
             throw new IllegalArgumentException("发车日期和时间不能为空");
         }
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
-        LocalDate date = LocalDate.parse(dateStr, dateFormatter);
+        LocalDate departureDate = LocalDate.parse(departureDateStr, dateFormatter);
         LocalTime departureTime = LocalTime.parse(departureTimeStr, timeFormatter);
         LocalTime arrivalTime = LocalTime.parse(arrivalTimeStr, timeFormatter);
 
-        LocalDateTime departureDateTime = LocalDateTime.of(date, departureTime);
-        LocalDateTime arrivalDateTime = LocalDateTime.of(date, arrivalTime);
+        LocalDate arrivalDate;
+        if (arrivalDateStr != null && !arrivalDateStr.isEmpty()) {
+            arrivalDate = LocalDate.parse(arrivalDateStr, dateFormatter);
+        } else {
+            // 兼容旧前端：如果未传到达日期，根据时间判断是否跨天
+            if (arrivalTime.isBefore(departureTime)) {
+                arrivalDate = departureDate.plusDays(1);
+            } else {
+                arrivalDate = departureDate;
+            }
+        }
+
+        LocalDateTime departureDateTime = LocalDateTime.of(departureDate, departureTime);
+        LocalDateTime arrivalDateTime = LocalDateTime.of(arrivalDate, arrivalTime);
 
         if (arrivalDateTime.isBefore(departureDateTime)) {
-            arrivalDateTime = arrivalDateTime.plusDays(1);
+            throw new IllegalArgumentException("到达时间不能早于出发时间");
         }
 
         tripDTO.setDepartureTime(departureDateTime);
