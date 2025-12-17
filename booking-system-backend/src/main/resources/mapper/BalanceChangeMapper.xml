@@ -20,5 +20,13 @@
     <select id="findByUserId" parameterType="int" resultMap="BalanceChangeResultMap">
         SELECT * FROM balance_changes WHERE user_id = #{userId} ORDER BY create_time DESC
     </select>
+
+    <select id="findByTimeRange" resultMap="BalanceChangeResultMap">
+        SELECT *
+        FROM balance_changes
+        WHERE create_time &gt;= #{startTime}
+          AND create_time &lt; #{endTime}
+        ORDER BY create_time ASC
+    </select>
 </mapper>
 

@@ -2,9 +2,12 @@ package com.booking.controller;
 
 import com.booking.common.PageListResult;
 import com.booking.common.Result;
+import com.booking.dto.FinancialReportDTO;
 import com.booking.dto.TripDTO;
 import com.booking.dto.TripManagementVO;
 import com.booking.dto.UserManagementVO;
+import com.booking.service.FinancialReportService;
+import com.booking.vo.FinancialReportVO;
 import com.booking.entity.Order;
 import com.booking.entity.Station;
 import com.booking.entity.User;
@@ -18,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -56,6 +60,9 @@ public class AdminController {
     
     @Resource
     private PasswordEncoder passwordEncoder;
+
+    @Resource
+    private FinancialReportService financialReportService;
     
     /**
      * 获取统计数据
@@ -75,6 +82,78 @@ public class AdminController {
         stats.put("todayTickets", todayTickets);
         
         return Result.success(stats);
+    }
+
+    @GetMapping("/financial/report")
+    public Result<FinancialReportVO> getFinancialReport(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(required = false, defaultValue = "daily") String reportType) {
+        try {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            FinancialReportVO data = financialReportService.getFinancialReport(start, end, reportType);
+            return Result.success(data);
+        } catch (Exception e) {
+            return Result.error("获取财务报表失败：" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/financial/sales")
+    public Result<FinancialReportVO> getSalesStatistics(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(required = false, defaultValue = "daily") String reportType) {
+        return getFinancialReport(startDate, endDate, reportType);
+    }
+
+    @GetMapping("/financial/export")
+    public void exportFinancialReport(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(required = false, defaultValue = "daily") String reportType,
+            HttpServletResponse response) {
+        try {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+            FinancialReportVO data = financialReportService.getFinancialReport(start, end, reportType);
+
+            response.setContentType("text/csv;charset=UTF-8");
+            String fileName = "financial_report_" + startDate + "_" + endDate + ".csv";
+            String encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
+
+            java.io.PrintWriter writer = response.getWriter();
+            writer.println("日期,销售额,退票金额,净收入,订单数,退票数");
+
+            if (data != null && data.getDetails() != null) {
+                for (FinancialReportDTO dto : data.getDetails()) {
+                    String dateStr = dto.getDate() != null ? dto.getDate().toString() : "";
+                    String salesStr = dto.getSales() != null ? dto.getSales().toPlainString() : "0";
+                    String refundStr = dto.getRefund() != null ? dto.getRefund().toPlainString() : "0";
+                    String netIncomeStr = dto.getNetIncome() != null ? dto.getNetIncome().toPlainString() : "0";
+                    int orderCount = dto.getOrderCount() != null ? dto.getOrderCount() : 0;
+                    int refundCount = dto.getRefundCount() != null ? dto.getRefundCount() : 0;
+
+                    writer.print(dateStr);
+                    writer.print(',');
+                    writer.print(salesStr);
+                    writer.print(',');
+                    writer.print(refundStr);
+                    writer.print(',');
+                    writer.print(netIncomeStr);
+                    writer.print(',');
+                    writer.print(orderCount);
+                    writer.print(',');
+                    writer.print(refundCount);
+                    writer.println();
+                }
+            }
+
+            writer.flush();
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**
