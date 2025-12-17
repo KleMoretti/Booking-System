@@ -74,6 +74,8 @@
         LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
         LEFT JOIN stations arr_station ON t.arrival_station_id = arr_station.station_id
         <where>
+            <!-- 用户端查询：排除已删除和已完成的车次 -->
+            AND t.trip_status NOT IN (2, 3)
             <if test="departureStationId != null">
                 AND t.departure_station_id = #{departureStationId}
             </if>
@@ -101,6 +103,7 @@
         LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
         LEFT JOIN stations arr_station ON t.arrival_station_id = arr_station.station_id
         <where>
+            <!-- 管理端统计：包含所有状态的车次 -->
             <if test="tripNumber != null and tripNumber != ''">
                 AND t.trip_number LIKE CONCAT('%', #{tripNumber}, '%')
             </if>
@@ -141,6 +144,8 @@
         <result property="departureTime" column="departure_time_only" />
         <result property="arrivalTime" column="arrival_time_only" />
         <result property="duration" column="duration" />
+        <result property="status" column="trip_status" />
+        <result property="statusText" column="status_text" />
         <association property="seats" javaType="com.booking.dto.TripManagementVO$SeatInfo">
             <result property="available" column="available_seats" />
             <result property="total" column="total_seats" />
@@ -167,11 +172,20 @@
             ) AS duration,
             (t.total_seats - COALESCE((SELECT COUNT(*) FROM seats s WHERE s.trip_id = t.trip_id AND s.seat_status IN (1, 2)), 0)) AS available_seats,
             t.total_seats,
-            t.base_price
+            t.base_price,
+            t.trip_status,
+            CASE t.trip_status
+                WHEN 0 THEN '计划中'
+                WHEN 1 THEN '进行中'
+                WHEN 2 THEN '已完成'
+                WHEN 3 THEN '已删除'
+                ELSE '未知'
+            END AS status_text
         FROM trips t
         LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
         LEFT JOIN stations arr_station ON t.arrival_station_id = arr_station.station_id
         <where>
+            <!-- 管理端查询：包含所有状态 -->
             <if test="tripNumber != null and tripNumber != ''">
                 AND t.trip_number LIKE CONCAT('%', #{tripNumber}, '%')
             </if>

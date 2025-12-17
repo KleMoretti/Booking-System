@@ -36,6 +36,12 @@ public class TripManagementVO {
     @JsonProperty("duration")
     private String duration;
     
+    @JsonProperty("status")
+    private Integer status;
+    
+    @JsonProperty("statusText")
+    private String statusText;
+    
     @JsonProperty("seats")
     private SeatInfo seats;
     
@@ -153,5 +159,21 @@ public class TripManagementVO {
 
     public void setSeats(SeatInfo seats) {
         this.seats = seats;
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getStatusText() {
+        return statusText;
+    }
+
+    public void setStatusText(String statusText) {
+        this.statusText = statusText;
     }
 }

@@ -1,5 +1,6 @@
 package com.booking.service.impl;
 
+import com.booking.constant.TripStatus;
 import com.booking.dto.TripDTO;
 import com.booking.dto.TripManagementVO;
 import com.booking.dto.TripVO;
@@ -70,9 +71,9 @@ public class TripServiceImpl implements TripService {
         Trip trip = new Trip();
         BeanUtils.copyProperties(tripDTO, trip);
         
-        // 设置默认状态为计划中
+        // 根据发车时间自动设置状态
         if (trip.getTripStatus() == null) {
-            trip.setTripStatus((byte) 0);
+            trip.setTripStatus(calculateTripStatus(trip.getDepartureTime(), trip.getArrivalTime()));
         }
         
         tripMapper.insert(trip);
@@ -86,17 +87,30 @@ public class TripServiceImpl implements TripService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateTrip(Integer tripId, TripDTO tripDTO) {
+        // 获取原车次信息
+        Trip oldTrip = tripMapper.findById(tripId);
+        if (oldTrip == null) {
+            throw new IllegalArgumentException("车次不存在");
+        }
+        
+        // 检查是否可编辑
+        if (!TripStatus.isEditable(oldTrip.getTripStatus())) {
+            throw new IllegalStateException("该车次状态不允许编辑：" + TripStatus.getStatusDesc(oldTrip.getTripStatus()));
+        }
+        
         Trip trip = new Trip();
         BeanUtils.copyProperties(tripDTO, trip);
         trip.setTripId(tripId);
         
-        // 获取原车次信息
-        Trip oldTrip = tripMapper.findById(tripId);
+        // 根据时间更新状态（除非已被标记为删除）
+        if (oldTrip.getTripStatus() != TripStatus.DELETED) {
+            trip.setTripStatus(calculateTripStatus(trip.getDepartureTime(), trip.getArrivalTime()));
+        }
         
         tripMapper.update(trip);
         
         // 如果座位数发生变化，需要调整座位
-        if (oldTrip != null && trip.getTotalSeats() != null 
+        if (trip.getTotalSeats() != null 
             && !trip.getTotalSeats().equals(oldTrip.getTotalSeats())) {
             adjustSeatsForTrip(tripId, oldTrip.getTotalSeats(), trip.getTotalSeats());
         }
@@ -105,14 +119,29 @@ public class TripServiceImpl implements TripService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTrip(Integer tripId) {
-        // 删除车次相关的座位
-        seatMapper.deleteByTripId(tripId);
-        // 删除车次
-        tripMapper.delete(tripId);
+        // 软删除：将车次状态标记为已删除
+        Trip trip = tripMapper.findById(tripId);
+        if (trip == null) {
+            throw new IllegalArgumentException("车次不存在");
+        }
+        
+        // 更新状态为已删除
+        trip.setTripStatus(TripStatus.DELETED);
+        tripMapper.update(trip);
     }
 
     @Override
     public void updateTripPrice(Integer tripId, BigDecimal newPrice) {
+        // 检查车次是否可编辑
+        Trip trip = tripMapper.findById(tripId);
+        if (trip == null) {
+            throw new IllegalArgumentException("车次不存在");
+        }
+        
+        if (!TripStatus.isEditable(trip.getTripStatus())) {
+            throw new IllegalStateException("该车次状态不允许修改票价：" + TripStatus.getStatusDesc(trip.getTripStatus()));
+        }
+        
         tripMapper.updatePrice(tripId, newPrice);
     }
     
@@ -159,6 +188,33 @@ public class TripServiceImpl implements TripService {
         char seatLetter = (char) ('A' + seatIndexInRow);      // A-E
 
         return carNum + "车" + String.format("%02d", rowNum) + seatLetter;
+    }
+    
+    /**
+     * 根据发车和到达时间计算车次状态
+     * @param departureTime 发车时间
+     * @param arrivalTime 到达时间
+     * @return 车次状态
+     */
+    private Byte calculateTripStatus(LocalDateTime departureTime, LocalDateTime arrivalTime) {
+        if (departureTime == null || arrivalTime == null) {
+            return TripStatus.PLANNED;
+        }
+        
+        LocalDateTime now = LocalDateTime.now();
+        
+        // 已到达
+        if (now.isAfter(arrivalTime)) {
+            return TripStatus.COMPLETED;
+        }
+        
+        // 已发车但未到达
+        if (now.isAfter(departureTime)) {
+            return TripStatus.IN_PROGRESS;
+        }
+        
+        // 未发车
+        return TripStatus.PLANNED;
     }
 }
 

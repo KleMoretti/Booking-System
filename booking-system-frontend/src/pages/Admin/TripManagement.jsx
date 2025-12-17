@@ -91,6 +91,12 @@ function TripManagement() {
   }
 
   const showEditModal = (record) => {
+    // 检查车次状态是否可编辑：已删除(3)和已完成(2)不可编辑
+    if (record.status === 2 || record.status === 3) {
+      message.warning(`该车次状态为「${record.statusText}」，不可编辑`)
+      return
+    }
+    
     setEditingRecord(record)
     // 组合日期和时间为完整的日期时间
     const departureDateTime = record.date && record.departureTime 
@@ -216,31 +222,61 @@ function TripManagement() {
       ),
     },
     {
+      title: '状态',
+      key: 'status',
+      width: 100,
+      align: 'center',
+      render: (_, record) => {
+        const statusConfig = {
+          0: { color: 'blue', text: '计划中' },
+          1: { color: 'orange', text: '进行中' },
+          2: { color: 'default', text: '已完成' },
+          3: { color: 'red', text: '已删除' },
+        }
+        const config = statusConfig[record.status] || { color: 'default', text: '未知' }
+        return <Tag color={config.color}>{config.text}</Tag>
+      },
+    },
+    {
       title: '操作',
       key: 'action',
       width: 150,
       align: 'center',
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => showEditModal(record)}
-          >
-            编辑
-          </Button>
-          <Popconfirm
-            title="确定删除？"
-            onConfirm={() => handleDelete(record.id)}
-            okText="确定"
-            cancelText="取消"
-          >
-            <Button danger icon={<DeleteOutlined />}>
-              删除
+      render: (_, record) => {
+        const isEditable = record.status !== 2 && record.status !== 3
+        const isDeletable = record.status !== 3
+        
+        return (
+          <Space size="small">
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => showEditModal(record)}
+              disabled={!isEditable}
+              title={!isEditable ? `${record.statusText}状态不可编辑` : '编辑车次'}
+            >
+              编辑
             </Button>
-          </Popconfirm>
-        </Space>
-      ),
+            <Popconfirm
+              title="确定删除？"
+              description="删除后车次将被标记为已删除状态，用户将无法搜索到该车次"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
+              disabled={!isDeletable}
+            >
+              <Button 
+                danger 
+                icon={<DeleteOutlined />}
+                disabled={!isDeletable}
+                title={!isDeletable ? '已删除的车次不可再次删除' : '删除车次'}
+              >
+                删除
+              </Button>
+            </Popconfirm>
+          </Space>
+        )
+      },
     },
   ]
 
