@@ -8,6 +8,7 @@ import com.booking.entity.Seat;
 import com.booking.entity.Trip;
 import com.booking.mapper.SeatMapper;
 import com.booking.mapper.TripMapper;
+import com.booking.service.OrderService;
 import com.booking.service.TripService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ public class TripServiceImpl implements TripService {
     
     @Resource
     private SeatMapper seatMapper;
+
+    @Resource
+    private OrderService orderService;
 
     @Override
     public List<TripVO> searchTrips(Integer departureStationId, Integer arrivalStationId, LocalDateTime departureTimeFrom, LocalDateTime departureTimeTo) {
@@ -119,6 +123,9 @@ public class TripServiceImpl implements TripService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTrip(Integer tripId) {
+        // 软删除前，先对该车次关联的订单进行取消与退款
+        orderService.cancelAndRefundByTrip(tripId);
+
         // 软删除：将车次状态标记为已删除
         Trip trip = tripMapper.findById(tripId);
         if (trip == null) {

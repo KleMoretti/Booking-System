@@ -24,8 +24,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -492,6 +494,91 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getById(Long orderId) {
         return orderMapper.findById(orderId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelAndRefundByTrip(Integer tripId) {
+        if (tripId == null) {
+            return;
+        }
+
+        // 查询该车次下的所有车票
+        List<Ticket> tickets = ticketMapper.findByTripId(tripId);
+        if (tickets == null || tickets.isEmpty()) {
+            return;
+        }
+
+        // 按订单分组车票
+        Map<Long, List<Ticket>> ticketsByOrder = new HashMap<>();
+        for (Ticket ticket : tickets) {
+            if (ticket.getOrderId() == null) {
+                continue;
+            }
+            ticketsByOrder
+                .computeIfAbsent(ticket.getOrderId(), k -> new ArrayList<>())
+                .add(ticket);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 逐个订单处理取消与退款
+        for (Map.Entry<Long, List<Ticket>> entry : ticketsByOrder.entrySet()) {
+            Long orderId = entry.getKey();
+            List<Ticket> orderTickets = entry.getValue();
+
+            Order order = orderMapper.findById(orderId);
+            if (order == null) {
+                continue;
+            }
+
+            Byte status = order.getOrderStatus();
+            if (status == null) {
+                continue;
+            }
+
+            // 只处理未支付、已支付或已完成的订单
+            if (status == 0) {
+                // 待支付：直接取消，无需退款
+                order.setOrderStatus((byte) 2); // 2=已取消
+                order.setUpdateTime(now);
+                orderMapper.update(order);
+            } else if (status == 1 || status == 3) {
+                // 已支付或已完成：全额退款
+                BigDecimal refundAmount = order.getPaidAmount();
+                if (refundAmount == null || refundAmount.compareTo(BigDecimal.ZERO) <= 0) {
+                    refundAmount = order.getTotalAmount();
+                }
+
+                if (refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+                    String refundNote = "车次取消自动退款，订单" + order.getOrderNumber();
+                    balanceService.refund(order.getUserId(), refundAmount, refundNote);
+                }
+
+                order.setOrderStatus((byte) 4); // 4=已退票/已退款
+                order.setUpdateTime(now);
+                orderMapper.update(order);
+            } else {
+                // 已取消、已退票、已改签等状态不再重复处理
+                continue;
+            }
+
+            // 更新本订单下、属于该车次的车票状态并释放座位
+            for (Ticket ticket : orderTickets) {
+                // 标记车票为已退票
+                ticket.setTicketStatus((byte) 2); // 2=已退票
+                ticket.setUpdateTime(now);
+                ticketMapper.update(ticket);
+
+                // 释放座位
+                Seat seat = seatMapper.findById(ticket.getSeatId());
+                if (seat != null && (seat.getSeatStatus() == 1 || seat.getSeatStatus() == 2)) {
+                    seat.setSeatStatus((byte) 0); // 0=可用
+                    seat.setLockExpireTime(null);
+                    seatMapper.update(seat);
+                }
+            }
+        }
     }
 
     @Override

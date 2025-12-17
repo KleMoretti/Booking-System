@@ -45,5 +45,11 @@ public interface OrderService {
     List<OrderVO> listByUser(Integer userId);
     
     Order getById(Long orderId);
+
+    /**
+     * 根据车次ID，取消并退款该车次下的所有相关订单
+     * 用于管理员删除车次时的级联处理
+     */
+    void cancelAndRefundByTrip(Integer tripId);
 }
 
