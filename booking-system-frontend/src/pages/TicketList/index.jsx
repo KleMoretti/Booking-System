@@ -1,5 +1,5 @@
 // 票务列表页面
-import { Card, Table, Tag, Button, Space, message, Modal, Form, Input, Radio, Select, Slider, Checkbox, Row, Col, Divider, Badge, Collapse } from 'antd'
+import { Card, Table, Tag, Button, Space, message, Modal, Form, Input, Select, Slider, Checkbox, Row, Col, Divider, Badge, Collapse } from 'antd'
 import { useEffect, useCallback, useState, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -24,7 +24,6 @@ function TicketList() {
   const { userInfo } = useSelector((state) => state.user)
   const [bookingModalVisible, setBookingModalVisible] = useState(false)
   const [selectedTrip, setSelectedTrip] = useState(null)
-  const [purchaseType, setPurchaseType] = useState('self')
   const [form] = Form.useForm()
   const [passengers, setPassengers] = useState([])
   
@@ -72,6 +71,43 @@ function TicketList() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // 可选择的乘客选项：包含当前用户和常用乘客
+  const selectablePassengerOptions = useMemo(() => {
+    const options = []
+    const defaultName = userInfo?.realName || userInfo?.username || ''
+    const defaultIdCard = userInfo?.idCardNo || ''
+
+    if (defaultName) {
+      options.push({
+        value: `self-${defaultIdCard || defaultName}`,
+        label: `${defaultName}${defaultIdCard ? ` (${defaultIdCard.slice(-4)})` : ''}`,
+        name: defaultName,
+        idCard: defaultIdCard,
+        isSelf: true,
+      })
+    }
+
+    if (passengers && passengers.length > 0) {
+      const selfIdCard = defaultIdCard || null
+      passengers.forEach((p) => {
+        const idCard = p.idCardNo || ''
+        // 避免与“本人”重复
+        if (selfIdCard && idCard && idCard === selfIdCard) {
+          return
+        }
+        options.push({
+          value: `contact-${p.passengerId}`,
+          label: `${p.passengerName}${idCard ? ` (${idCard.slice(-4)})` : ''}`,
+          name: p.passengerName,
+          idCard,
+          isSelf: false,
+        })
+      })
+    }
+
+    return options
+  }, [userInfo, passengers])
 
   // 日期切换
   const handleDateChange = useCallback((days) => {
@@ -163,40 +199,32 @@ function TicketList() {
   const handleBookTicket = (trip) => {
     // 这里先实现一个最小可用的下单流程：为当前用户购买 1 张票
     setSelectedTrip(trip)
-    const defaultName = userInfo?.realName || userInfo?.username || ''
-    const defaultIdCard = userInfo?.idCardNo || ''
-    setPurchaseType('self')
+    const selfOption = selectablePassengerOptions.find((opt) => opt.isSelf)
     form.setFieldsValue({
-      purchaseType: 'self',
-      passengers: [
-        {
-          name: defaultName,
-          idCard: defaultIdCard,
-        },
-      ],
+      selectedPassengerKeys: selfOption ? [selfOption.value] : [],
+      passengers: selfOption
+        ? [
+            {
+              name: selfOption.name,
+              idCard: selfOption.idCard,
+            },
+          ]
+        : [],
     })
     setBookingModalVisible(true)
   }
 
-  const handlePurchaseTypeChange = (e) => {
-    const value = e.target.value
-    setPurchaseType(value)
-    if (value === 'self') {
-      const defaultName = userInfo?.realName || userInfo?.username || ''
-      const defaultIdCard = userInfo?.idCardNo || ''
-      form.setFieldsValue({
-        passengers: [
-          {
-            name: defaultName,
-            idCard: defaultIdCard,
-          },
-        ],
-      })
-    } else {
-      form.setFieldsValue({
-        passengers: [],
-      })
-    }
+  // 乘客下拉多选变化时，同步更新 passengers 列表
+  const handleSelectedPassengersChange = (values) => {
+    const selectedOptions = selectablePassengerOptions.filter((opt) => values.includes(opt.value))
+    const mappedPassengers = selectedOptions.map((opt) => ({
+      name: opt.name,
+      idCard: opt.idCard,
+    }))
+    form.setFieldsValue({
+      selectedPassengerKeys: values,
+      passengers: mappedPassengers,
+    })
   }
 
   const handleSubmitBooking = async () => {
@@ -249,25 +277,6 @@ function TicketList() {
       message.error(error.message || '创建订单失败')
     }
   }
-
-  // 选择常用乘客
-  const handleSelectPassenger = useCallback((passenger) => {
-    const currentPassengers = form.getFieldValue('passengers') || []
-    const exists = currentPassengers.some((item) => item && item.idCard === passenger.idCardNo)
-    if (!exists) {
-      const updated = [
-        ...currentPassengers,
-        {
-          name: passenger.passengerName,
-          idCard: passenger.idCardNo,
-        },
-      ]
-      form.setFieldsValue({
-        passengers: updated,
-      })
-    }
-    setPurchaseType('other')
-  }, [form])
 
   const handleCloseBookingModal = () => {
     setBookingModalVisible(false)
@@ -546,32 +555,26 @@ function TicketList() {
             form={form}
             layout="vertical"
           >
-            <Form.Item label="购票类型" name="purchaseType">
-              <Radio.Group value={purchaseType} onChange={handlePurchaseTypeChange}>
-                <Radio value="self">为自己购票</Radio>
-                <Radio value="other">为他人购票</Radio>
-              </Radio.Group>
+            <Form.Item
+              label="选择乘客（可多选）"
+              name="selectedPassengerKeys"
+              rules={[{ required: true, message: '请至少选择一位乘客' }]}
+            >
+              <Select
+                mode="multiple"
+                allowClear
+                disabled={selectablePassengerOptions.length === 0}
+                placeholder={
+                  selectablePassengerOptions.length > 0
+                    ? '请选择乘客，可多选本人和常用乘客'
+                    : '暂无可选乘客，请在下方手动填写乘客信息'
+                }
+                options={selectablePassengerOptions}
+                onChange={handleSelectedPassengersChange}
+              />
             </Form.Item>
-            
-            {/* 常用乘客选择（来自个人中心-常用联系人） */}
-            {passengers.length > 0 && purchaseType === 'other' && (
-              <Form.Item label="常用乘客">
-                <Space wrap>
-                  {passengers.map((passenger) => (
-                    <Tag
-                      key={passenger.passengerId}
-                      color="blue"
-                      style={{ cursor: 'pointer', padding: '4px 12px' }}
-                      onClick={() => handleSelectPassenger(passenger)}
-                    >
-                      {passenger.passengerName} ({passenger.idCardNo ? passenger.idCardNo.slice(-4) : ''})
-                    </Tag>
-                  ))}
-                </Space>
-              </Form.Item>
-            )}
             <Form.List name="passengers">
-              {(fields, { add, remove }) => (
+              {(fields) => (
                 <>
                   {fields.map((field, index) => (
                     <Space key={field.key} align="baseline" style={{ marginBottom: 8 }}>
@@ -580,40 +583,19 @@ function TicketList() {
                         name={[field.name, 'name']}
                         fieldKey={[field.fieldKey, 'name']}
                         label={index === 0 ? '乘客姓名' : ''}
-                        rules={[{ required: true, message: '请输入乘客姓名' }]}
                       >
-                        <Input placeholder="请输入乘客姓名" />
+                        <Input disabled placeholder="乘客姓名" />
                       </Form.Item>
                       <Form.Item
                         {...field}
                         name={[field.name, 'idCard']}
                         fieldKey={[field.fieldKey, 'idCard']}
                         label={index === 0 ? '身份证号' : ''}
-                        rules={[
-                          { required: true, message: '请输入身份证号' },
-                          { pattern: /^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]$/, message: '身份证号格式不正确' },
-                        ]}
                       >
-                        <Input placeholder="请输入身份证号" maxLength={18} />
+                        <Input disabled placeholder="身份证号" />
                       </Form.Item>
-                      {fields.length > 1 && (
-                        <Button
-                          type="link"
-                          danger
-                          onClick={() => remove(field.name)}
-                        >
-                          删除
-                        </Button>
-                      )}
                     </Space>
                   ))}
-                  <Button
-                    type="dashed"
-                    block
-                    onClick={() => add()}
-                  >
-                    添加乘客
-                  </Button>
                 </>
               )}
             </Form.List>
