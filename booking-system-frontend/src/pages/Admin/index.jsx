@@ -16,6 +16,7 @@ import PriceManagement from './PriceManagement'
 import UserManagement from './UserManagement'
 import BatchTripManagement from './BatchTripManagement'
 import FinancialReport from './FinancialReport'
+import TripTemplateManagement from './TripTemplateManagement'
 import { getStatistics } from '../../api/admin'
 import './style.css'
 
@@ -71,6 +72,11 @@ function Admin() {
       key: 'batch-trips',
       icon: <CloudUploadOutlined />,
       label: '批量车次管理',
+    },
+    {
+      key: 'trip-templates',
+      icon: <CloudUploadOutlined />,
+      label: '车次模板管理',
     },
     {
       key: 'prices',
@@ -222,6 +228,8 @@ function Admin() {
         return <UserManagement />
       case 'stations':
         return <StationManagement />
+      case 'trip-templates':
+        return <TripTemplateManagement />
       case 'trips':
         return <TripManagement />
       case 'batch-trips':

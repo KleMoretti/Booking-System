@@ -69,7 +69,7 @@ function BatchTripManagement() {
       const url = window.URL.createObjectURL(new Blob([response]))
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', '车次导入模板.xlsx')
+      link.setAttribute('download', '车次导入模板.csv')
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -82,15 +82,14 @@ function BatchTripManagement() {
 
   // 上传文件配置
   const uploadProps = {
-    accept: '.xlsx,.xls,.csv',
+    accept: '.xlsx,.xls',
     maxCount: 1,
     fileList,
     beforeUpload: (file) => {
       const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-                      file.type === 'application/vnd.ms-excel' ||
-                      file.type === 'text/csv'
+                      file.type === 'application/vnd.ms-excel'
       if (!isExcel) {
-        message.error('只能上传Excel或CSV文件！')
+        message.error('只能上传Excel文件！')
         return false
       }
       const isLt5M = file.size / 1024 / 1024 < 5
@@ -121,7 +120,33 @@ function BatchTripManagement() {
       const response = await batchImportTrips(formData)
       
       if (response.code === API_CODE.SUCCESS) {
-        message.success(`导入成功！成功导入 ${response.data.successCount} 条车次`)
+        const { successCount = 0, failCount = 0, errors = [] } = response.data || {}
+
+        if (failCount === 0) {
+          message.success(`成功导入 ${successCount} 条车次`)
+        } else {
+          Modal.warning({
+            title: '导入完成',
+            content: (
+              <div>
+                <p>成功: {successCount} 条</p>
+                <p>失败: {failCount} 条</p>
+                {Array.isArray(errors) && errors.length > 0 && (
+                  <div style={{ marginTop: 10, maxHeight: 200, overflow: 'auto' }}>
+                    <p>错误信息:</p>
+                    {errors.map((err, idx) => (
+                      <p key={idx} style={{ color: 'red', fontSize: 12 }}>
+                        {err}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ),
+            width: 600,
+          })
+        }
+
         setUploadModalVisible(false)
         setFileList([])
         loadTripList()

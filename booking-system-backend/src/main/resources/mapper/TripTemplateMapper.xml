@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.booking.mapper.TripTemplateMapper">
+
+    <resultMap id="TripTemplateResultMap" type="com.booking.entity.TripTemplate">
+        <id property="templateId" column="template_id" />
+        <result property="tripNumber" column="trip_number" />
+        <result property="vehicleInfo" column="vehicle_info" />
+        <result property="totalSeats" column="total_seats" />
+        <result property="departureStationId" column="departure_station_id" />
+        <result property="departureStationName" column="departure_station_name" />
+        <result property="arrivalStationId" column="arrival_station_id" />
+        <result property="arrivalStationName" column="arrival_station_name" />
+        <result property="departureTime" column="departure_time" />
+        <result property="arrivalTime" column="arrival_time" />
+        <result property="basePrice" column="base_price" />
+        <result property="isActive" column="is_active" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.booking.entity.TripTemplate" useGeneratedKeys="true" keyProperty="template.templateId">
+        INSERT INTO trip_templates(
+            trip_number, vehicle_info, total_seats, 
+            departure_station_id, arrival_station_id, 
+            departure_time, arrival_time, base_price, is_active
+        )
+        VALUES(
+            #{template.tripNumber}, #{template.vehicleInfo}, #{template.totalSeats},
+            #{template.departureStationId}, #{template.arrivalStationId},
+            #{template.departureTime}, #{template.arrivalTime}, #{template.basePrice}, #{template.isActive}
+        )
+    </insert>
+
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO trip_templates(
+            trip_number, vehicle_info, total_seats, 
+            departure_station_id, arrival_station_id, 
+            departure_time, arrival_time, base_price, is_active
+        )
+        VALUES
+        <foreach collection="templates" item="item" separator=",">
+            (
+                #{item.tripNumber}, #{item.vehicleInfo}, #{item.totalSeats},
+                #{item.departureStationId}, #{item.arrivalStationId},
+                #{item.departureTime}, #{item.arrivalTime}, #{item.basePrice}, #{item.isActive}
+            )
+        </foreach>
+    </insert>
+
+    <select id="findById" resultMap="TripTemplateResultMap">
+        SELECT 
+            t.*,
+            ds.station_name as departure_station_name,
+            as.station_name as arrival_station_name
+        FROM trip_templates t
+        LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
+        LEFT JOIN stations as ON t.arrival_station_id = as.station_id
+        WHERE t.template_id = #{templateId}
+    </select>
+
+    <select id="findByTripNumber" resultMap="TripTemplateResultMap">
+        SELECT 
+            t.*,
+            ds.station_name as departure_station_name,
+            as.station_name as arrival_station_name
+        FROM trip_templates t
+        LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
+        LEFT JOIN stations as ON t.arrival_station_id = as.station_id
+        WHERE t.trip_number = #{tripNumber}
+    </select>
+
+    <select id="findAll" resultMap="TripTemplateResultMap">
+        SELECT 
+            t.*,
+            ds.station_name as departure_station_name,
+            as.station_name as arrival_station_name
+        FROM trip_templates t
+        LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
+        LEFT JOIN stations as ON t.arrival_station_id = as.station_id
+        ORDER BY t.create_time DESC
+    </select>
+
+    <select id="findActive" resultMap="TripTemplateResultMap">
+        SELECT 
+            t.*,
+            ds.station_name as departure_station_name,
+            as.station_name as arrival_station_name
+        FROM trip_templates t
+        LEFT JOIN stations ds ON t.departure_station_id = ds.station_id
+        LEFT JOIN stations as ON t.arrival_station_id = as.station_id
+        WHERE t.is_active = 1
+        ORDER BY t.create_time DESC
+    </select>
+
+    <update id="update" parameterType="com.booking.entity.TripTemplate">
+        UPDATE trip_templates
+        SET 
+            trip_number = #{template.tripNumber},
+            vehicle_info = #{template.vehicleInfo},
+            total_seats = #{template.totalSeats},
+            departure_station_id = #{template.departureStationId},
+            arrival_station_id = #{template.arrivalStationId},
+            departure_time = #{template.departureTime},
+            arrival_time = #{template.arrivalTime},
+            base_price = #{template.basePrice},
+            is_active = #{template.isActive}
+        WHERE template_id = #{template.templateId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM trip_templates WHERE template_id = #{templateId}
+    </delete>
+
+</mapper>

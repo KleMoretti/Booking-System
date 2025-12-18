@@ -1,0 +1,20 @@
+.trip-template-management {
+  padding: 24px;
+}
+
+.trip-template-management .ant-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trip-template-management .ant-table {
+  background: #fff;
+}
+
+.trip-template-management .ant-btn-link {
+  padding: 0;
+}
+
+.trip-template-management .ant-descriptions-item-label {
+  font-weight: 500;
+  background-color: #fafafa;
+}

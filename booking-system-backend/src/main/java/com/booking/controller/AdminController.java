@@ -19,6 +19,7 @@ import com.booking.service.OrderService;
 import com.booking.service.TripService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -272,6 +273,39 @@ public class AdminController {
         PageListResult<TripManagementVO> result = new PageListResult<>(list, total);
         
         return Result.success(result);
+    }
+    
+    /**
+     * 批量导入车次
+     */
+    @PostMapping("/trips/batch-import")
+    public Result<Map<String, Object>> batchImportTrips(@RequestParam("file") MultipartFile file) {
+        try {
+            Map<String, Object> result = tripService.importTripsFromExcel(file);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("批量导入失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 下载车次导入模板（CSV）
+     */
+    @GetMapping("/trips/template")
+    public void downloadTripTemplate(HttpServletResponse response) {
+        try {
+            response.setContentType("text/csv;charset=UTF-8");
+            String fileName = "trip_import_template.csv";
+            String encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
+
+            java.io.PrintWriter writer = response.getWriter();
+            writer.println("车次号,车辆信息,总座位数,出发站,到达站,出发日期,出发时间,到达日期,到达时间,基础票价");
+            writer.println("G1001,CRH380A,556,北京南站,上海虹桥站,2025-12-20,08:00,2025-12-20,12:30,553.5");
+            writer.flush();
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
     }
     
     /**

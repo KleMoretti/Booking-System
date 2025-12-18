@@ -4,10 +4,12 @@ import com.booking.dto.TripDTO;
 import com.booking.dto.TripManagementVO;
 import com.booking.dto.TripVO;
 import com.booking.entity.Trip;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public interface TripService {
     // 用户端查询
@@ -22,5 +24,6 @@ public interface TripService {
     void updateTrip(Integer tripId, TripDTO tripDTO);
     void deleteTrip(Integer tripId);
     void updateTripPrice(Integer tripId, BigDecimal newPrice);
+    Map<String, Object> importTripsFromExcel(MultipartFile file);
 }
 
