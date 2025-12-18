@@ -289,19 +289,27 @@ public class AdminController {
     }
 
     /**
-     * 下载车次导入模板（CSV）
+     * 下载车次导入模板（Excel格式，UTF-8 BOM编码）
      */
     @GetMapping("/trips/template")
     public void downloadTripTemplate(HttpServletResponse response) {
         try {
             response.setContentType("text/csv;charset=UTF-8");
-            String fileName = "trip_import_template.csv";
-            String encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8");
-            response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
+            String fileName = "车次导入模板.csv";
+            String encodedFileName = java.net.URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+            response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFileName);
+            response.setCharacterEncoding("UTF-8");
 
-            java.io.PrintWriter writer = response.getWriter();
+            // 添加UTF-8 BOM头，确保Excel能正确识别中文编码
+            java.io.OutputStream out = response.getOutputStream();
+            out.write(0xEF);
+            out.write(0xBB);
+            out.write(0xBF);
+            
+            java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.OutputStreamWriter(out, "UTF-8"));
             writer.println("车次号,车辆信息,总座位数,出发站,到达站,出发日期,出发时间,到达日期,到达时间,基础票价");
             writer.println("G1001,CRH380A,556,北京南站,上海虹桥站,2025-12-20,08:00,2025-12-20,12:30,553.5");
+            writer.println("D2001,CRH2A,613,广州南站,深圳北站,2025-12-21,09:30,2025-12-21,10:15,79.5");
             writer.flush();
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

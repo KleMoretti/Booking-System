@@ -3,6 +3,8 @@ package com.booking.service.impl;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.read.builder.ExcelReaderBuilder;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.booking.dto.TripTemplateExcelDTO;
 import com.booking.entity.Station;
 import com.booking.entity.TripTemplate;
@@ -39,8 +41,8 @@ public class TripTemplateServiceImpl implements TripTemplateService {
         }
 
         String filename = file.getOriginalFilename();
-        if (filename == null || (!filename.endsWith(".xlsx") && !filename.endsWith(".xls"))) {
-            throw new IllegalArgumentException("只支持Excel文件格式（.xlsx 或 .xls）");
+        if (filename == null || (!filename.endsWith(".xlsx") && !filename.endsWith(".xls") && !filename.endsWith(".csv"))) {
+            throw new IllegalArgumentException("只支持Excel或CSV文件格式（.xlsx, .xls, .csv）");
         }
 
         List<TripTemplate> templates = new ArrayList<>();
@@ -54,7 +56,7 @@ public class TripTemplateServiceImpl implements TripTemplateService {
         }
 
         try {
-            EasyExcel.read(file.getInputStream(), TripTemplateExcelDTO.class, new AnalysisEventListener<TripTemplateExcelDTO>() {
+            ExcelReaderBuilder readerBuilder = EasyExcel.read(file.getInputStream(), TripTemplateExcelDTO.class, new AnalysisEventListener<TripTemplateExcelDTO>() {
                 @Override
                 public void invoke(TripTemplateExcelDTO data, AnalysisContext context) {
                     Integer rowNum = context.readRowHolder().getRowIndex() + 1;
@@ -70,7 +72,13 @@ public class TripTemplateServiceImpl implements TripTemplateService {
                 public void doAfterAllAnalysed(AnalysisContext context) {
                     // 读取完成
                 }
-            }).sheet().doRead();
+            });
+
+            if (filename != null && filename.toLowerCase().endsWith(".csv")) {
+                readerBuilder.excelType(ExcelTypeEnum.CSV);
+            }
+
+            readerBuilder.sheet().doRead();
 
             // 批量插入数据库
             if (!templates.isEmpty()) {

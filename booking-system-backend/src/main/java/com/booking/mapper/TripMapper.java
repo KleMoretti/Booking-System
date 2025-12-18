@@ -46,4 +46,14 @@ public interface TripMapper {
      * 根据站点ID查询所有使用该站点的车次ID（出发站或到达站）
      */
     List<Integer> findTripIdsByStationId(@Param("stationId") Integer stationId);
+
+    /**
+     * 更新发车车次状态为进行中
+     */
+    int updateStatusToInProgress(@Param("currentTime") LocalDateTime currentTime);
+
+    /**
+     * 更新到达车次状态为已结束
+     */
+    int updateStatusToFinished(@Param("currentTime") LocalDateTime currentTime);
 }

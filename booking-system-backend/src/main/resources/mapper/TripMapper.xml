@@ -53,7 +53,7 @@
             <result property="price" column="base_price" />
         </association>
     </resultMap>
-    
+
     <select id="searchTrips" resultMap="TripVOResultMap">
         SELECT 
             t.trip_id,
@@ -231,5 +231,19 @@
             LIMIT #{offset}, #{pageSize}
         </if>
     </select>
-</mapper>
 
+    <update id="updateStatusToInProgress">
+        UPDATE trips
+        SET trip_status = 1, update_time = NOW()
+        WHERE trip_status = 0
+          AND departure_time &lt;= #{currentTime}
+          AND arrival_time &gt; #{currentTime}
+    </update>
+
+    <update id="updateStatusToFinished">
+        UPDATE trips
+        SET trip_status = 2, update_time = NOW()
+        WHERE trip_status IN (0, 1)
+          AND arrival_time &lt;= #{currentTime}
+    </update>
+</mapper>

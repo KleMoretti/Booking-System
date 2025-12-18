@@ -3,6 +3,8 @@ package com.booking.service.impl;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
+import com.alibaba.excel.read.builder.ExcelReaderBuilder;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.booking.constant.TripStatus;
 import com.booking.dto.TripDTO;
 import com.booking.dto.TripExcelDTO;
@@ -90,8 +92,8 @@ public class TripServiceImpl implements TripService {
         }
 
         String filename = file.getOriginalFilename();
-        if (filename == null || (!filename.endsWith(".xlsx") && !filename.endsWith(".xls"))) {
-            throw new IllegalArgumentException("只支持Excel文件格式（.xlsx 或 .xls）");
+        if (filename == null || (!filename.endsWith(".xlsx") && !filename.endsWith(".xls") && !filename.endsWith(".csv"))) {
+            throw new IllegalArgumentException("只支持Excel或CSV文件格式（.xlsx, .xls, .csv）");
         }
 
         List<TripDTO> tripDTOList = new ArrayList<>();
@@ -105,7 +107,7 @@ public class TripServiceImpl implements TripService {
         }
 
         try {
-            EasyExcel.read(file.getInputStream(), TripExcelDTO.class, new AnalysisEventListener<TripExcelDTO>() {
+            ExcelReaderBuilder readerBuilder = EasyExcel.read(file.getInputStream(), TripExcelDTO.class, new AnalysisEventListener<TripExcelDTO>() {
                 @Override
                 public void invoke(TripExcelDTO data, AnalysisContext context) {
                     Integer rowNum = context.readRowHolder().getRowIndex() + 1;
@@ -121,7 +123,13 @@ public class TripServiceImpl implements TripService {
                 public void doAfterAllAnalysed(AnalysisContext context) {
                     // 读取完成
                 }
-            }).sheet().doRead();
+            });
+
+            if (filename.toLowerCase().endsWith(".csv")) {
+                readerBuilder.excelType(ExcelTypeEnum.CSV);
+            }
+
+            readerBuilder.sheet().doRead();
 
             int successCount = 0;
             for (TripDTO tripDTO : tripDTOList) {
