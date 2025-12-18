@@ -462,7 +462,7 @@ public class OrderServiceImpl implements OrderService {
             ticketMapper.update(oldTicket);
         }
         
-        // 创建新订单
+        // 创建新订单（直接标记为已支付）
         Order newOrder = new Order();
         newOrder.setUserId(userId);
         newOrder.setOrderNumber(generateOrderNumber());
@@ -471,7 +471,10 @@ public class OrderServiceImpl implements OrderService {
         newOrder.setOrderStatus((byte) 1); // 1=已支付
         newOrder.setCreateTime(LocalDateTime.now());
         newOrder.setPayTime(LocalDateTime.now());
+        // 先插入获取主键
         orderMapper.insert(newOrder);
+        // 再更新一次以持久化 payTime 等字段（insert 语句未包含 pay_time 列）
+        orderMapper.update(newOrder);
         
         // 创建新车票
         for (int i = 0; i < oldTickets.size(); i++) {

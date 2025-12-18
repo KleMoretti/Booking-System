@@ -168,8 +168,12 @@ function TicketList() {
     setPurchaseType('self')
     form.setFieldsValue({
       purchaseType: 'self',
-      passengerName: defaultName,
-      passengerIdCard: defaultIdCard,
+      passengers: [
+        {
+          name: defaultName,
+          idCard: defaultIdCard,
+        },
+      ],
     })
     setBookingModalVisible(true)
   }
@@ -181,13 +185,16 @@ function TicketList() {
       const defaultName = userInfo?.realName || userInfo?.username || ''
       const defaultIdCard = userInfo?.idCardNo || ''
       form.setFieldsValue({
-        passengerName: defaultName,
-        passengerIdCard: defaultIdCard,
+        passengers: [
+          {
+            name: defaultName,
+            idCard: defaultIdCard,
+          },
+        ],
       })
     } else {
       form.setFieldsValue({
-        passengerName: '',
-        passengerIdCard: '',
+        passengers: [],
       })
     }
   }
@@ -198,12 +205,23 @@ function TicketList() {
     }
     try {
       const values = await form.validateFields()
-      const passengerData = [
-        {
-          name: values.passengerName,
-          idCard: values.passengerIdCard,
-        },
-      ]
+      const passengerList = values.passengers || []
+
+      if (!Array.isArray(passengerList) || passengerList.length === 0) {
+        message.error('请至少添加一位乘客')
+        return
+      }
+
+      const maxSeats = selectedTrip?.seats?.available || 0
+      if (maxSeats > 0 && passengerList.length > maxSeats) {
+        message.error(`当前车次最多可购买 ${maxSeats} 张票，请减少乘客数量`)
+        return
+      }
+
+      const passengerData = passengerList.map((item) => ({
+        name: item.name,
+        idCard: item.idCard,
+      }))
 
       const orderData = {
         tripId: selectedTrip.id,
@@ -234,10 +252,20 @@ function TicketList() {
 
   // 选择常用乘客
   const handleSelectPassenger = useCallback((passenger) => {
-    form.setFieldsValue({
-      passengerName: passenger.passengerName,
-      passengerIdCard: passenger.idCardNo,
-    })
+    const currentPassengers = form.getFieldValue('passengers') || []
+    const exists = currentPassengers.some((item) => item && item.idCard === passenger.idCardNo)
+    if (!exists) {
+      const updated = [
+        ...currentPassengers,
+        {
+          name: passenger.passengerName,
+          idCard: passenger.idCardNo,
+        },
+      ]
+      form.setFieldsValue({
+        passengers: updated,
+      })
+    }
     setPurchaseType('other')
   }, [form])
 
@@ -542,26 +570,53 @@ function TicketList() {
                 </Space>
               </Form.Item>
             )}
-            
-            <Form.Item
-              label="乘客姓名"
-              name="passengerName"
-              rules={[{ required: true, message: '请输入乘客姓名' }]}
-            >
-              <Input placeholder="请输入乘客姓名" />
-            </Form.Item>
-            <Form.Item
-              label="身份证号"
-              name="passengerIdCard"
-              rules={[
-                { required: true, message: '请输入身份证号' },
-                { pattern: /^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]$/, message: '身份证号格式不正确' }
-              ]}
-            >
-              <Input placeholder="请输入身份证号" maxLength={18} />
-            </Form.Item>
-            
-            {/* 为他人购票时，这里不再单独保存到本地常用乘客，而是统一使用个人中心的常用联系人 */}
+            <Form.List name="passengers">
+              {(fields, { add, remove }) => (
+                <>
+                  {fields.map((field, index) => (
+                    <Space key={field.key} align="baseline" style={{ marginBottom: 8 }}>
+                      <Form.Item
+                        {...field}
+                        name={[field.name, 'name']}
+                        fieldKey={[field.fieldKey, 'name']}
+                        label={index === 0 ? '乘客姓名' : ''}
+                        rules={[{ required: true, message: '请输入乘客姓名' }]}
+                      >
+                        <Input placeholder="请输入乘客姓名" />
+                      </Form.Item>
+                      <Form.Item
+                        {...field}
+                        name={[field.name, 'idCard']}
+                        fieldKey={[field.fieldKey, 'idCard']}
+                        label={index === 0 ? '身份证号' : ''}
+                        rules={[
+                          { required: true, message: '请输入身份证号' },
+                          { pattern: /^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]$/, message: '身份证号格式不正确' },
+                        ]}
+                      >
+                        <Input placeholder="请输入身份证号" maxLength={18} />
+                      </Form.Item>
+                      {fields.length > 1 && (
+                        <Button
+                          type="link"
+                          danger
+                          onClick={() => remove(field.name)}
+                        >
+                          删除
+                        </Button>
+                      )}
+                    </Space>
+                  ))}
+                  <Button
+                    type="dashed"
+                    block
+                    onClick={() => add()}
+                  >
+                    添加乘客
+                  </Button>
+                </>
+              )}
+            </Form.List>
           </Form>
         </Modal>
       </Card>

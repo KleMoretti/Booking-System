@@ -42,9 +42,12 @@
     </select>
     
     <select id="countTodayTickets" resultType="long">
-        SELECT COUNT(*) FROM tickets
-        WHERE DATE(create_time) = CURDATE()
-          AND ticket_status != 2
+        SELECT COUNT(*)
+        FROM tickets t
+        JOIN orders o ON t.order_id = o.order_id
+        WHERE DATE(t.create_time) = CURDATE()
+          AND t.ticket_status != 2
+          AND o.order_status IN (1, 3, 5)
     </select>
 
     <!-- 统计某车次下指定乘客（身份证号）已支付且未退票的车票数量 -->

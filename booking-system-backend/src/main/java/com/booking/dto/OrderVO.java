@@ -104,6 +104,9 @@ public class OrderVO {
                     case 2:
                         this.ticketStatusText = "已退票";
                         break;
+                    case 3:
+                        this.ticketStatusText = "已取消";
+                        break;
                     default:
                         this.ticketStatusText = "未知";
                 }
@@ -168,6 +171,12 @@ public class OrderVO {
                     break;
                 case 2:
                     this.orderStatusText = "已取消";
+                    break;
+                case 4:
+                    this.orderStatusText = "已退票";
+                    break;
+                case 5:
+                    this.orderStatusText = "已改签";
                     break;
                 default:
                     this.orderStatusText = "未知";
