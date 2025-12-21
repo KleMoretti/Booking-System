@@ -44,6 +44,14 @@ function TripFormModal({ visible, editingRecord, stations, onOk, onCancel, form 
 
   const handleTimeChange = () => {
     calculateDuration()
+
+    // 当出发时间变化时，自动将发车日期设置为出发时间的日期部分
+    const departureTime = form.getFieldValue('departureTime')
+    if (departureTime) {
+      form.setFieldsValue({
+        date: departureTime.startOf('day'),
+      })
+    }
   }
   return (
     <Modal

@@ -1,5 +1,5 @@
 -- 插入车次数据脚本
--- 时间范围：2025-12-14 至 2025-12-23（10天）
+-- 时间范围：2025-12-18 至 2025-12-27（10天）
 -- 包含：车站、车次、座位数据
 
 USE booking_system;
@@ -43,134 +43,55 @@ SET @chongqing_id = 10;
 SET @tianjin_id = 11;
 SET @zhengzhou_id = 12;
 SET @changsha_id = 13;
-SET @jinan_id = 14;
-SET @qingdao_id = 15;
-
+ SET @jinan_id = 14;
+ SET @qingdao_id = 15;
+ 
 -- ============================================
--- 第1天：2025-12-14
+-- 第1天：2025-12-18
 -- ============================================
 
 -- G1: 北京南 → 上海虹桥（高铁）
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-14 07:00:00', '2025-12-14 11:30:00', 553.00, 0);
+VALUES ('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-18 07:00:00', '2025-12-18 11:30:00', 553.00, 0);
 
 -- G2: 上海虹桥 → 北京南
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-14 08:00:00', '2025-12-14 12:30:00', 553.00, 0);
+VALUES ('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-18 08:00:00', '2025-12-18 12:30:00', 553.00, 0);
 
 -- G7: 北京西 → 广州南
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-14 08:00:00', '2025-12-14 16:30:00', 862.00, 0);
+VALUES ('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-18 08:00:00', '2025-12-18 16:30:00', 862.00, 0);
 
 -- D101: 上海虹桥 → 杭州东
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-14 09:00:00', '2025-12-14 10:00:00', 73.00, 0);
+VALUES ('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-18 09:00:00', '2025-12-18 10:00:00', 73.00, 0);
 
 -- G15: 北京南 → 深圳北
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-14 09:30:00', '2025-12-14 18:30:00', 933.50, 0);
+VALUES ('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-18 09:30:00', '2025-12-18 18:30:00', 933.50, 0);
 
 -- G55: 杭州东 → 广州南
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-14 10:00:00', '2025-12-14 17:30:00', 694.50, 0);
+VALUES ('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-18 10:00:00', '2025-12-18 17:30:00', 694.50, 0);
 
 -- G123: 南京南 → 北京南
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-14 11:00:00', '2025-12-14 14:30:00', 443.50, 0);
+VALUES ('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-18 11:00:00', '2025-12-18 14:30:00', 443.50, 0);
 
 -- D202: 武汉 → 广州南
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-14 12:00:00', '2025-12-14 16:00:00', 463.50, 0);
+VALUES ('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-18 12:00:00', '2025-12-18 16:00:00', 463.50, 0);
 
 -- G87: 成都东 → 重庆北
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-14 13:00:00', '2025-12-14 14:30:00', 154.50, 0);
+VALUES ('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-18 13:00:00', '2025-12-18 14:30:00', 154.50, 0);
 
 -- G91: 西安北 → 郑州东
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES ('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-14 14:00:00', '2025-12-14 16:00:00', 234.50, 0);
+VALUES ('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-18 14:00:00', '2025-12-18 16:00:00', 234.50, 0);
 
 -- ============================================
--- 第2天：2025-12-15
--- ============================================
-
-INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES 
-('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-15 07:00:00', '2025-12-15 11:30:00', 553.00, 0),
-('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-15 08:00:00', '2025-12-15 12:30:00', 553.00, 0),
-('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-15 08:00:00', '2025-12-15 16:30:00', 862.00, 0),
-('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-15 09:00:00', '2025-12-15 10:00:00', 73.00, 0),
-('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-15 09:30:00', '2025-12-15 18:30:00', 933.50, 0),
-('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-15 10:00:00', '2025-12-15 17:30:00', 694.50, 0),
-('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-15 11:00:00', '2025-12-15 14:30:00', 443.50, 0),
-('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-15 12:00:00', '2025-12-15 16:00:00', 463.50, 0),
-('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-15 13:00:00', '2025-12-15 14:30:00', 154.50, 0),
-('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-15 14:00:00', '2025-12-15 16:00:00', 234.50, 0),
-('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-15 15:00:00', '2025-12-15 19:30:00', 598.50, 0),
-('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-15 16:00:00', '2025-12-15 19:00:00', 314.50, 0);
-
--- ============================================
--- 第3天：2025-12-16
--- ============================================
-
-INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES 
-('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-16 07:00:00', '2025-12-16 11:30:00', 553.00, 0),
-('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-16 08:00:00', '2025-12-16 12:30:00', 553.00, 0),
-('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-16 08:00:00', '2025-12-16 16:30:00', 862.00, 0),
-('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-16 09:00:00', '2025-12-16 10:00:00', 73.00, 0),
-('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-16 09:30:00', '2025-12-16 18:30:00', 933.50, 0),
-('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-16 10:00:00', '2025-12-16 17:30:00', 694.50, 0),
-('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-16 11:00:00', '2025-12-16 14:30:00', 443.50, 0),
-('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-16 12:00:00', '2025-12-16 16:00:00', 463.50, 0),
-('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-16 13:00:00', '2025-12-16 14:30:00', 154.50, 0),
-('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-16 14:00:00', '2025-12-16 16:00:00', 234.50, 0),
-('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-16 15:00:00', '2025-12-16 19:30:00', 598.50, 0),
-('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-16 16:00:00', '2025-12-16 19:00:00', 314.50, 0),
-('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-16 17:00:00', '2025-12-16 19:30:00', 184.50, 0);
-
--- ============================================
--- 第4天：2025-12-17
--- ============================================
-
-INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES 
-('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-17 07:00:00', '2025-12-17 11:30:00', 553.00, 0),
-('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-17 08:00:00', '2025-12-17 12:30:00', 553.00, 0),
-('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-17 08:00:00', '2025-12-17 16:30:00', 862.00, 0),
-('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-17 09:00:00', '2025-12-17 10:00:00', 73.00, 0),
-('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-17 09:30:00', '2025-12-17 18:30:00', 933.50, 0),
-('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-17 10:00:00', '2025-12-17 17:30:00', 694.50, 0),
-('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-17 11:00:00', '2025-12-17 14:30:00', 443.50, 0),
-('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-17 12:00:00', '2025-12-17 16:00:00', 463.50, 0),
-('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-17 13:00:00', '2025-12-17 14:30:00', 154.50, 0),
-('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-17 14:00:00', '2025-12-17 16:00:00', 234.50, 0),
-('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-17 15:00:00', '2025-12-17 19:30:00', 598.50, 0),
-('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-17 16:00:00', '2025-12-17 19:00:00', 314.50, 0),
-('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-17 17:00:00', '2025-12-17 19:30:00', 184.50, 0);
-
--- ============================================
--- 第5天：2025-12-18
--- ============================================
-
-INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
-VALUES 
-('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-18 07:00:00', '2025-12-18 11:30:00', 553.00, 0),
-('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-18 08:00:00', '2025-12-18 12:30:00', 553.00, 0),
-('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-18 08:00:00', '2025-12-18 16:30:00', 862.00, 0),
-('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-18 09:00:00', '2025-12-18 10:00:00', 73.00, 0),
-('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-18 09:30:00', '2025-12-18 18:30:00', 933.50, 0),
-('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-18 10:00:00', '2025-12-18 17:30:00', 694.50, 0),
-('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-18 11:00:00', '2025-12-18 14:30:00', 443.50, 0),
-('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-18 12:00:00', '2025-12-18 16:00:00', 463.50, 0),
-('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-18 13:00:00', '2025-12-18 14:30:00', 154.50, 0),
-('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-18 14:00:00', '2025-12-18 16:00:00', 234.50, 0),
-('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-18 15:00:00', '2025-12-18 19:30:00', 598.50, 0),
-('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-18 16:00:00', '2025-12-18 19:00:00', 314.50, 0),
-('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-18 17:00:00', '2025-12-18 19:30:00', 184.50, 0);
-
--- ============================================
--- 第6天：2025-12-19
+-- 第2天：2025-12-19
 -- ============================================
 
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
@@ -186,11 +107,10 @@ VALUES
 ('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-19 13:00:00', '2025-12-19 14:30:00', 154.50, 0),
 ('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-19 14:00:00', '2025-12-19 16:00:00', 234.50, 0),
 ('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-19 15:00:00', '2025-12-19 19:30:00', 598.50, 0),
-('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-19 16:00:00', '2025-12-19 19:00:00', 314.50, 0),
-('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-19 17:00:00', '2025-12-19 19:30:00', 184.50, 0);
+('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-19 16:00:00', '2025-12-19 19:00:00', 314.50, 0);
 
 -- ============================================
--- 第7天：2025-12-20
+-- 第3天：2025-12-20
 -- ============================================
 
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
@@ -210,7 +130,7 @@ VALUES
 ('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-20 17:00:00', '2025-12-20 19:30:00', 184.50, 0);
 
 -- ============================================
--- 第8天：2025-12-21
+-- 第4天：2025-12-21
 -- ============================================
 
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
@@ -230,7 +150,7 @@ VALUES
 ('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-21 17:00:00', '2025-12-21 19:30:00', 184.50, 0);
 
 -- ============================================
--- 第9天：2025-12-22
+-- 第5天：2025-12-22
 -- ============================================
 
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
@@ -250,7 +170,7 @@ VALUES
 ('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-22 17:00:00', '2025-12-22 19:30:00', 184.50, 0);
 
 -- ============================================
--- 第10天：2025-12-23
+-- 第6天：2025-12-23
 -- ============================================
 
 INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
@@ -268,6 +188,86 @@ VALUES
 ('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-23 15:00:00', '2025-12-23 19:30:00', 598.50, 0),
 ('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-23 16:00:00', '2025-12-23 19:00:00', 314.50, 0),
 ('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-23 17:00:00', '2025-12-23 19:30:00', 184.50, 0);
+
+-- ============================================
+-- 第7天：2025-12-24
+-- ============================================
+
+INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
+VALUES 
+('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-24 07:00:00', '2025-12-24 11:30:00', 553.00, 0),
+('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-24 08:00:00', '2025-12-24 12:30:00', 553.00, 0),
+('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-24 08:00:00', '2025-12-24 16:30:00', 862.00, 0),
+('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-24 09:00:00', '2025-12-24 10:00:00', 73.00, 0),
+('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-24 09:30:00', '2025-12-24 18:30:00', 933.50, 0),
+('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-24 10:00:00', '2025-12-24 17:30:00', 694.50, 0),
+('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-24 11:00:00', '2025-12-24 14:30:00', 443.50, 0),
+('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-24 12:00:00', '2025-12-24 16:00:00', 463.50, 0),
+('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-24 13:00:00', '2025-12-24 14:30:00', 154.50, 0),
+('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-24 14:00:00', '2025-12-24 16:00:00', 234.50, 0),
+('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-24 15:00:00', '2025-12-24 19:30:00', 598.50, 0),
+('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-24 16:00:00', '2025-12-24 19:00:00', 314.50, 0),
+('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-24 17:00:00', '2025-12-24 19:30:00', 184.50, 0);
+
+-- ============================================
+-- 第8天：2025-12-25
+-- ============================================
+
+INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
+VALUES 
+('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-25 07:00:00', '2025-12-25 11:30:00', 553.00, 0),
+('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-25 08:00:00', '2025-12-25 12:30:00', 553.00, 0),
+('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-25 08:00:00', '2025-12-25 16:30:00', 862.00, 0),
+('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-25 09:00:00', '2025-12-25 10:00:00', 73.00, 0),
+('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-25 09:30:00', '2025-12-25 18:30:00', 933.50, 0),
+('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-25 10:00:00', '2025-12-25 17:30:00', 694.50, 0),
+('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-25 11:00:00', '2025-12-25 14:30:00', 443.50, 0),
+('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-25 12:00:00', '2025-12-25 16:00:00', 463.50, 0),
+('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-25 13:00:00', '2025-12-25 14:30:00', 154.50, 0),
+('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-25 14:00:00', '2025-12-25 16:00:00', 234.50, 0),
+('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-25 15:00:00', '2025-12-25 19:30:00', 598.50, 0),
+('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-25 16:00:00', '2025-12-25 19:00:00', 314.50, 0),
+('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-25 17:00:00', '2025-12-25 19:30:00', 184.50, 0);
+
+-- ============================================
+-- 第9天：2025-12-26
+-- ============================================
+
+INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
+VALUES 
+('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-26 07:00:00', '2025-12-26 11:30:00', 553.00, 0),
+('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-26 08:00:00', '2025-12-26 12:30:00', 553.00, 0),
+('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-26 08:00:00', '2025-12-26 16:30:00', 862.00, 0),
+('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-26 09:00:00', '2025-12-26 10:00:00', 73.00, 0),
+('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-26 09:30:00', '2025-12-26 18:30:00', 933.50, 0),
+('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-26 10:00:00', '2025-12-26 17:30:00', 694.50, 0),
+('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-26 11:00:00', '2025-12-26 14:30:00', 443.50, 0),
+('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-26 12:00:00', '2025-12-26 16:00:00', 463.50, 0),
+('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-26 13:00:00', '2025-12-26 14:30:00', 154.50, 0),
+('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-26 14:00:00', '2025-12-26 16:00:00', 234.50, 0),
+('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-26 15:00:00', '2025-12-26 19:30:00', 598.50, 0),
+('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-26 16:00:00', '2025-12-26 19:00:00', 314.50, 0),
+('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-26 17:00:00', '2025-12-26 19:30:00', 184.50, 0);
+
+-- ============================================
+-- 第10天：2025-12-27
+-- ============================================
+
+INSERT INTO trips (trip_number, vehicle_info, total_seats, departure_station_id, arrival_station_id, departure_time, arrival_time, base_price, trip_status)
+VALUES 
+('G1', 'CRH380A', 556, @beijing_id, @shanghai_id, '2025-12-27 07:00:00', '2025-12-27 11:30:00', 553.00, 0),
+('G2', 'CRH380A', 556, @shanghai_id, @beijing_id, '2025-12-27 08:00:00', '2025-12-27 12:30:00', 553.00, 0),
+('G7', 'CRH380B', 556, @beijing_id, @guangzhou_id, '2025-12-27 08:00:00', '2025-12-27 16:30:00', 862.00, 0),
+('D101', 'CRH2A', 610, @shanghai_id, @hangzhou_id, '2025-12-27 09:00:00', '2025-12-27 10:00:00', 73.00, 0),
+('G15', 'CRH380A', 556, @beijing_id, @shenzhen_id, '2025-12-27 09:30:00', '2025-12-27 18:30:00', 933.50, 0),
+('G55', 'CRH380B', 556, @hangzhou_id, @guangzhou_id, '2025-12-27 10:00:00', '2025-12-27 17:30:00', 694.50, 0),
+('G123', 'CRH380D', 556, @nanjing_id, @beijing_id, '2025-12-27 11:00:00', '2025-12-27 14:30:00', 443.50, 0),
+('D202', 'CRH2C', 610, @wuhan_id, @guangzhou_id, '2025-12-27 12:00:00', '2025-12-27 16:00:00', 463.50, 0),
+('G87', 'CRH3C', 610, @chengdu_id, @chongqing_id, '2025-12-27 13:00:00', '2025-12-27 14:30:00', 154.50, 0),
+('G91', 'CRH380B', 556, @xian_id, @zhengzhou_id, '2025-12-27 14:00:00', '2025-12-27 16:00:00', 234.50, 0),
+('G303', 'CRH380A', 556, @tianjin_id, @shanghai_id, '2025-12-27 15:00:00', '2025-12-27 19:30:00', 598.50, 0),
+('D305', 'CRH2A', 610, @changsha_id, @shenzhen_id, '2025-12-27 16:00:00', '2025-12-27 19:00:00', 314.50, 0),
+('G401', 'CRH380B', 556, @jinan_id, @qingdao_id, '2025-12-27 17:00:00', '2025-12-27 19:30:00', 184.50, 0);
 
 -- ============================================
 -- 3. 为所有车次创建座位数据
@@ -380,7 +380,7 @@ LIMIT 5;
 -- ============================================
 -- 总结：
 -- - 15个车站
--- - 10天（2025-12-14 至 2025-12-23）
+-- - 10天（2025-12-18 至 2025-12-27）
 -- - 每天约13个车次
 -- - 总计约130个车次
 -- - 每个车次556或610个座位
