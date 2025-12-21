@@ -36,10 +36,6 @@ function PriceManagement() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [pagination.current, pagination.pageSize]);
-
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -53,20 +49,17 @@ function PriceManagement() {
           : undefined,
         departureStation: values.departureStation,
         arrivalStation: values.arrivalStation,
+        status: 0, // 只查询计划中的车次
         sortBy: values.sortBy,
         sortOrder: values.sortOrder,
       });
 
       if (response.data) {
-        // 过滤掉进行中、已完成和已删除的车次
-        const filteredList = (response.data.list || []).filter(
-          (trip) => trip.status === 0 // 只显示计划中的车次
-        );
-        setDataSource(filteredList);
-        setPagination({
-          ...pagination,
-          total: filteredList.length,
-        });
+        setDataSource(response.data.list || []);
+        setPagination((prev) => ({
+          ...prev,
+          total: response.data.total || 0,
+        }));
       }
     } catch (error) {
       message.error("获取数据失败");
@@ -74,6 +67,10 @@ function PriceManagement() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [pagination.current, pagination.pageSize]);
 
   const fetchStations = async () => {
     try {

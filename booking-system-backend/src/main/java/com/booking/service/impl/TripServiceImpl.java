@@ -75,13 +75,13 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public List<TripManagementVO> getTripList(String tripNumber, String departureDate, String departureStation, String arrivalStation, String sortBy, String sortOrder, Integer offset, Integer pageSize) {
-        return tripMapper.getTripList(tripNumber, departureDate, departureStation, arrivalStation, sortBy, sortOrder, offset, pageSize);
+    public List<TripManagementVO> getTripList(String tripNumber, String departureDate, String departureStation, String arrivalStation, Integer status, String sortBy, String sortOrder, Integer offset, Integer pageSize) {
+        return tripMapper.getTripList(tripNumber, departureDate, departureStation, arrivalStation, status, sortBy, sortOrder, offset, pageSize);
     }
 
     @Override
-    public Long countTrips(String tripNumber, String departureDate, String departureStation, String arrivalStation) {
-        return tripMapper.countTrips(tripNumber, departureDate, departureStation, arrivalStation);
+    public Long countTrips(String tripNumber, String departureDate, String departureStation, String arrivalStation, Integer status) {
+        return tripMapper.countTrips(tripNumber, departureDate, departureStation, arrivalStation, status);
     }
 
     @Override

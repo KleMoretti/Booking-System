@@ -116,6 +116,9 @@
             <if test="arrivalStation != null and arrivalStation != ''">
                 AND arr_station.station_name LIKE CONCAT('%', #{arrivalStation}, '%')
             </if>
+            <if test="status != null">
+                AND t.trip_status = #{status}
+            </if>
         </where>
     </select>
 
@@ -199,6 +202,9 @@
             </if>
             <if test="arrivalStation != null and arrivalStation != ''">
                 AND arr_station.station_name LIKE CONCAT('%', #{arrivalStation}, '%')
+            </if>
+            <if test="status != null">
+                AND t.trip_status = #{status}
             </if>
         </where>
         ORDER BY

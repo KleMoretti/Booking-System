@@ -32,6 +32,7 @@ public interface TripMapper {
                                        @Param("departureDate") String departureDate,
                                        @Param("departureStation") String departureStation,
                                        @Param("arrivalStation") String arrivalStation,
+                                       @Param("status") Integer status,
                                        @Param("sortBy") String sortBy,
                                        @Param("sortOrder") String sortOrder,
                                        @Param("offset") Integer offset,
@@ -39,7 +40,8 @@ public interface TripMapper {
     Long countTrips(@Param("tripNumber") String tripNumber,
                     @Param("departureDate") String departureDate,
                     @Param("departureStation") String departureStation,
-                    @Param("arrivalStation") String arrivalStation);
+                    @Param("arrivalStation") String arrivalStation,
+                    @Param("status") Integer status);
     int updatePrice(@Param("tripId") Integer tripId, @Param("basePrice") BigDecimal basePrice);
 
     /**
