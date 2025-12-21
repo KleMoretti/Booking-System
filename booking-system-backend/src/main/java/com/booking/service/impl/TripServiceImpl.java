@@ -224,7 +224,7 @@ public class TripServiceImpl implements TripService {
     }
 
     @Override
-    public void updateTripPrice(Integer tripId, BigDecimal newPrice) {
+    public void updateTripPrice(Integer tripId, BigDecimal newPrice, Integer totalSeats) {
         // 检查车次是否可编辑
         Trip trip = tripMapper.findById(tripId);
         if (trip == null) {
@@ -235,7 +235,14 @@ public class TripServiceImpl implements TripService {
             throw new IllegalStateException("该车次状态不允许修改票价：" + TripStatus.getStatusDesc(trip.getTripStatus()));
         }
         
+        // 更新票价
         tripMapper.updatePrice(tripId, newPrice);
+        
+        // 如果提供了总座位数，也要更新
+        if (totalSeats != null && !totalSeats.equals(trip.getTotalSeats())) {
+            trip.setTotalSeats(totalSeats);
+            tripMapper.update(trip);
+        }
     }
     
     /**

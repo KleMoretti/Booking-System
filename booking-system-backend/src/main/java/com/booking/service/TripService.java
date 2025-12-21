@@ -23,7 +23,7 @@ public interface TripService {
     void addTrip(TripDTO tripDTO);
     void updateTrip(Integer tripId, TripDTO tripDTO);
     void deleteTrip(Integer tripId);
-    void updateTripPrice(Integer tripId, BigDecimal newPrice);
+    void updateTripPrice(Integer tripId, BigDecimal newPrice, Integer totalSeats);
     Map<String, Object> importTripsFromExcel(MultipartFile file);
 }
 

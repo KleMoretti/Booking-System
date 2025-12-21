@@ -401,6 +401,8 @@ function BatchTripManagement() {
               下载导入模板
             </Button>
             <Divider type="vertical" />
+            
+            {/* 
             <Button icon={<PlusOutlined />} onClick={handleAddTrip}>
               加开车次
             </Button>
@@ -419,12 +421,12 @@ function BatchTripManagement() {
             >
               批量下线
             </Button>
+            {selectedRowKeys.length > 0 && (
+              <span style={{ marginLeft: 16, color: "#1890ff" }}>
+                已选择 {selectedRowKeys.length} 个车次
+              </span>
+            )} */}
           </Space>
-          {selectedRowKeys.length > 0 && (
-            <span style={{ marginLeft: 16, color: "#1890ff" }}>
-              已选择 {selectedRowKeys.length} 个车次
-            </span>
-          )}
         </div>
 
         <Table

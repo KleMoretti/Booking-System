@@ -378,7 +378,17 @@ public class AdminController {
                 return Result.error("票价不能超过10000元");
             }
             
-            tripService.updateTripPrice(id, newPrice);
+            // 处理总座位数
+            Integer totalSeats = null;
+            Object totalSeatsObj = data.get("totalSeats");
+            if (totalSeatsObj != null) {
+                totalSeats = Integer.parseInt(totalSeatsObj.toString());
+                if (totalSeats < 0) {
+                    return Result.error("总座位数不能为负数");
+                }
+            }
+            
+            tripService.updateTripPrice(id, newPrice, totalSeats);
             return Result.success("票价更新成功", null);
         } catch (Exception e) {
             return Result.error("更新票价失败：" + e.getMessage());
@@ -413,7 +423,7 @@ public class AdminController {
             
             // 批量更新
             for (Integer tripId : tripIds) {
-                tripService.updateTripPrice(tripId, newPrice);
+                tripService.updateTripPrice(tripId, newPrice, null);
             }
             
             return Result.success("批量更新票价成功", null);
