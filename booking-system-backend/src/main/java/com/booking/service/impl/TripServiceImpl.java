@@ -158,6 +158,9 @@ public class TripServiceImpl implements TripService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addTrip(TripDTO tripDTO) {
+        // 校验同一天是否已存在相同车次号
+        checkTripExists(tripDTO.getTripNumber(), tripDTO.getDepartureTime(), null);
+
         Trip trip = new Trip();
         BeanUtils.copyProperties(tripDTO, trip);
         
@@ -182,6 +185,9 @@ public class TripServiceImpl implements TripService {
         if (oldTrip == null) {
             throw new IllegalArgumentException("车次不存在");
         }
+
+        // 校验同一天是否已存在相同车次号（排除自身）
+        checkTripExists(tripDTO.getTripNumber(), tripDTO.getDepartureTime(), tripId);
         
         // 检查是否可编辑
         if (!TripStatus.isEditable(oldTrip.getTripStatus())) {
@@ -245,6 +251,42 @@ public class TripServiceImpl implements TripService {
         }
     }
     
+    /**
+     * 检查同一天是否已存在相同车次号
+     * @param tripNumber 车次号
+     * @param departureTime 发车时间
+     * @param excludeTripId 排除的车次ID（用于更新时排除自身）
+     */
+    private void checkTripExists(String tripNumber, LocalDateTime departureTime, Integer excludeTripId) {
+        if (tripNumber == null || departureTime == null) {
+            return;
+        }
+        
+        String dateStr = departureTime.toLocalDate().toString();
+        // 使用 getTripList 查询当天的相似车次
+        // 注意：getTripList 使用的是模糊查询，所以需要手动精确比对
+        List<TripManagementVO> existingTrips = tripMapper.getTripList(
+            tripNumber, dateStr, null, null, null, null, null, null, null
+        );
+        
+        if (existingTrips != null) {
+            for (TripManagementVO vo : existingTrips) {
+                // 精确匹配车次号
+                if (vo.getTripNumber().equalsIgnoreCase(tripNumber)) {
+                    // 如果是更新操作，且ID相同，则跳过（是同一个车次）
+                    if (excludeTripId != null && vo.getTripId().equals(excludeTripId)) {
+                        continue;
+                    }
+                    // 排除已删除的车次
+                    if (vo.getStatus() != null && vo.getStatus() == TripStatus.DELETED) {
+                        continue;
+                    }
+                    throw new IllegalArgumentException("该日期 (" + dateStr + ") 已存在相同的车次号：" + tripNumber);
+                }
+            }
+        }
+    }
+
     /**
      * 将 Excel 行数据转换为 TripDTO，复用车次管理中添加车次的站点与时间校验逻辑
      */
